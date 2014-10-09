@@ -110,8 +110,8 @@ func pl_arrow(x0, y0, x1, y1, head=, size=, width=, color=, angle=)
 }
 
 func pl_fc(z, y, x, ireg, levs=, legend=, hide=, type=, width=, color=,
-	   colors=, smooth=, marks=, marker=, mspace=, mphase=,
-	   triangle=, region=)
+           colors=, smooth=, marks=, marker=, mspace=, mphase=,
+           triangle=, region=)
 {
   d = dimsof(z);
   if (d(1) != 2)
@@ -518,8 +518,8 @@ func color_bar(levs, colors, vert=, labs=, adjust=, color=, width=,
 /*---------------------------------------------------------------------------*/
 
 func pla(y, x, every=, legend=, hide=, type=, width=, color=, closed=, smooth=,
-	 marks=, marker=, mspace=, mphase=, rays=, arrowl=, arroww=, rspace=,
-	 rphase=)
+         marks=, marker=, mspace=, mphase=, rays=, arrowl=, arroww=, rspace=,
+         rphase=)
 /* DOCUMENT pla, y, x
          or pla, y
 
@@ -587,11 +587,11 @@ func pls_mesh(&x, &xx, d, which=, inhibit=)
        (1) if X is a vector with N elements or has the same shape as Z,
            then X is considered to give the coordinates at the centre of Z
            cells: X is unchanged and output XX is build by interpolating
-	   (and extrapolating at the edges) X ;
+           (and extrapolating at the edges) X ;
        (2) if X is a vector with N+1 elements or has 1 more element than Z
            in each dimension, then X is considered to give the coordinates
            at the corners of Z cells: output XX is set to input X and
-	   output X is build by interpolating output XX;
+           output X is build by interpolating output XX;
        (3) if X is nil, it defaults to [0.5, 1.5, ..., N-0.5] and XX
            defaults to [0, 1, ..., N] along the considered dimension.
      Finally, if X is 1-D, it is expanded in the other direction.
@@ -625,9 +625,9 @@ func pls_mesh(&x, &xx, d, which=, inhibit=)
   } else if (dx(1) == 1) {
     if (dx(2) == n) {
       if (do_xx) {
-	xx = x(pcen);
-	xx(1) = 2.0 * x(1) - x(2);
-	xx(0) = 2.0 * x(0) - x(-1);
+        xx = x(pcen);
+        xx(1) = 2.0 * x(1) - x(2);
+        xx(0) = 2.0 * x(0) - x(-1);
       }
     } else if (dx(2) == n+1) {
       xx = x;
@@ -637,13 +637,13 @@ func pls_mesh(&x, &xx, d, which=, inhibit=)
     expand = 0;
     if (allof(dx == d)) {
       if (do_xx) {
-	t = x(pcen,);
-	t(1,) = 2.0 * x(1,) - x(2,);
-	t(0,) = 2.0 * x(0,) - x(-1,);
-	xx = t(,pcen);
-	xx(,1) = 2.0 * t(,1) - t(,2);
-	xx(,0) = 2.0 * t(,0) - t(,-1);
-	t = [];
+        t = x(pcen,);
+        t(1,) = 2.0 * x(1,) - x(2,);
+        t(0,) = 2.0 * x(0,) - x(-1,);
+        xx = t(,pcen);
+        xx(,1) = 2.0 * t(,1) - t(,2);
+        xx(,0) = 2.0 * t(,0) - t(,-1);
+        t = [];
       }
     } else if (allof(dx == d + [0,1,1])) {
       xx = x;
@@ -656,21 +656,21 @@ func pls_mesh(&x, &xx, d, which=, inhibit=)
   if (expand) {
     if (which == 1) {
       if (do_x)
-	x = x(,-:1:n2);
+        x = x(,-:1:n2);
       if (do_xx)
-	xx = xx(,-:1:n2+1);
+        xx = xx(,-:1:n2+1);
     } else {
       if (do_x)
-	x = x(-:1:n1,);
+        x = x(-:1:n1,);
       if (do_xx)
-	xx = xx(-:1:n1+1,);
+        xx = xx(-:1:n1+1,);
     }
   }
   return string(0);
 }
 
 func pls(z, y, x, cbar=, viewport=, title=, xtitle=, ytitle=,
-	 legend=, hide=, top=, cmin=, cmax=, edges=, ecolor=, ewidth=,
+         legend=, hide=, top=, cmin=, cmax=, edges=, ecolor=, ewidth=,
          height=, font=, levs=, nlevs=, type=, width=, color=,
          marks=, marker=, mspace=, mphase=, smooth=)
 /* DOCUMENT pls, z, y, x
@@ -796,19 +796,19 @@ func pls(z, y, x, cbar=, viewport=, title=, xtitle=, ytitle=,
 /*---------------------------------------------------------------------------*/
 
 func plh(y, x, just=, legend=, hide=, type=, width=, color=, marks=, marker=,
-	 mspace=, mphase=)
+         mspace=, mphase=)
 /* DOCUMENT plh, y, x
          or plh, y
-	plots a graph of Y versus X in an "histogram" style (i.e., with
-	steps).  Y and X must be 1-D arrays of equal length; if X is
-	omitted, it defaults to [1, 2, ..., numberof(Y)].
+        plots a graph of Y versus X in an "histogram" style (i.e., with
+        steps).  Y and X must be 1-D arrays of equal length; if X is
+        omitted, it defaults to [1, 2, ..., numberof(Y)].
 
-	The optional keyword JUST set justification of the histogram:
-	JUST=1, 2 or 3 makes the graph be left justified, centered or
-	right justified respectively along X axis.  Default is centered.
+        The optional keyword JUST set justification of the histogram:
+        JUST=1, 2 or 3 makes the graph be left justified, centered or
+        right justified respectively along X axis.  Default is centered.
 
-	Other plotting keywords (legend, hide, type, width, color, marks,
-	marker, mspace, and mphase) are passed to the plg routine.
+        Other plotting keywords (legend, hide, type, width, color, marks,
+        marker, mspace, and mphase) are passed to the plg routine.
 
    SEE ALSO: plg, plm, plc, plv, plf, pli, plt, pldj, plfp
              limits, logxy, range, fma, hcp
@@ -946,7 +946,7 @@ func plvline(x, y0, y1, color=, width=, type=) {
 /* PLP - PLOTTING POINTS */
 
 func plp(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
-	 legend=, type=, width=, color=, fill=)
+         legend=, type=, width=, color=, fill=)
 /* DOCUMENT plp, y, x;
  *     -or- plp, y, x, dx=sigma_x, dy=sigma_y;
  *
@@ -1729,7 +1729,7 @@ func _pl3xy(&xp, &yp, x, y, z)
 /*---------------------------------------------------------------------------*/
 
 func pl3t(text, x, y, z, alt=, az=, legend=, hide=, color=, font=, height=,
-	  opaque=, path=, justify=, tosys=)
+          opaque=, path=, justify=, tosys=)
 {
 /* DOCUMENT pl3t, text, x, y, z, alt=alt, az=az, tosys=0/1
      plots TEXT (a string) at the point (X,Y,Z) in a 3-dimensional
@@ -1753,8 +1753,8 @@ func pl3t(text, x, y, z, alt=, az=, legend=, hide=, color=, font=, height=,
   } else {
     for (i=1; i<=n; i++) {
       plt, text(i), xp(i), yp(i),
-	legend=legend, hide=hide, color=color,font=font, height=height,
-	opaque=opaque, path=path, justify=justify, tosys=tosys;
+        legend=legend, hide=hide, color=color,font=font, height=height,
+        opaque=opaque, path=path, justify=justify, tosys=tosys;
     }
   }
 }
@@ -1762,7 +1762,7 @@ func pl3t(text, x, y, z, alt=, az=, legend=, hide=, color=, font=, height=,
 /*---------------------------------------------------------------------------*/
 
 func pl3dj(x0, y0, z0, x1, y1, z1, alt=, az=,
-	   legend=, hide=, type=, width=, color=)
+           legend=, hide=, type=, width=, color=)
 {
 /* DOCUMENT pl3dj, x0, y0, z0, x1, y1, z1, alt=alt, az=az
      plots disjoint lines from (X0,Y0,Z0) to (X1,Y1,Z1) in a 3-dimensional
@@ -1905,7 +1905,7 @@ func pl3s(z, y, x, alt=, az=, axis=, box=, acolor=, fill=, legend=, hide=,
       [ 0, 0,-1, 0, 1, 0],
       [-1, 1, 0, 0, 0, 0];
     face_edges=[[1,2,3,4], [5,6,7,8], [1,5,9,10], [2,6,10,11],
-		[3,7,11,12], [4,8,9,12]];
+                [3,7,11,12], [4,8,9,12]];
     visible = array(0, 12);
     visible(face_edges(, where(nzp >= 0.0))(*)) = 1;
     fore = where(visible);
@@ -2068,8 +2068,8 @@ func _pl3tick(tmin, tmax, p, d, v, color=, font=, height=, opaque=, path=)
 
 func xwindow(win, width=, height=, dpi=, display=, private=, dump=, hcp=,
              parent=, xpos=, ypos=,
-	     landscape=, viewport=, units=, font=, size=, color=, frame=,
-	     keep=, xopt=, yopt=, xmargin=, ymargin=, debug=)
+             landscape=, viewport=, units=, font=, size=, color=, frame=,
+             keep=, xopt=, yopt=, xmargin=, ymargin=, debug=)
 /* DOCUMENT xwindow, win;
        -or- xwindow;
        -or- xwindow(...);
@@ -2351,15 +2351,15 @@ func xbtn_plot(..)
       x = btn.x;
       y = btn.y;
       plt, btn.text, x, y, justify="CH", font=font, height=h,
-	color=color, opaque=1;
+        color=color, opaque=1;
       dx = btn.dx;
       dy = btn.dy;
       if (!(w = btn.width)) w = 1.0;
       if (w>0.0) {
-	oldSys = plsys(0);
-	plg, [y-dy,y-dy,y+dy,y+dy],[x-dx,x+dx,x+dx,x-dx],
+        oldSys = plsys(0);
+        plg, [y-dy,y-dy,y+dy,y+dy],[x-dx,x+dx,x+dx,x-dx],
           closed=1, width=w, type=1, marks=0, color=color;
-	plsys, oldSys;
+        plsys, oldSys;
       }
     }
   }
