@@ -96,7 +96,7 @@ func fft_best_dim(len)
   return best;
 }
 
-func fft_indgen(dim) { return (u= indgen(0:dim-1)) - dim*(u > dim/2); }
+func fft_indgen(dim) { return (u = indgen(0:dim-1)) - dim*(u > dim/2); }
 /* DOCUMENT fft_indgen(len)
      Return FFT frequencies along a dimension of length LEN.
    SEE ALSO: indgen, span, fft_dist, fft_freqlist, fft_symmetric_index. */
@@ -178,7 +178,7 @@ func fft_freqlist(dimlist)
   PI = 3.1415926535897932384626433832795029;
   ndims = dimlist(1);
   ptr = array(pointer, ndims);
-  for (k=1 ; k<=ndims ; ++k) {
+  for (k = 1; k <= ndims; ++k) {
     len = dimlist(k + 1);
     ws = array(1, k + 1); /* to build dimension list of k-th dimension */
     ws(1) = k;
@@ -354,7 +354,7 @@ func __fft_init(dimlist)
   ndims = numberof(dims);
   __fft_setup = array(pointer, ndims);
   __fft_number = 0;
-  for (i=1 ; i<=ndims ; ++i) {
+  for (i = 1; i <= ndims; ++i) {
     if (! __fft_setup(i)) {
       dim = dims(i);
       ws = array(double, 6*dim + 15);
@@ -391,7 +391,7 @@ func __fft(x, dir)
   len = 6*dims + 15; // expected length of workspace vectors
   std = 1;
   top = numberof(x);
-  for (i=1 ; i<=ndims ; i++) {
+  for (i = 1; i <= ndims; ++i) {
     dim = dims(i);
     ws = __fft_setup(i);
     if (numberof(*ws) != len(i) || structof(*ws) != double)
@@ -402,7 +402,7 @@ func __fft(x, dir)
   }
 
   /* increment counter and return result */
-  if (is_void(__fft_number)) __fft_number= 0;
+  if (is_void(__fft_number)) __fft_number = 0;
   ++__fft_number;
   return x;
 }
@@ -415,12 +415,12 @@ func fft_symmetric_index(..)
      Returns  indices  of  hermitian-symmetry  transform  for  a  FFT  with
      dimension list DIMLIST.  For instance,  if A is a N-dimensional array,
      then:
-        AP= A(fft_symmetric_index(dimsof(A)))
+        AP = A(fft_symmetric_index(dimsof(A)))
      is  equal to array  A with  its coordinates  negated according  to FFT
      convention:
         AP(X1, X2, ..., XN) = A(-X1, -X2, ..., -XN)
      consequently if A is hermitian then:
-        AP= conj(A).
+        AP = conj(A).
 
    SEE ALSO: fft_indgen. */
 {
@@ -431,10 +431,10 @@ func fft_symmetric_index(..)
   /* Compute result starting by last dimension. */
   local u;
   if ((n = numberof(dimlist)) == 1) return 1; /* scalar array */
-  for (k=n ; k>1 ; --k) {
+  for (k = n; k > 1; --k) {
     dim = dimlist(k);
     (q = indgen(dim:1:-1))(1) = 0; // neg. of freq along that dim
-    u= k<n ? dim*u(-,..) + q : q;
+    u = (k < n ? dim*u(-,..) + q : q);
   }
   return u + 1; /* <== indices start at 1 in Yorick */
 }
@@ -449,16 +449,16 @@ func _fft_centroid(a1, repeat)
 
    SEE ALSO fft_centroid. */
 {
-  dim= numberof(a1);
-  u= fft_indgen(dim);
-  x0= u(a1(mxx));
-  x= double(u);
+  dim = numberof(a1);
+  u = fft_indgen(dim);
+  x0 = u(a1(mxx));
+  x = double(u);
   do {
-    w= x0==0 ? a1 : roll(a1, -x0);
+    w = (x0 == 0 ? a1 : roll(a1, -x0));
     if (dim%2 == 0) w(dim/2+1)= 0.0; // remove Nyquist frequency
-    x1= x0+sum(w*x)/sum(w);
-    x0p= x0;
-    x0= long(floor(x1+0.5));
+    x1 = x0+sum(w*x)/sum(w);
+    x0p = x0;
+    x0 = long(floor(x1+0.5));
   } while (--repeat>0 && abs(x0-x0p)>=1);
   return x1;
 }
@@ -477,21 +477,21 @@ func fft_centroid(a, repeat)
 
    SEE ALSO fft_indgen. */
 {
-  if (is_void(repeat)) repeat= 3;
-  dims= dimsof(a);
-  if ((ndims= dims(1)) <= 2) {
-    if (ndims==2) return [_fft_centroid(a(,sum), repeat),
-			 _fft_centroid(a(sum,), repeat)];
-    if (ndims==1) return _fft_centroid(a, repeat);
-    return 0.0; // ndims==0
+  if (is_void(repeat)) repeat = 3;
+  dims = dimsof(a);
+  if ((ndims = dims(1)) <= 2) {
+    if (ndims == 2) return [_fft_centroid(a(,sum), repeat),
+                            _fft_centroid(a(sum,), repeat)];
+    if (ndims == 1) return _fft_centroid(a, repeat);
+    return 0.0; // ndims == 0
   }
-  result= array(double, ndims);
-  for (i=1 ; i<=ndims ; ++i) {
-    dim= dims(i+1);
-    a1= array(double, numberof(a)/dim, dim);
-    a1(*)= (i==ndims ? a(*) : transpose(a, [ndims,i])(*));
-    a1= a1(sum,);
-    result(i)= _fft_centroid(a1, repeat);
+  result = array(double, ndims);
+  for (i = 1; i <= ndims; ++i) {
+    dim = dims(i+1);
+    a1 = array(double, numberof(a)/dim, dim);
+    a1(*) = (i==ndims ? a(*) : transpose(a, [ndims,i])(*));
+    a1 = a1(sum,);
+    result(i) = _fft_centroid(a1, repeat);
   }
   return result;
 }
@@ -567,7 +567,7 @@ func fft_recenter(x, template, reverse)
   ndims = dims(1);
   dims = dims(2:);
   offset = array(long, ndims);
-  for (i=1 ; i<=ndims ; ++i) {
+  for (i = 1; i <= ndims; ++i) {
     dim = dims(i);
     offset(i) = index % dim;
     index /= dim;
@@ -592,7 +592,7 @@ func fft_recenter_at_max(z, middle=)
   ndims = dims(1);
   dims = dims(2:);
   offset = array(long, ndims);
-  for (i=1 ; i<=ndims ; ++i) {
+  for (i = 1; i <= ndims; ++i) {
     dim = dims(i);
     offset(i) = index % dim;
     index /= dim;
@@ -673,7 +673,7 @@ func fft_shift_phasor(off, u)
 {
   if (structof(u) != pointer) u = fft_freqlist(u);
   ndims = numberof(u);
-  for (i=1 ; i<=ndims ; ++i) {
+  for (i = 1; i <= ndims; ++i) {
     a = (*u(i))*off(i);
     if (i == 1) p  =  cos(a) + 1i*sin(a);
     else        p *= (cos(a) + 1i*sin(a));
@@ -764,13 +764,13 @@ func fft_plg(y, scale=, legend=, hide=, type=, width=, color=, smooth=,
 
    SEE ALSO plh, plg, roll. */
 {
-  if (is_void(scale)) scale= 1.0;
+  if (is_void(scale)) scale = 1.0;
   else if (! is_array(scale) || dimsof(scale)(1)!=0)
     error, "expecting a scalar for SCALE";
-  if (! is_array(y) || (dims= dimsof(y))(1)!=1) error, "expecting 1-D array";
+  if (! is_array(y) || (dims = dimsof(y))(1)!=1) error, "expecting 1-D array";
 
-  dim1= dims(2);
-  min1= (max1= dim1/2) - dim1 + 1;
+  dim1 = dims(2);
+  min1 = (max1= dim1/2) - dim1 + 1;
 
   if (stair) {
     // just=
@@ -927,16 +927,16 @@ func fft_of_two_real_arrays(a, b, &ft_a, &ft_b, ljdir, rjdir, setup=)
 
 func fft_paste(a, b)
 /* DOCUMENT fft_paste(a, b)
- *     -or- fft_paste, a, b;
- *   Paste array B into array A in the sense of FFT indexing.  All
- *   dimensions of A must be greater or equal the corresponding dimension
- *   of B.  When called as a subroutine, the operation is done in-place.
- *
- * RESTRICTIONS:
- *   For even dimensions, the Nyquist frequency from B is not pasted
- *   into A.
- *
- * SEE ALSO: fft_indgen.
+         or fft_paste, a, b;
+     Paste array B into array A in the sense of FFT indexing.  All dimensions
+     of A must be greater or equal the corresponding dimension of B.  When
+     called as a subroutine, the operation is done in-place.
+
+   RESTRICTIONS:
+     For even dimensions, the Nyquist frequency from B is not pasted
+     into A.
+
+   SEE ALSO: fft_indgen.
  */
 {
   if (! is_array(a) || ! is_array(b))
@@ -957,7 +957,7 @@ func fft_paste(a, b)
   ia = ib = 1L; /* indices start at one in Yorick */
   sa = numberof(a); /* stride in A */
   sb = numberof(b); /* stride in B */
-  for (k=n ; k>=2 ; --k) {
+  for (k = n; k >= 2; --k) {
     alen = adim(k);
     sa /= alen;
     blen = bdim(k);
