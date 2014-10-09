@@ -75,7 +75,8 @@ func fmin(f, a, b, lim, tol=, all=, eps=)
          (Englewood Cliffs, NJ: Prentice-Hall), Chapter 5.
 
 
-   SEE ALSO: */
+   SEE ALSO: fmin_global.
+*/
 {
   /* Make sure A and B are double precision values. */
   a += 0.0;
@@ -220,25 +221,25 @@ func fmin(f, a, b, lim, tol=, all=, eps=)
       q = (x - v)*(fx - fw);
       r = (x - w)*(fx - fv);
       if (q <= r) {
-	p = (x - v)*q - (x - w)*r;
-	q = (r - q)*2.0;
+        p = (x - v)*q - (x - w)*r;
+        q = (r - q)*2.0;
       } else {
-	p = (x - w)*r - (x - v)*q;
-	q = (q - r)*2.0;
+        p = (x - w)*r - (x - v)*q;
+        q = (q - r)*2.0;
       }
       if (abs(p) < abs(0.5*q*e) && p > q*(a - x) && p < q*(b - x)) {
-	/* use a parabolic-interpolation step */
+        /* use a parabolic-interpolation step */
         e = d;
         u = x + (d = p/q);
 
-	/* F must not be evaluated too close to A or B */
-	if (u - a < tol2 || b - u < tol2) {
-	  d = (x < xm ? tol1 : -tol1);
-	}
+        /* F must not be evaluated too close to A or B */
+        if (u - a < tol2 || b - u < tol2) {
+          d = (x < xm ? tol1 : -tol1);
+        }
       } else {
-	/* use a golden-section step */
-	e = (x >= xm ? a : b) - x;
-	d = c*e;
+        /* use a golden-section step */
+        e = (x >= xm ? a : b) - x;
+        d = c*e;
       }
     } else {
       /* use a golden-section step */
