@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------------
  */
 
+_LINALG_VERSION = "$Date";
+
 func svd_eigen_decomp(A, &Z)
 /* DOCUMENT lambda = svd_eigen_decomp(A, Z)
 

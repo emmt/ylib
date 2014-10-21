@@ -40,6 +40,8 @@
  * ----------------------------------------------------------------------------
  */
 
+_SPG2_VERSION = "$Date$";
+
 SPG2_WORK_IN_PROGRESS         =  0;
 SPG2_CONVERGENCE_WITH_INFNORM =  1;
 SPG2_CONVERGENCE_WITH_TWONORM =  2;

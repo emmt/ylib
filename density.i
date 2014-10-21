@@ -31,6 +31,8 @@
  * ----------------------------------------------------------------------------
  */
 
+_DENSITY_VERSION = "$Date$";
+
 /* Load FFT utility functions. */
 if (! is_func(fft_best_dim)) include, "fft_utils.i", 1;
 

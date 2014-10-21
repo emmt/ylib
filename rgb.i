@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------------
  */
 
+_RGB_VERSION = "$Date$";
+
 func rgb_load(nil)
 /* DOCUMENT rgb_load;
        -or- db = rgb_load();

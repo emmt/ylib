@@ -68,6 +68,8 @@
  * ----------------------------------------------------------------------------
  */
 
+_PLOT_VERSION = "$Date$";
+
 require, "utils.i";
 
 func pl_arrow(x0, y0, x1, y1, head=, size=, width=, color=, angle=)
