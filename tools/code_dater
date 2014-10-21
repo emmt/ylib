@@ -5,7 +5,7 @@
 # touched to have the same date as the timestamp.
 #
 
-debug=yes
+debug=no
 
 if test $# -eq 0; then
     date=$(git log --pretty=format:"%ai" -1)
