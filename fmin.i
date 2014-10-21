@@ -31,7 +31,7 @@
  * ----------------------------------------------------------------------------
  */
 
-_FMIN_VERSION = "$Date";
+_FMIN_VERSION = "$Date$";
 
 func fmin(f, a, b, lim, tol=, all=, eps=)
 /* DOCUMENT fmin(f, a, b)

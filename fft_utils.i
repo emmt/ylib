@@ -29,7 +29,7 @@
  * ---------------------------------------------------------------------------
  */
 
-_FFT_UTILS_VERSION = "$Date";
+_FFT_UTILS_VERSION = "$Date$";
 
 require, "utils.i";
 
