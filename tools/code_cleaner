@@ -17,8 +17,7 @@ fi
 # Simply execute "cat" to bypass the filter:
 test "$bypass" = "yes" && exec cat
 
-expand --initial --tabs=8 \
-  | sed -e 's/\x0d$//;s/[ 	]*$//;s/[ 	]*\x0d/\x0a/g'
+sed -e 's/\$Date:[^\$]*\$/\$Date\$/g;s/\x0d$//;s/[ 	]*$//;s/[ 	]*\x0d/\x0a/g' | expand --initial --tabs=8
 
 # Local Variables:
 # mode: sh
