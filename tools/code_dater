@@ -25,7 +25,7 @@ else
     while test $# -gt 0; do
         src=$1
         shift
-        date=$(git log --pretty=format:"%ai" "$src")
+        date=$(git log --pretty=format:"%ai" "$src" | head -1)
         sed "s/\\\$Date[^\\\$]*\\\$/\\\$Date: ${date}\\\$/g" <"$src" >"$tmp"
         cp "$tmp" "$src"
         touch -d "$date" "$src"
