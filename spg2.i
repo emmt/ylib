@@ -15,7 +15,8 @@
  *
  * ----------------------------------------------------------------------------
  *
- * The MIT License (MIT)
+ * This file is part of YLib (Yorick Library) which is licensed under the MIT
+ * "Expat" License:
  *
  * Copyright (C) 2014, Éric Thiébaut.
  *
@@ -55,7 +56,7 @@ func spg2_twonorm(v) { return sqrt(spg2_dot(v, v)); }
 func spg2_infnorm(v) { return max(abs(v)); }
 
 func spg2(fg, prj, x0, m,
-          maxit=, maxfc=, eps1=, eps2=, eta=, alt=,
+          maxit=, maxfc=, eps1=, eps2=, eta=,
           printer=, verb=)
 /* DOCUMENT ws = spg2(fg, prj, x0, m);
 
@@ -94,10 +95,6 @@ func spg2(fg, prj, x0, m,
                  simply multiply the function by some factor).  If option ALT
                  is true, the scaling parameter will only be used to compute
                  the first projected gradient.
-        alt    - If set true, use an alternate method to estimate the projected
-                 gradient form the search direction (thus saving one projection
-                 per iteration).  Note that projected gradient is only used to
-                 check the stopping criterion.
         maxit  - Maximum number of iterations.
         maxfc  - Maximum number of function evaluations.
         verb   - If true, print some information at each iteration.
@@ -150,7 +147,6 @@ func spg2(fg, prj, x0, m,
   if (is_void(eta)) eta = 1.0;
   if (is_void(maxit)) maxit = -1;
   if (is_void(maxfc)) maxfc = -1;
-  improved_method = (alt ? true : false);
 
   /* Initialization. */
   local sty, sts, x0, f0, g0, x, f, g, d;
@@ -311,7 +307,7 @@ func spg2(fg, prj, x0, m,
       break;
     }
 
-    /* Do next iteration. */
+    /* Proceed with next iteration. */
     ++iter;
 
   }
