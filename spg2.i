@@ -42,6 +42,8 @@
 
 _SPG2_VERSION = "$Date$";
 
+SPG2_DBL_MAX = machine_constant("DBL_MAX");
+
 SPG2_WORK_IN_PROGRESS         =  0;
 SPG2_CONVERGENCE_WITH_INFNORM =  1;
 SPG2_CONVERGENCE_WITH_TWONORM =  2;
@@ -138,11 +140,11 @@ func spg2(fg, prj, x0, m,
 {
   true = 1n;
   false = 0n;
-  amin = 1e-30;
-  amax = 1e+30;
-  gamma = 1e-4;
-  sigma1 = 0.1;
-  sigma2 = 0.9;
+  lmin = 1e-30;
+  lmax = 1e+30;
+  ftol = 1e-4;
+  amin = 0.1;
+  amax = 0.9;
   if (is_void(eps1)) eps1 = 1e-6;
   if (is_void(eps2)) eps2 = 1e-6;
   if (is_void(eta)) eta = 1.0;
@@ -151,61 +153,48 @@ func spg2(fg, prj, x0, m,
   improved_method = (alt ? true : false);
 
   /* Initialization. */
+  local sty, sts, x0, f0, g0, x, f, g, d;
   status = SPG2_WORK_IN_PROGRESS;
   iter = 0;
   fcnt = 0;
   pcnt = 0;
-  sty = 0.0; // to make sure this variable is locally defined
-  sts = 0.0; // to make sure this variable is locally defined
   if (m > 1) {
-    lastfv = array(-machine_constant("DBL_MAX"), m);
+    lastfv = array(-SPG2_DBL_MAX, m);
   } else {
     lastfv = [];
   }
 
   /* Project initial guess. */
-  x0 = prj(x0);
+  x = prj(x0);
   ++pcnt;
 
   /* Evaluate function and gradient. */
-  g0 = true;
-  f0 = fg(x0, g0);
+  g = true;
+  f = fg(x, g);
   ++fcnt;
 
   /* Initialize best solution and best function value. */
-  ws = h_new(xbest = x0, fbest = f0, gbest = g0);
+  ws = h_new(xbest = x, fbest = f, gbest = g);
 
   /* Main loop. */
   while (true) {
 
-    /* Estimate the norms of the projected gradient. */
-    save_projection = (improved_method && iter > 0);
-    if (save_projection) {
-      /* First, build the search direction. */
-      _spg2_search_direction, false;
-
-      /* Estimate the norms of the projected gradient from the search
-         direction. */
-      pgtwon = spg2_twonorm(d)/alpha;
-      pginfn = spg2_infnorm(d)/alpha;
+    /* Compute continuous projected gradient (and its norms). */
+    if (eta == 1.0) {
+      pg = x - prj(x - g);
     } else {
-      /* Compute continuous projected gradient (and its norms). */
-      if (eta == 1.0) {
-        pg = x0 - prj(x0 - g0);
-      } else {
-        pg = (x0 - prj(x0 - eta*g0))*(1.0/eta);
-      }
-      ++pcnt;
-      pgtwon = spg2_twonorm(pg);
-      pginfn = spg2_infnorm(pg);
-      pg = []; // free some memory
+      pg = (x - prj(x - eta*g))*(1.0/eta);
     }
+    ++pcnt;
+    pgtwon = spg2_twonorm(pg);
+    pginfn = spg2_infnorm(pg);
+    pg = []; // free some memory
 
     /* Print iteration information */
     if (! is_void(printer)) {
       printer, h_set(ws, status = status, pgtwon = pgtwon, pginfn = pginfn,
                      iter = iter, fcnt = fcnt, pcnt = pcnt,
-                     x = x0, f = f0, g = g0);
+                     x = x, f = f, g = g);
       h_pop, ws, x=; // release reference
       h_pop, ws, f=; // release reference
       h_pop, ws, g=; // release reference
@@ -213,7 +202,7 @@ func spg2(fg, prj, x0, m,
     if (verb) {
       write,
         format="ITER = %-5d  EVAL = %-5d  PROJ = %-5d  F(%s) =%24.17e  ||PG||oo = %17.10e\n",
-        iter, fcnt, pcnt, f0, (f0 <= ws.fbest ? "+" : "-"), pginfn;
+        iter, fcnt, pcnt, (f <= ws.fbest ? "+" : "-"), f, pginfn;
     }
 
     /* Test stopping criteria. */
@@ -227,36 +216,58 @@ func spg2(fg, prj, x0, m,
       status = SPG2_CONVERGENCE_WITH_TWONORM;
       break;
     }
-    if (maxit >= 0 && iter > maxit) {
+    if (maxit >= 0 && iter >= maxit) {
       /* Maximum number of iterations exceeded, stop. */
       status = SPG2_TOO_MANY_ITERATIONS;
       break;
     }
-    if (maxfc >= 0 && fcnt > maxfc) {
+    if (maxfc >= 0 && fcnt >= maxfc) {
       /* Maximum number of function evaluations exceeded, stop. */
       status = SPG2_TOO_MANY_EVALUATIONS;
       break;
     }
 
-    /* Do next iteration. */
-    ++iter;
-
-    /* Choose the search direction if not yet done. */
-    if (! save_projection) {
-      _spg2_search_direction, (iter <= 1);
-    }
-
     /* Store function value for the nonmonotone line search and
        find maximum function value since m last calls. */
     if (m > 1) {
-      lastfv((iter%m) + 1) = f0;
+      lastfv((iter%m) + 1) = f;
       fmax = max(lastfv);
     } else {
-      fmax = f0;
+      fmax = f;
     }
 
+    /* Compute spectral steplength. */
+    if (iter == 0) {
+      /* Initial steplength. */
+      lambda = min(lmax, max(lmin, 1.0/pginfn));
+    } else {
+      s = x - x0;
+      y = g - g0;
+      sty = spg2_dot(s, y);
+      y = []; // free some memory
+      if (sty > 0.0) {
+        /* Safeguarded Barzilai & Borwein spectral steplength. */
+        sts = spg2_dot(s, s);
+        lambda = min(lmax, max(lmin, sts/sty));
+      } else {
+        lambda = lmax;
+      }
+      s = []; // free some memory
+    }
+
+    /* Save current point. */
+    eq_nocopy, x0, x;
+    eq_nocopy, g0, g;
+    f0 = f;
+
+    /* Compute the spectral projected gradient direction and <G,D> */
+    x = prj(x0 - lambda*g0);
+    ++pcnt;
+    d = x - x0;
+    delta = spg2_dot(g0, d);
+
     /* Nonmonotone line search. */
-    lambda = 1.0; // Step length for first trial.
+    stp = 1.0; // Step length for first trial.
     while (true) {
       /* Evaluate function and gradient at trial point. */
       g = true;
@@ -271,7 +282,7 @@ func spg2(fg, prj, x0, m,
       }
 
       /* Test stopping criteria. */
-      if (f <= fmax + lambda*gamma*delta) {
+      if (f <= fmax + stp*ftol*delta) {
         /* Nonmonotone Armijo-like stopping criterion satisfied, stop. */
         break;
       }
@@ -282,64 +293,30 @@ func spg2(fg, prj, x0, m,
       }
 
       /* Safeguarded quadratic interpolation. */
-      if (lambda <= sigma1) {
-        lambda /= 2.0;
+      q = -delta*(stp*stp);
+      r = (f - f0 - stp*delta)*2.0;
+      if (r > 0.0 && amin*r <= q && q <= amax*stp*r) {
+        stp = q/r;
       } else {
-        temp = -delta*(lambda*lambda)/((f - f0 - lambda*delta)*2.0);
-        if (sigma1 <= temp && temp <= sigma2*lambda) {
-          lambda = temp;
-        } else {
-          lambda /= 2.0;
-        }
+        stp /= 2.0;
       }
 
       /* Compute trial point. */
-      x = x0 + lambda*d;
+      x = x0 + stp*d;
     }
 
     if (status != SPG2_WORK_IN_PROGRESS) {
-      /* The number of function evaluations was exceeded inside the
-         line search. */
+      /* The number of function evaluations was exceeded inside the line
+         search. */
       break;
     }
 
-    /* Compute S = X - X0, Y = G - G0, <S,S>, <S,Y>. */
-    s = x - x0;
-    y = g - g0;
-    sts = spg2_dot(s, s);
-    sty = spg2_dot(s, y);
-    s = []; // free some memory
-    y = []; // free some memory
+    /* Do next iteration. */
+    ++iter;
 
-    /* Save new solution as the initial one for the next iteration. */
-    eq_nocopy, x0, x;
-    eq_nocopy, g0, g;
-    f0 = f;
   }
   return h_set(ws, status = status, pgtwon = pgtwon, pginfn = pginfn,
                iter = iter, fcnt = fcnt, pcnt = pcnt);
-}
-
-/* Private function to compute the search direction (and related quantities),
-   most parameters are passed externally. */
-func _spg2_search_direction(first) {
-  extern alpha, amin, amax, sts, sty, pginfn, x, x0, g0, d, delta;
-  /* Compute spectral steplength. */
-  if (first) {
-    /* Initial steplength. */
-    alpha = min(amax, max(amin, 1.0/pginfn));
-  } else if (sty > 0.0) {
-    /* Safeguarded Barzilai & Borwein spectral steplength. */
-    alpha = min(amax, max(amin, sts/sty));
-  } else {
-    alpha = amax;
-  }
-
-  /* Compute the spectral projected gradient direction and <G,D> */
-  x = prj(x0 - alpha*g0);
-  ++pcnt;
-  d = x - x0;
-  delta = spg2_dot(g0, d);
 }
 
 /*
