@@ -5,7 +5,8 @@
  *
  * ----------------------------------------------------------------------------
  *
- * The MIT License (MIT)
+ * This file is part of YLib (Yorick Library) which is licensed under the MIT
+ * "Expat" License:
  *
  * Copyright (C) 2000, 2014, Éric Thiébaut.
  *
@@ -928,10 +929,12 @@ func plfg(y, x, base=, vert=, color=, edges=, ecolor=, ewidth=, etype=,
 /*---------------------------------------------------------------------------*/
 
 func plhline(y, x0, x1, color=, width=, type=) {
+  if (! is_void(color)) color = pl_get_color(color);
   lim = limits(); one = array(1.0, dimsof(y));
   pldj, one*(is_void(x0) ? lim(1) : x0), y, one*(is_void(x1) ? lim(2) : x1), y,
     color=color, width=width, type=type; }
 func plvline(x, y0, y1, color=, width=, type=) {
+  if (! is_void(color)) color = pl_get_color(color);
   lim = limits(); one = array(1.0, dimsof(x));
   pldj, x, one*(is_void(y0) ? lim(3) : y0), x, one*(is_void(y1) ? lim(4) : y1),
     color=color, width=width, type=type; }
