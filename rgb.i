@@ -1,11 +1,12 @@
 /*
  * rgb.i --
  *
- *	Deal with X11 color database in Yorick.
+ * Deal with X11 color database in Yorick.
  *
  * ----------------------------------------------------------------------------
  *
- * The MIT License (MIT)
+ * This file is part of YLib (Yorick Library) which is licensed under the MIT
+ * "Expat" License:
  *
  * Copyright (C) 1995-2014, Éric Thiébaut.
  *
