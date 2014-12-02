@@ -91,10 +91,8 @@ func spg2(fg, prj, x0, m,
                  x) instead of x - prj(x - g) which corresponds to the default
                  behavior (same as if eta=1) and is usually used in
                  methodological publications although it does not scale
-                 correctly (for instance, if you make a change of variables ro
-                 simply multiply the function by some factor).  If option ALT
-                 is true, the scaling parameter will only be used to compute
-                 the first projected gradient.
+                 correctly (for instance, if you make a change of variables or
+                 simply multiply the function by some factor).
         maxit  - Maximum number of iterations.
         maxfc  - Maximum number of function evaluations.
         verb   - If true, print some information at each iteration.
