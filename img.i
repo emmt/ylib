@@ -174,12 +174,12 @@ func img_cbar(z, cmin=, cmax=, vert=, vport=, adjust=,
 {
   nil = string(0);
   if (is_void(cmin)) {
-    if (is_void(img)) error, "keyword CMIN must be given";
-    cmin = min(img);
+    if (is_void(z)) error, "keyword CMIN must be given";
+    cmin = min(z);
   }
   if (is_void(cmax)) {
-    if (is_void(img)) error, "keyword CMAX must be given";
-    cmax = max(img);
+    if (is_void(z)) error, "keyword CMAX must be given";
+    cmax = max(z);
   }
   cmin = double(cmin); /* make sure CMIN is double */
   cmax = double(cmax); /* make sure CMAX is double */
