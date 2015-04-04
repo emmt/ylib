@@ -421,37 +421,39 @@ func color_bar(levs, colors, vert=, labs=, adjust=, color=, width=,
 /* DOCUMENT color_bar;
          or color_bar, levs, colors;
 
-     Note: pl_cbar (which see) is probably a better routine.
+     Remarks: This routine supersedes `color_bar` in `graph.i` (more keywords
+              are available to specify the viewport, the text font, color,
+              etc.).  For most purposes, `pl_cbar` (which see) is probably
+              more suitable.
 
      Draw a color bar below the current coordinate system.  If LEVS is not
      specified uses plfc_levs (set by previous call to plfc).  If COLORS is
      specified, it should have one more value than LEVS, otherwise equally
-     spaced colors are chosen, or plfc_colors if plfc_levs was used.  With
-     the VERT=1 keyword the color bar appears to the left of the current
-     coordinate system (vert=0 is default).  By default, color_bar will
-     attempt to label some of the color interfaces.  With the LABS keyword,
-     you can force the labelling algorithm as follows: LABS=0 supresses all
-     labels, LABS=n forces a label at every n-th interface, LABS=[i,n]
-     forces a label every n-th interface starting at i-th interface
-     (0<=i<=numberof(LEVS)).
+     spaced colors are chosen, or plfc_colors if plfc_levs was used.  With the
+     VERT=1 keyword the color bar appears to the left of the current coordinate
+     system (vert=0 is default).  By default, color_bar will attempt to label
+     some of the color interfaces.  With the LABS keyword, you can force the
+     labelling algorithm as follows: LABS=0 supresses all labels, LABS=n forces
+     a label at every n-th interface, LABS=[i,n] forces a label every n-th
+     interface starting at i-th interface (0<=i<=numberof(LEVS)).
 
      You can specify the viewport coordinates by keyword
-     VPORT=[xmin,xmax,ymin,ymax]; by default the colorbar is drawn next to
-     the current viewport.  You can use the ADJUST keyword to move the bar
-     closer to (adjust<0) or further from (adjust>0) the viewport.
+     VPORT=[xmin,xmax,ymin,ymax]; by default the colorbar is drawn next to the
+     current viewport.  You can use the ADJUST keyword to move the bar closer
+     to (adjust<0) or further from (adjust>0) the viewport.
 
-     You can specify the string format for labels with keyword FORMAT
-     (default "%g"), the font type with keyword FONT (default "helvetica")
-     and the font height with keyword HEIGHT (default 14 points).
+     You can specify the string format for labels with keyword FORMAT (default
+     "%g"), the font type with keyword FONT (default "helvetica") and the font
+     height with keyword HEIGHT (default 14 points).
 
-     Keyword COLOR can be used to specify the color of the labels, the
-     ticks and the frame of the colorbar.  Default is foreground color.
+     Keyword COLOR can be used to specify the color of the labels, the ticks
+     and the frame of the colorbar.  Default is foreground color.
 
-     Keyword WIDTH can be used to set the width of the lines used to draw
-     the frame and the ticks of the colorbar.
+     Keyword WIDTH can be used to set the width of the lines used to draw the
+     frame and the ticks of the colorbar.
 
-     Keyword TICKLEN can be used to set the length (in NDC units) of the
-     ticks.  Default is 0.005 NDC.
+     Keyword TICKLEN can be used to set the length (in NDC units) of the ticks.
+     Default is 0.005 NDC.
 
    SEE ALSO: pl_cbar, plfc. */
 {
