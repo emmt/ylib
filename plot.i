@@ -272,7 +272,7 @@ func pl_cbar(z, cmin=, cmax=, vert=, nlabs=, adjust=,
      (default FONT="helvetica"), HEIGHT (default HEIGHT=14 points) and ORIENT
      respectively.
 
-     If neither LEVELS nor NLABS are specified, keyword NLABS can be used to
+     If neither LEVELS nor LABELS are specified, keyword NLABS can be used to
      choose the number of displayed labels; by default, NLABS=11 which
      correspond to a label every 10% of the dynamic; use NLABS=0 to suppress
      all labels.
@@ -3231,7 +3231,8 @@ func win_copy_lim(src, dst, axis)
 /* DOCUMENT win_copy_lim, src, dst;
          or win_copy_lim, src, dst, axis;
 
-     Make limits of window DST the same as those in window SRC.
+     Make limits of window DST the same as those in window SRC.  DST may be an
+     array of window numbers or a range.
 
      AXIS can be used to specify which limits to copy: 1st and 2nd bits
      respectively indicate whether X and/or Y limits should be copied. If
@@ -3243,16 +3244,21 @@ func win_copy_lim(src, dst, axis)
   win = current_window();
   window, src;
   l = limits();
-  window, dst;
-  if (is_void(axis) || (axis & 3) == 3) {
-    /* copy X and Y limits */
-    limits, l(1), l(2), l(3), l(4);
-  } else if ((axis & 3) == 1) {
-    /* only copy X limits */
-    limits, l(1), l(2);
-  } else if ((axis & 3) == 2) {
-    /* copy Y limits */
-    limits, , , l(3), l(4);
+  if (is_range(dst)) {
+    dst = indgen(dst);
+  }
+  for (k = 1; k <= numberof(dst); ++k) {
+    window, dst(k);
+    if (is_void(axis) || (axis & 3) == 3) {
+      /* copy X and Y limits */
+      limits, l(1), l(2), l(3), l(4);
+    } else if ((axis & 3) == 1) {
+      /* only copy X limits */
+      limits, l(1), l(2);
+    } else if ((axis & 3) == 2) {
+      /* copy Y limits */
+      limits, , , l(3), l(4);
+    }
   }
   if (win >= 0) window, win; /* restore old current window */
 }
