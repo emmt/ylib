@@ -31,6 +31,253 @@
  * ----------------------------------------------------------------------------
  */
 
+func extract_image_colors(img, quiet=, full=)
+/* DOCUMENT cmap = extract_image_colors(img)
+
+     Extract the unique colors of image IMG, a 3-by-any array of char.
+     IMG(1,..), IMG(2,..) and IMG(3,..) are assumed to be the channels of the
+     image (presumably the red, green and blue ones).
+
+     The result is a 3-by-N array of char with N the number of unique colors.
+
+   SEE ALSO: heapsort.
+ */
+{
+  if (! is_func(heapsort)) include, "yeti.i", 1;
+  local q;
+  dims = dimsof(img);
+  rank = numberof(dims) - 1;
+  if (structof(img) != char || rank < 2 || dims(2) != 3) {
+    error, "expecting a 3-by-ANY array of char";
+  }
+  q = ((int(img(1,*)) << 16) | (int(img(2,*)) << 8) | int(img(3,*)));
+  heapsort, q;
+  k = where(q(dif));
+  n = numberof(k) + 1;
+  if (! quiet) {
+    write, format="found %d unique color(s)\n", n;
+  }
+  if (n > 1) {
+    q = grow(q(1), q(k+1));
+  } else {
+    q = q(1);
+  }
+  cmap = array(char,3,n);
+  cmap(1,) = char(q >> 16);
+  cmap(2,) = char(q >>  8);
+  cmap(3,) = char(q      );
+  return cmap;
+}
+
+func make_indexed_image(img, quiet=)
+/* DOCUMENT ptr = make_indexed_image(img)
+
+     Extract the unique colors of RGB image IMG, a 3-by-any array of char and
+     return an indexed version of the image with the unique colors.  IMG(1,..),
+     IMG(2,..) and IMG(3,..) are assumed to be the channels of the image
+     (presumably the red, green and blue ones).
+
+     The result is 2 component pointer:
+
+         *ptr(1) = the indexed image IDX: an array of 1-based integer index in
+                   the colormap;
+
+         *ptr(2) = the color table CMAP: a 3-by-N array of char with N the
+                   number of unique colors.
+
+     such that CMAP(,IDX) yields the original image.
+
+   SEE ALSO: heapsort.
+ */
+{
+  if (! is_func(heapsort)) include, "yeti.i", 1;
+  local q;
+  dims = dimsof(img);
+  rank = numberof(dims) - 1;
+  if (structof(img) != char || rank < 2 || dims(2) != 3) {
+    error, "expecting a 3-by-ANY array of char";
+  }
+  c = ((long(img(1,..)) << 16) | (long(img(2,..)) << 8) | long(img(3,..)));
+  j = heapsort(c);
+  q = c(j);
+  r = (q(dif) > 0);
+  c(j) = r(cum) + 1;
+  k = where(r);
+  n = numberof(k) + 1;
+  if (! quiet) {
+    write, format="found %d unique color(s)\n", n;
+  }
+  if (n > 1) {
+    q = grow(q(1), q(k+1));
+  } else {
+    q = q(1);
+  }
+  cmap = array(char,3,n);
+  cmap(1,) = char(q >> 16);
+  cmap(2,) = char(q >>  8);
+  cmap(3,) = char(q      );
+  return [&c, &cmap];
+}
+
+func compare_colors(a, b, f)
+/* DOCUMENT [cab, cba] = compare_colors(a, b);
+         or [cab, cba] = compare_colors(a, b, f);
+
+     Compare the two color tables A and B (respectively 3-by-NA and 3-by-NB
+     arrays of char) and return a two component vector [CAB, CBA] with CAB the
+     average cost of re-encoding the colors of A using the ones in B and
+     conversely for CBA.
+
+     If provided, F is a function which will be called with a single argument C
+     which is a 3-by-NA-by-NB array of color differences.  It should return a
+     NA-by-NB array of color distances.  The default is use the sum of squared
+     differences for the color channels.
+
+   SEE ALSO: compare_colors_matrix, reindex_colors.
+ */
+{
+  c = compare_colors_matrix(a, b, f);
+  cab = avg(c(,min)); // average the minimal cost if A is repainted with B
+  cba = avg(c(min,)); // average the minimal cost if B is repainted with A
+  return [cab, cba];
+}
+
+func reindex_colors(a, b, f)
+/* DOCUMENT idx = reindex_colors(a, b);
+         or idx = reindex_colors(a, b, f);
+
+     Return an indirection table IDX, such that j = IDX(i) is the index of the
+     entry in color table B that best match the j-th entry in color table A.
+     Color tables A and B are respectively 3-by-NA and 3-by-NB arrays of char..
+
+     If provided, F is a function which will be called with a single argument C
+     which is a 3-by-NA-by-NB array of color differences.  It should return a
+     NA-by-NB array of color distances.  The default is use the sum of squared
+     differences for the color channels.
+
+   SEE ALSO: compare_colors, compare_colors_matrix.
+ */
+{
+  c = compare_colors_matrix(a, b, f);
+  return c(,mnx);
+}
+
+func compare_colors_matrix(a, b, f)
+/* DOCUMENT c = compare_colors_matrix(a, b);
+         or c = compare_colors_matrix(a, b, f);
+
+     Return the matrix C of color distances between color tables A and B:
+
+         c(i,j) = distance between color a(i,) and color b(j,)
+
+     Color tables A and B are respectively 3-by-NA and 3-by-NB arrays of char.
+
+     If provided, F is a function which will be called with a single argument C
+     which is a 3-by-NA-by-NB array of color differences.  It should return a
+     NA-by-NB array of color distances.  The default is use the sum of squared
+     differences for the color channels.
+
+   SEE ALSO: compare_colors, reindex_colors.
+*/
+{
+  /* Check color table A. */
+  dims = dimsof(a);
+  rank = numberof(dims) - 1;
+  if (structof(a) != char || rank != 2 || dims(2) != 3) {
+    error, "expecting a 3-by-N array of char for color table A";
+  }
+  na = dims(3);
+
+  /* Check color table B. */
+  dims = dimsof(b);
+  rank = numberof(dims) - 1;
+  if (structof(b) != char || rank != 2 || dims(2) != 3) {
+    error, "expecting a 3-by-N array of char for color table B";
+  }
+  nb = dims(3);
+
+  /* Color distances. */
+  c = int(a) - int(b(,-,));
+  if (is_void(f)) {
+    c = (c*c)(sum,..);
+  } else {
+    c = f(c);
+  }
+  return c;
+}
+
+func get_colormap(name)
+{
+  return symbol_def("CMAP_" + strcase(1, name) + "_TABLE");
+}
+
+func best_colormap(a, f, quiet=)
+{
+  local b, cbest;
+  jbest = -1;
+  for (j = 1; j <= numberof(CMAP_NAMES); ++j) {
+    name = CMAP_NAMES(j);
+    c = compare_colors(a, get_colormap(name), f)(1);
+    if (jbest == -1 || c < cbest) {
+      jbest = j;
+      cbest = c;
+    }
+  }
+  if (! quiet) {
+    write, format="best colormap = \"%s\"\n", CMAP_NAMES(jbest);
+  }
+  return CMAP_NAMES(jbest);
+}
+
+func uncolor_image(img, cmap, cost, quiet=)
+/* DOCUMENT z = uncolor_image(img);
+         or z = uncolor_image(img, cmap);
+         or z = uncolor_image(img, cmap, cf);
+
+     Given RGB image IMG, this function attempts to convert it to a gray scale
+     image.  In the first case, the gray levels are computed form the red,
+     green and blue levels using the NTSC formula:
+
+         GRAY = 0.2126*RED + 0.7152*GREEN + 0.0722*BLUE;
+
+     If a color table CMAP is provided (as a name or as a 3-by-N arrays of
+     char) it is used as the color map with which the RGB image was produced.
+     CMAP can be "auto" to automatically find the best color map among the
+     known ones.  If FC is provided it is used as a color cost function.
+
+   SEE ALSO:
+ */
+{
+  dims = dimsof(img);
+  rank = numberof(dims) - 1;
+  if (structof(img) != char || rank != 3 || dims(2) != 3) {
+    error, "expecting a RGB image";
+  }
+  if (is_void(cmap)) {
+    return char(lround(0.2126*img(1,..) + 0.7152*img(2,..) + 0.0722*img(3,..)));
+  }
+  local colors, index;
+  ptr = make_indexed_image(img, quiet=quiet);
+  eq_nocopy, index, *ptr(1);
+  eq_nocopy, colors, *ptr(2);
+  if (is_scalar(cmap) && structof(cmap) == string) {
+    if (cmap == "auto") {
+      cmap = best_colormap(colors, fc, quiet=quiet);
+    }
+    eq_nocopy, cmap, get_colormap(cmap);
+  }
+  level = reindex_colors(colors, cmap, fc) - 1;
+  lmax = max(level);
+  if (lmax <= 0xff) {
+    level = char(level);
+  } else if (lmax <= 0x7fff) {
+    level = short(level);
+  }
+  return level(index);
+}
+
+/*--------------------------------------------------------------------------*/
+
 local CMAP_NAMES;
 func cmap_codger(name, output)
 /* DOCUMENT cmap_codger, name;
