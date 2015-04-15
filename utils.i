@@ -1323,32 +1323,35 @@ _protect_file_name_list = ['$','&','!','#','?','*',
                            ' ','\t','\r','\n','\v','\f'];
 (_protect_file_name_table = array(char, 256))(1 + _protect_file_name_list) = 1;
 
-func read_ascii(file, compress=, maxcols=)
-/* DOCUMENT read_ascii(file_or_name)
-     Reads ascii numeric  data in columns from text  file.  FILE_OR_NAME is
-     the name of the  file or an already open file stream.  The result is a
-     NCOLUMNS-by-NLINES array of doubles.
+func read_ascii(file, compress=, maxcols=, skip=)
+/* DOCUMENT arr = read_ascii(file_or_name);
 
-     Data are  read as double values  arranged in columns  separated by any
-     number of spaces  or tabs.  Comments starting with a  "#" or any other
-     character  which  is not  part  of  a number  are  ignored  up to  the
-     end-of-line.  Blank lines  are ignored.  The first non-blank/commented
-     line  gives the  number of  values per  column, for  subsequent lines.
-     Subsequent lines  must have  the same number  of columns --  blanks in
-     columns are  not permitted, use  0.0 instead.  However,  minimal error
-     checking  is performed,  and if  the data  is not  really  in columns,
-     read_ascii  can silently  fail to  interpret  your file  as you  would
-     scanning it by eye.
+     Reads ascii numeric  data in columns from text file.   FILE_OR_NAME is the
+     name  of the  file  or an  already  open  file stream.   The  result is  a
+     NCOLS-by-NROWS array of doubles.
 
-     The  read operation will  be much  faster if  the number  of commented
-     lines is  relatively small.   Blank lines cost  nothing, while  a line
-     containing just a "#" is expensive.
+     Data are read as double values arranged in columns separated by any number
+     of spaces  or tabs.  Comments starting  with a "#" or  any other character
+     which is not  part of a number  are ignored up to  the end-of-line.  Blank
+     lines are ignored.  The first non-blank/commented line gives the number of
+     values per column,  for subsequent lines.  Subsequent lines  must have the
+     same number  of columns --  blanks in columns  are not permitted,  use 0.0
+     instead.  However, minimal error checking is performed, and if the data is
+     not really in columns, read_ascii can silently fail to interpret your file
+     as you would scanning it by eye.
 
-     If the  file is specified by its  name, it may be  compressed in which
-     case it get automatically decompressed while reading (see xopen).  The
-     value of keyword COMPRESS ("auto" by default) is passed to xopen.
+     Keyword SKIP can be  set with the number of lines  to skip before starting
+     the parsing.
 
-     For very large  data file, keyword MAXCOLS can be  used to specify the
+     The read operation will be much faster if the number of commented lines is
+     relatively small.  Blank lines cost  nothing, while a line containing just
+     a "#" is expensive.
+
+     If the file is  specified by its name, it may be  compressed in which case
+     it is automatically decompressed while  reading (see xopen).  The value of
+     keyword COMPRESS ("auto" by default) is passed to xopen.
+
+     For  very large  data file,  keyword MAXCOLS  can be  used to  specify the
      expected maximum number of columns (10000 by default).
 
    SEE ALSO: xopen, read, raw_read. */
@@ -1360,6 +1363,9 @@ func read_ascii(file, compress=, maxcols=)
   /* read lines one at a time until the "model" line which
    * determines the number of columns is discovered
    * assume the number of columns is less than MAXCOLS */
+  if (! is_void(skip)) {
+    rdline, file, skip;
+  }
   x = array(double, (is_void(maxcols) ? 10000 : maxcols));
   ncols = 0;
   while ((line = rdline(file))) {
