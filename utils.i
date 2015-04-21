@@ -1919,7 +1919,7 @@ func timer_elapsed(count)
        ...             // some more code to be profiled
        timer_elapsed;  // prints out _total_ elapsed time
 
-  SEE ALSO: timer. */
+  SEE ALSO: timer, benchmark. */
 {
   extern _timer_stamp;
   elapsed = _timer_stamp;
@@ -1932,6 +1932,52 @@ func timer_elapsed(count)
   } else {
     return elapsed;
   }
+}
+
+local __benchmark_proc;
+func benchmark(script, repeat)
+/* DOCUMENT t = benchmark(script);
+         or t = benchmark(script, repeat);
+         or benchmark, script;
+         or benchmark, script, repeat;
+
+     Measure the  time spent  by executing  Yorick code  in the  SCRIPT string.
+     Argument SCRIPT can be a scalar  string or an array of strings (typically,
+     one per line of code).  Optional argument REPEAT gives the number of times
+     the script is executed; if omitted, its default value is 100.  When called
+     as a function,  the returned value is the elapsed  times [CPU,SYS,WALL] in
+     seconds  (see `timer`).   When called  as  a subroutine,  the results  are
+     printed to standard output.
+
+     The  function `__benchmark_proc`  is created  on  the fly  to perform  the
+     benchmark.  A consequence  is that it is not possible  to call `benchmark`
+     from the  script.  Also symbols  prefixed by `__benchmark_` should  not be
+     used  by  the script  (they  are  reserved  to implement  the  `benchmark`
+     function).
+
+
+   SEE ALSO: timer, timer_start.
+ */
+{
+  extern __benchmark_proc;
+  if (is_void(repeat)) repeat = 100;
+  if (! is_string(script)) error, "SCRIPT must be a string";
+  include, grow("func __benchmark_proc(__benchmark__counter) {",
+                "  while (--__benchmark__counter >= 0) { ",
+                script,
+                "  }",
+                "}"), 1;
+  t0 = t1 = array(double, 3);
+  timer, t0;
+  __benchmark_proc, repeat;
+  timer, t1;
+  __benchmark_proc = [];
+  t = (t1 - t0)/repeat;
+  if (am_subroutine()) {
+    write, format="cpu=%gms, system=%gms, wall=%gms (measured for %d iteration%s)\n",
+      t(1)*1e3, t(2)*1e3, t(2)*1e3, repeat, (repeat > 1 ? "s" : "");
+  }
+  return t;
 }
 
 /*---------------------------------------------------------------------------*/
