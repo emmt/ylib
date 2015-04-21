@@ -372,9 +372,9 @@ func resample(a, f)
 
 local nrows_of, ncols_of;
 func ndims_of(a)  { return (is_array(a) ? dimsof(a)(1) : -1); }
-func width_of(a)  { return (is_array(a) ? ((dims = dimsof(a))(1) >= 1 ? dims(2) : 1) : 0); }
-func height_of(a) { return (is_array(a) ? ((dims = dimsof(a))(1) >= 2 ? dims(3) : 1) : 0); }
-func depth_of(a)  { return (is_array(a) ? ((dims = dimsof(a))(1) >= 3 ? dims(4) : 1) : 0); }
+func width_of(a)  { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 2 ? dims(2) : 1) : 0); }
+func height_of(a) { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 3 ? dims(3) : 1) : 0); }
+func depth_of(a)  { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 4 ? dims(4) : 1) : 0); }
 /* DOCUMENT ndims_of(a) - get number of dimensions of array A; returns -1
  *                        for non-array argument;
  *          nrows_of(a) - get number of rows of array A, returns 0
