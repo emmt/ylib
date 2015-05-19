@@ -1092,16 +1092,17 @@ func pwd(nil)
   else return dir;
 }
 
-func glob(pat)
-/* DOCUMENT glob(pat)
- *   This function returns a list of files matching glob-style pattern PAT.
- *   Only the 'file' part of PAT can have wild characters (the file part is
- *   after the last '/' in PAT).  If no files match PAT, nil is returned.
- *
- * SEE ALSO: lsdir, strglob.
+func glob(pat, sorted=)
+/* DOCUMENT glob(pat);
+     This function  returns a  list of files  matching glob-style  pattern PAT.
+     Only the  'file' part of  PAT can have wild  characters (the file  part is
+     after the  last '/'  in PAT).   If no files  match PAT,  a void  result is
+     returned.  Set keyword SORTED with a true value to sort the result.
+
+   SEE ALSO: lsdir, strglob, sort.
  */
 {
-  i = strfind("/", pat, back=1);
+  i = strfind("/", pat, back=1n);
   if ((i = i(2)) >= 1) {
     dir = strpart(pat, 1:i);
     pat = strpart(pat, i+1:0);
@@ -1111,7 +1112,7 @@ func glob(pat)
   list = lsdir(dir);
   if (structof(list) == string) {
     list = list(where(strglob(pat, list)));
-    if (! is_void(list)) return dir + list;
+    if (! is_void(list)) return dir + (sorted ? list(sort(list)) : list);
   }
 }
 
