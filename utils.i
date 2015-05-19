@@ -180,6 +180,21 @@ func old_eval(code, tmp=, debug=)
   return eval_result;
 }
 
+func sorted(a, quicksort=)
+/* DOCUMENT sorted(a);
+     Return a  flat array with  the elements of  A in ascending  order.  Unless
+     keyword QUICKSORT is true, heapsort algorithm is used if possiple.
+
+   SEE ALSO: sort, heapsort.
+ */
+{
+  if (quicksort || is_string(a) || ! is_func(heapsort)) {
+    eq_nocopy, a, a(*);
+    return a(sort(a));
+  }
+  return a(heapsort(a));
+}
+
 func undersample(a, nsub, which=, op=)
 /* DOCUMENT undersample(a, nsub)
 
