@@ -1031,51 +1031,29 @@ _TEMPFILE_ALPHABET = ['0','1','2','3','4','5','6','7','8','9',
                       'a','b','c','d','e','f','g','h','i','j','k','l','m',
                       'n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
-func filesize(filename, errmode)
-/* DOCUMENT filesize(filename)
- *     -or- filesize(filename, errmode)
- *
- *   Returns the size (in bytes) of file FILENAME which must be readable.
- *   If ERRMODE is non-nil and non-zero, fail by returning -1L, otherwise
- *   failure to open the file in read mode is a runtime error.
- *
- * SEE ALSO: open, _read.
+func filesize(file, errmode)
+/* DOCUMENT filesize(file);
+         or filesize(file, errmode);
+     Returns the size (in bytes) of a readable file.  Argument FILE is the name
+     of the  file or  a binary  stream (open  with "rb"  mode).  If  ERRMODE is
+     non-nil and non-zero, fail by returning -1L, otherwise failure to open the
+     file in read mode is a runtime error.
+
+   SEE ALSO: open, _read.
  */
 {
-  /* Open file in binary mode and get the file size by a bisection method,
-     attempting to read a single byte at various offsets.  To avoid integer
-     overflows, all offset computations are performed in double
-     precision. */
-  stream = open(filename, "rb", 1);
-  if (! stream) {
-    if (errmode) return -1L;
-    error, "cannot read file";
-  }
-  byte = char(0);
-  nbits = 8*sizeof(long) - 1;
-  max_offset = 2.0^nbits - 1.0;
-  min_size =  0.0;
-  max_size = -1.0; /* negative until maximum size is detected */
-  offset = 16384.0;
-  gain = 2.0;
-  for (;;) {
-    if (_read(stream, long(offset), byte)) {
-      min_size = offset + 1.0;
-    } else {
-      max_size = offset;
+  id = identof(file);
+  if (id !=  Y_STREAM) {
+    if (id != Y_STRING || ! is_scalar(file)) {
+      error, "expecting a stream or a file name";
     }
-    if (max_size >= min_size) {
-      /* Maximum size has been set: check for convergence, otherwise
-         take the safeguarded bissection step. */
-      if (min_size == max_size) {
-        return long(max_size);
-      }
-      offset = min(max_offset, floor((min_size + max_size)/2.0));
-    } else {
-      /* Maximum size has not yet been set: grow the size. */
-      offset = min(max_offset, floor(min_size*gain));
+    file = open(file, "rb", 1);
+    if (! file) {
+      if (errmode) return -1L;
+      error, "cannot read file";
     }
   }
+  return sizeof(file);
 }
 
 func pwd(nil)
