@@ -465,11 +465,10 @@ func spline_zoom(a, factor, rgb=)
 func map(__map__f, __map__x)
 /* DOCUMENT map(f, x)
          or map, f, x;
-     Map scalar function or subroutine F onto argument X to mimics
-     elementwise unary operation.  Argument X must be an array, or
-     a list or nil.  When called as a function, the result is: nil
-     if X is nil, an array dimsof(F(X(1)))-by-dimsof(X) if X is an
-     array, a list if X is a list.
+     Map scalar function or subroutine F  onto argument X to mimics elementwise
+     unary operation.   Argument X must  be an array, or  a list or  nil.  When
+     called  as  a  function,  the  result  is: nil  if  X  is  nil,  an  array
+     dimsof(F(X(1)))-by-dimsof(X) if X is an array, a list if X is a list.
 
      For example, to kill all windows:
        map, winkill, window_list();
@@ -479,9 +478,9 @@ func map(__map__f, __map__x)
 
    SEE ALSO: lambda, _map. */
 {
-  /* All locals here must have weird names, since the user's function
-     may rely on external variables for arguments not varying in the
-     source, or for accumulated outputs. */
+  /* All locals here must have weird names, since the user's function may rely
+     on external variables for arguments not varying in the source, or for
+     accumulated outputs. */
   if (is_array(__map__x)) {
     if (am_subroutine()) {
       __map__n = numberof(__map__x);
@@ -525,6 +524,62 @@ func map(__map__f, __map__x)
     }
   } else if (! is_void(__map__x)) {
     error, "unsupported data type \""+typeof(__map__x)+"\"";
+  }
+}
+
+func reduce(f, x, ravel=)
+/* DOCUMENT y = reduce(f, x);
+
+     Apply the binary  function F to the  first two "slices" of X,  then on the
+     result and  the next "slice",  and so on.   The final result  is returned.
+     Argument X  can be empty,  an array or  a list.  If  X is empty,  an empty
+     result is returned.  If X is a list, a "slice" is an item of the list.  If
+     X is an array, the i-th slice is X(i) -- i.e., the i-th element of X -- if
+     keyword RAVEL is true or if the rank of X is less or equal one, or X(..,i)
+     otherwise.  If X counts less than two slices, the result is just the first
+     slice of X.
+
+     For instance reduce(f,x) yields:
+
+         []                           for an empty argument;
+         x(1)                         for a scalar or a 1-element vector;
+         f(x(1),x(2))                 for a 2-element vector;
+         f(f(x(1),x(2)),x(3))         for a 3-element vector;
+         f(f(f(x(1),x(2)),x(3)),x(4)) for a 4-element vector;
+         etc.
+
+   SEE ALSO: map.
+ */
+{
+  if (is_array(x)) {
+    dims = dimsof(x);
+    i = 1;
+    if (ravel || numberof(dims) <= 2) {
+      n = numberof(x);
+      y = x(1);
+      while (i < n) {
+        y = f(y, x(++i));
+      }
+    } else {
+      n = dims(0);
+      y = x(.., 1);
+      while (i < n) {
+        y = f(unref(y), x(.., ++i));
+      }
+    }
+    return y;
+  }
+  if (is_list(x)) {
+    y = _car(x);
+    x = _cdr(x);
+    while (x) {
+      y = f(unref(y), _car(x));
+      x = _cdr(x);
+    }
+    return y;
+  }
+  if (! is_void(x)) {
+    error, "unsupported data type \""+typeof(x)+"\"";
   }
 }
 
