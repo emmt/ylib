@@ -2024,7 +2024,7 @@ func benchmark(script, repeat)
   t = (t1 - t0)/repeat;
   if (am_subroutine()) {
     write, format="cpu=%gms, system=%gms, wall=%gms (measured for %d iteration%s)\n",
-      t(1)*1e3, t(2)*1e3, t(2)*1e3, repeat, (repeat > 1 ? "s" : "");
+      t(1)*1e3, t(2)*1e3, t(3)*1e3, repeat, (repeat > 1 ? "s" : "");
   }
   return t;
 }
