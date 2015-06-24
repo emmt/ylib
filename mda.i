@@ -135,31 +135,41 @@ func mda_recv(file, &offset, justcheck=)
   if (type == 1 || type == 2) {
     type = char;
     elsize = 1;
+    cmplx = 0n;
   } else if (type == 3 || type == 4) {
     type = short;
     elsize = 2;
+    cmplx = 0n;
   } else if (type == 5 || type == 6) {
     type = int;
     elsize = 4;
+    cmplx = 0n;
   } else if (type == 7 || type == 8) {
     type = long;
     elsize = 8;
-  } else if (type == 9) {
+    cmplx = 0n;
+  } else if (type == 9 || type == 11) {
     type = float;
     elsize = 4;
-  } else if (type == 10) {
+    cmplx = (type == 11);
+  } else if (type == 10 || type == 12) {
     type = double;
     elsize = 8;
+    cmplx = (type == 12);
   } else {
     error, "invalid MDA type identifier";
   }
   set_primitives, file, encoding;
   if (ndims == 0) {
-    dims = [];
+    dims = (cmplx ? [1,2] : [0]);
   } else {
     dims = array(int, ndims);
     _read, file, offset + 4, dims;
-    dims = grow(ndims, dims);
+    if (cmplx) {
+      dims = grow(ndims+1, 2, dims);
+    } else {
+      dims = grow(ndims, dims);
+    }
   }
   if (justcheck) {
     if (am_subroutine()) {
@@ -175,6 +185,13 @@ func mda_recv(file, &offset, justcheck=)
   data = array(type, dims);
   _read, file, offset, data;
   offset += elsize*numberof(data);
+  if (cmplx) {
+    local z;
+    dims = dims(2:);
+    dims(1) = ndims;
+    reshape, z, &double(data), complex, dims;
+    return z;
+  }
   return data;
 }
 
