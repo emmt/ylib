@@ -50,6 +50,7 @@ func mda_save(data, file, &offset, byteorder=)
  */
 {
   type = structof(data);
+  cmplx = is_complex(data);
   if (type == char) {
     type = ('\xFF' > '\x00' ? 1 : 2);
     elsize = 1;
@@ -68,6 +69,9 @@ func mda_save(data, file, &offset, byteorder=)
   } else if (type == double) {
     type = 10;
     elsize = 8;
+  } else if (type == complex) {
+    type = 12;
+    elsize = 16;
   } else {
     error, "unsupported data type";
   }
@@ -89,6 +93,10 @@ func mda_save(data, file, &offset, byteorder=)
   header = int(dims);
   header(1) = 0x4D444100 | (type << 4) | ndims;
   set_primitives, file, encoding;
+  if (cmplx) {
+    /* make stream aware of the definition of a complex */
+    save, file, complex;
+  }
   _write, file, offset, header;
   offset +=  4*(ndims + 1);
   _write, file, offset, data;
