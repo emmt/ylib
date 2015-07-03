@@ -1,4 +1,4 @@
-autoload, "density.i", density;
+autoload, "statistics.i", density, hist;
 
 autoload, "fft_utils.i", abs2, fft_best_dim, fft_indgen, fft_dist, fft_freqlist;
 autoload, "fft_utils.i", fft_smooth, fft_convolve, fft_gaussian_psf, fft_gaussian_mtf;
