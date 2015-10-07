@@ -2106,20 +2106,23 @@ func _stat_worker(x)
 
    SEE ALSO stat. */
 {
-  if (structof(x)!=double) x = double(x);
+  //if (structof(x) != double) x = double(unref(x));
   avg_x = avg(x);
-  dx = x - avg_x;
-  return [min(x), max(x), avg_x, sqrt(avg(dx*dx))];
+  min_x = min(x);
+  max_x = max(x);
+  dx = unref(x) - avg_x;
+  return [min_x, max_x, avg_x, sqrt(avg(dx*dx))];
 }
 
 func stat(..)
 /* DOCUMENT stat, x, ...
      Print out statistics and information for all the arguments. */
 {
+  local x;
   ith = 0;
   while (more_args()) {
     ++ith;
-    x = next_arg();
+    eq_nocopy, x, next_arg();
     write, format="%2d: ", ith;
     if (is_array(x)) {
       write, format="array(%s", typeof(x);
