@@ -157,13 +157,13 @@ func mda_recv(file, &offset, justcheck=)
     elsize = 8;
     cmplx = 0n;
   } else if (type == 9 || type == 11) {
+    cmplx = (type == 11);
     type = float;
     elsize = 4;
-    cmplx = (type == 11);
   } else if (type == 10 || type == 12) {
+    cmplx = (type == 12);
     type = double;
     elsize = 8;
-    cmplx = (type == 12);
   } else {
     error, "invalid MDA type identifier";
   }
