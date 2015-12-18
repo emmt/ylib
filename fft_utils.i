@@ -68,9 +68,10 @@ local fft_utils;
 
    SEE ALSO: fft, fftw. */
 
+__abs2__ = abs2;
 func abs2(x)
 /* DOCUMENT abs2(x)
-     Returns abs(X)^2
+     Returns abs(X)^2 computed efficiently.
    SEE ALSO: abs. */
 {
   if (structof(x) != complex) return x*x;
@@ -78,6 +79,8 @@ func abs2(x)
   x = double(x);
   return x*x + y*y;
 }
+if (is_func(__abs2__) == 2n) abs2 = __abs2__;
+__abs2__ = [];
 
 func fft_best_dim(len)
 /* DOCUMENT fft_best_dim(len);
@@ -99,7 +102,7 @@ func fft_best_dim(len)
   return best;
 }
 
-func fft_indgen(dim) { return (u = indgen(0:dim-1)) - dim*(u > dim/2); }
+func fft_indgen(dim) { return (u = indgen(0:dim-1)) - dim*(u > (dim-1)/2); }
 /* DOCUMENT fft_indgen(len)
      Return FFT frequencies along a dimension of length LEN.
    SEE ALSO: indgen, span, fft_dist, fft_freqlist, fft_symmetric_index. */
