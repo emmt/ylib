@@ -719,6 +719,34 @@ func fft_fine_shift(a, off, setup=)
   return (1.0/numberof(a))*(real ? double(a) : a);
 }
 
+func fft_fine_shift_and_convolve(arr, psf, off, setup=, mtf=)
+/* DOCUMENT fft_fine_shift_and_convolve(arr, psf, off, setup=, mtf=)
+
+     The function fft_fine_shift_and_convolve returns array ARR convolved by
+     PSF and shifted by offset OFF which can be fractionnal.
+
+     This functions can make use of pre-computed FFT workspace specified by
+     keyword SETUP (see fft_setup).
+
+     If Keyword MTF is set true, it is assumed that the argument PSF is
+     the FFT of the point spread function.
+
+SEE ALSO: fft, fft_setup, fft_shift_phasor, roll. */
+{
+  real = (structof(arr) != complex && (mtf || structof(psf) != complex));
+  adims = dimsof(arr);
+  pdims = dimsof(psf);
+  if (numberof(adims) != numberof(pdims) || anyof(adims != pdims)) {
+    error, "ARR and PSF must have the same size";
+  }
+  if (is_void(setup)) setup = fft_setup(adims);
+  a = fft(fft(arr, +1, setup=setup)*
+          (mtf ? psf : fft(psf, +1, setup=setup))*
+          fft_shift_phasor(-off, adims), -1);
+  return (1.0/numberof(a))*(real ? double(a) : a);
+}
+
+
 func fft_interp_real(z, phasor)
 { return (1.0/numberof(z))*double(sum(z*phasor)); }
 func fft_interp_complex(z, phasor)
