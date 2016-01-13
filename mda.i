@@ -219,15 +219,3 @@ _MDA_BIG_ENDIAN = [/*   char */   1,         1,         1,
                    /* double */   0,    1,   11,   12,   52,    0,  0x3ff];
 _MDA_LITTLE_ENDIAN = _MDA_BIG_ENDIAN;
 _MDA_LITTLE_ENDIAN(3:18:3) = -1;
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * indent-tabs-mode: nil
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

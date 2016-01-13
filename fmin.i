@@ -354,15 +354,3 @@ func fmin_range(a, b, n)
   b = double(b);
   return ((b - a)/(n - 1.0))*(indgen(n) - (n + 1)/2.0) + (a + b)/2.0;
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * indent-tabs-mode: nil
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

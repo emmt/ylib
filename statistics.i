@@ -606,15 +606,3 @@ func hist(v, w, n=, vmin=, vmax=, edg=, interpolate=)
   save, rv, mean = s1, dev = sqrt(max(s2*s - s1*s1, 0.0));
   return rv;
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * indent-tabs-mode: nil
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

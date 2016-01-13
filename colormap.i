@@ -1084,14 +1084,3 @@ func yarg(i)
     error, "expecting scalar real or integer";
   }
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

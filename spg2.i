@@ -312,14 +312,3 @@ func spg2(fg, prj, x0, m,
   return h_set(ws, status = status, pgtwon = pgtwon, pginfn = pginfn,
                iter = iter, fcnt = fcnt, pcnt = pcnt);
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

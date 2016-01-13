@@ -749,15 +749,3 @@ func make_matrix(op, x, extra)
   }
   return a;
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * indent-tabs-mode: nil
- * c-basic-offset: 2
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */
