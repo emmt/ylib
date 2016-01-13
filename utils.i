@@ -718,6 +718,76 @@ func cast(a, type, dimlist)
   return r;
 }
 
+func collate(arg)
+/* DOCUMENT collate(arg);
+
+     Collate all the values of argument ARG in a flat vector (1D array).  If
+     ARG is an array of pointers, the pointers are dereferenced and
+     recursively collated.  ARG can also be a list whose contents is
+     recursively collated.
+
+     Since collating is performed recursively, pointers of pointers, lists of
+     lists, lists of pointers, etc., are supported.
+
+
+   SEE ALSO: array, identof, _lst, map.
+ */
+{
+  local arr;
+  id = identof(arg);
+  if (id < Y_POINTER) return unref(arg)(*);
+  if (id == Y_POINTER) {
+    ptr = unref(arg); // private copy to allow changing elements
+    n = numberof(ptr);
+    rsid = -1; // type id. of result
+    type = []; // type of result
+    number = 0;
+    for (k = 1; k <= n; ++k) {
+      eq_nocopy, arr, *ptr(k);
+      id = identof(arr);
+      if (id == Y_POINTER) {
+        arr = collate(arr);
+        ptr(k) = &arr;
+        id = identof(arr);
+      }
+      if (id != Y_VOID) {
+        if (id > rsid) {
+          if (id == Y_STRING && rsid != -1) {
+            error, "strings and numerical types cannot be mixed";
+          }
+          rsid = id;
+          type = structof(arr);
+        }
+        number += numberof(arr);
+      }
+    }
+    if (number == 0) return;
+    out = array(type, number);
+    i1 = i2 = 0;
+    for (k = 1; k <= n; ++k) {
+      eq_nocopy, arr, *ptr(k);
+      if (is_void(arr)) continue;
+      i1 = i2 + 1;
+      i2 = i2 + numberof(arr);
+      out(i1:i2) = arr(*);
+    }
+    return out;
+  }
+  if (id == Y_VOID) return;
+  if (id == Y_OPAQUE) {
+    if (is_list(arg)) {
+      n = _len(arg);
+      ptr = array(pointer, n);
+      for (k = 1; k <= n; ++k) {
+        ptr(k) = &collate(_car(arg));
+        arg = _cdr(arg);
+      }
+      return collate(ptr);
+    }
+  }
+  error, "unsupported data type";
+}
+
 func swap_bytes(a)
 /* DOCUMENT swap_bytes(a)
      Swap the bytes of the array A.
