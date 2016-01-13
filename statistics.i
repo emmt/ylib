@@ -600,7 +600,7 @@ func hist(v, w, n=, vmin=, vmax=, edg=, interpolate=)
   } else {
     k = where(cnt);
     s = array(double, n);
-    s(i) = 1.0/cnt(i);
+    s(k) = 1.0/cnt(k);
   }
   s1 *= s;
   save, rv, mean = s1, dev = sqrt(max(s2*s - s1*s1, 0.0));
