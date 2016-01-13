@@ -12,6 +12,7 @@ autoload, "fft_utils.i", fft_plh, fft_plg, fft_pli, fft_plc, fft_plfc;
 //autoload, "fft_utils.i", fft_paste;
 
 autoload, "fmin.i", fmin, fmin_global, fmin_range;
+autoload, "fzero.i", fzero;
 
 autoload, "img.i", img_dims, img_plot, img_cbar;
 autoload, "img.i", img_resize, img_thumbnail, img_interpolate;
@@ -46,14 +47,13 @@ autoload, "plot.i", ps2png, ps2jpeg, win2png, win2jpeg;
 autoload, "plot.i", pl_span, pl_map, win_copy_lim;
 //autoload, "plot.i", pl_database_index_to_rgb, pl_database_index_to_packed, pl_rgb_to_packed, pl_packed_to_rgb;
 
-autoload, "spg2.i", spg2_dot, spg2_twonorm, spg2_infnorm, spg2;
-
-autoload, "utils.i", eval, map, lambda, cast, swap_bytes;
+autoload, "utils.i", eval, map, lambda, cast, collate, swap_bytes;
 autoload, "utils.i", undersample, resample, spline_zoom, rescale, smooth;
 //autoload, "utils.i", ndims_of, width_of, height_of, depth_of;
 //autoload, "utils.i", is_integer_scalar, is_string_scalar, is_absolute_path;
 autoload, "utils.i", pwd, glob;
-autoload, "utils.i", locate, load, tempfile, filesize, dirname, basename;
+//autoload, "utils.i", dirname, basename;
+autoload, "utils.i", locate, load, tempfile, filesize, structname;
 autoload, "utils.i", strip_file_extension, expand_file_name, get_file_name, protect_file_name, read_ascii, load_text, dump_text, guess_compression, xopen, raw_read;
 autoload, "utils.i", pw_get_user, pw_get_uid, pw_get_gid, pw_get_name, pw_get_home, pw_get_shell;
 autoload, "utils.i", pdb_list, pdb_restore_all;
