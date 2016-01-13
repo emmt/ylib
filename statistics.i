@@ -445,3 +445,109 @@ func density_test(s, x, adjust=)
 }
 
 /*---------------------------------------------------------------------------*/
+/* HISTOGRAM */
+
+func hist(vals, bins, wgts, average=, interpolate=)
+/* DOCUMENT hst = hist(vals, bins);
+         or hst = hist(vals, bins, wgts);
+
+     Compute an histogram (an empirical distribution).  VALS gives the values
+     of the samples, BINS gives the positions of the histogram bins.
+     Optionally, WGTS gives the weights of the samples.  VALS can have any
+     dimension list, BINS must be a vector of strictly increasing or strictly
+     decreasing valus and, if specified, WGTS must be conformable with VALS.
+     If WGTS is not specified, the result is as if the weights were all equal
+     to one.
+
+     If keyword AVERAGE is true and the weights WGTS are specified, the
+     average value of the weights in each bin is computed instead of the total
+     value.  If the weights WGTS are unspecified, the AVERAGE keyword is
+     ignored -- otherwise the result would be 0 or 1 everywhere.  For the same
+     reason, it makes little sense to set AVERAGE true with uniform weights
+     (you have been warned).
+
+     If keyword INTERPOLATE is true, a linear interpolation rule is used to
+     distribute the (weighted) counts in the bins and the result has the same
+     length as BINS and should be interpreted as having sampled the
+     distribution at the positions specified by BINS.  By default, the result
+     has one more element than BINS and should be interpreted as the number of
+     values between successive bins, the first (resp. last) value, HST(1)
+     (resp. HST(0)) being the number of samples beyond the first (resp. last)
+     bin BINS(1) (resp. BINS(0)).
+
+     This routine is more general than histo2 as it let you choose non-evenly
+     spaced bins.
+
+   SEE ALSO: histogram, digitize, histo2.
+ */
+{
+  i = digitize(vals, bins);
+  n = numberof(bins);
+  if (interpolate) {
+    /* compute interpolation coefficients */
+    dims = dimsof(vals);
+    w1 = array(double, dims);
+    i1 = array(long, dims);
+    i2 = array(long, dims);
+    lo = (i < 2);
+    hi = (i > n);
+    j = where(lo);
+    if (is_array(j)) {
+      /* interpolation coefficients for values beyond first bin */
+      w1(j) = 0.0;
+      i1(j) = 1;
+      i2(j) = 1;
+    }
+    j = where(hi);
+    if (is_array(j)) {
+      /* interpolation coefficients for values beyond last bin */
+      w1(j) = 1.0;
+      i1(j) = n;
+      i2(j) = n;
+    }
+    j = where(!(lo|hi));
+    if (is_array(j)) {
+       /* interpolation coefficients values between first and last bins (the
+          weird division in the expression below is an attempt to do as few
+          divisions as possible assuming there are more samples than bins) */
+      j2 = i(j);
+      j1 = j2 - 1;
+      w1(j) = (vals(j) - bins(j1))*(1.0/bins(dif))(j1);
+      i1(j) = j1;
+      i2(j) = j2;
+    }
+    w2 = 1.0 - w1;
+    if (is_void(wgts)) {
+      hst = (histogram(i1, w1, top=n+1) +
+             histogram(i2, w2, top=n+1));
+    } else {
+      hst = (histogram(i1, w1*wgts, top=n+1) +
+             histogram(i2, w2*wgts, top=n+1));
+      if (average) {
+        /* normalize by the sum of the interpolation weights in each bin
+           taking care of not dividing by zero */
+        nrm = (histogram(i1, w1, top=n+1) +
+               histogram(i2, w2, top=n+1));
+        msk = (nrm > 0.0);
+        hst *= double(msk)/(double(!msk) + nrm);
+      }
+    }
+    return hst(1:n);
+  } else {
+    if (is_void(wgts)) {
+      hst = histogram(i, top=n+1);
+    } else {
+      hst = histogram(i, wgts, top=n+1);
+      if (average) {
+        /* normalize by the counts in each bin taking care of not dividing by
+           zero */
+        nrm = histogram(i, top=n+1);
+        msk = (nrm > 0.0);
+        hst *= double(msk)/(double(!msk) + nrm);
+      }
+    }
+    return hst;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
