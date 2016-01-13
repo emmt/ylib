@@ -810,6 +810,25 @@ func strrchr(s, c)
   return strchr(s, c, 1n);
 }
 
+func structname(obj)
+/* DOCUMENT structname(obj);
+
+     Get the name of the structure of which OBJ is an instance of.  A nil
+     string is returned is OBJ is not a structure instance.
+
+   RESTRICTIONS:
+     This function is not particularly fast because it has to convert the
+     structure definition into a string and then find the structure name in
+     that string.  This amounts to about 3 microseconds on my 2.4GHz i7 Core
+     Laptop, not a big deal!
+
+   SEE ALSO: strgrep, strpart, print, structof.
+ */
+{
+  str = sum(print(structof(obj)));
+  return strpart(str, strgrep("^struct ([^ ]+) {.*", str, sub=1));
+}
+
 /*---------------------------------------------------------------------------*/
 /* LOGICAL ROUTINES */
 
