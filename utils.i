@@ -880,23 +880,49 @@ func strrchr(s, c)
   return strchr(s, c, 1n);
 }
 
-func structname(obj)
+func structname(obj, w)
 /* DOCUMENT structname(obj);
+         or structname(obj, 0/1/2);
 
      Get the name of the structure of which OBJ is an instance of.  A nil
      string is returned is OBJ is not a structure instance.
 
+     Optional second argument can be: 0 to retrieve the structure name only
+     (default behavior), 1 to retrieve the names of the structure members,
+     or 2 to retrieve the structure name and the names of its members.
+
    RESTRICTIONS:
      This function is not particularly fast because it has to convert the
      structure definition into a string and then find the structure name in
-     that string.  This amounts to about 3 microseconds on my 2.4GHz i7 Core
-     Laptop, not a big deal!
+     that string using `strgrep`.  This amounts to about 3 microseconds on
+     my 2.4GHz i7 Core Laptop, not a big deal!
 
    SEE ALSO: strgrep, strpart, print, structof.
  */
 {
   str = sum(print(structof(obj)));
-  return strpart(str, strgrep("^struct ([^ ]+) {.*", str, sub=1));
+  if (! w) {
+    return strpart(str, strgrep("^struct +([^ ]+) +{", str, sub=1));
+  } else if (w == 1 || w == 2) {
+    sub = [1,2];
+    reg = "^ *[A-Z_a-z][0-9A-Z_a-z]* +([A-Z_a-z][0-9A-Z_a-z]*)[^;]*;(.*)";
+    str = strpart(str, strgrep("^struct +([^ ]+) +{(.*)", str, sub=sub));
+    tail = str(2);
+    list = array(string, 1 + strlen(tail)/4);
+    i = 0
+    if (w == 2) {
+      list(++i) = str(1);
+    }
+    for (;;) {
+      str = strpart(tail, strgrep(reg, tail, sub=sub));
+      name = str(1);
+      if (! name) return list(1:i);
+      list(++i) = name;
+      tail = str(2);
+    }
+  } else {
+    error, "bad flag value";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
