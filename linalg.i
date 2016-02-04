@@ -293,6 +293,56 @@ func kronecker_product(a,b)
 }
 
 /*---------------------------------------------------------------------------*/
+/* Linear fit */
+
+func linreg(x,y,w)
+/* DOCUMENT [a,b] = linreg(x,y);
+         or [a,b] = linreg(x,y,w);
+
+     Performs linear regression.  Returns a and b such that a + b*x is the
+     closest straight line to the given points (x, y), i.e., such that the
+     squared error between y and a + b*x is minimized.
+
+     If weights w are provided, the result of weighted least-squares linear
+     regression is returned.
+
+   SEE ALSO:
+ */
+{
+  dims = dimsof(x, y);
+  if (is_void(w)) {
+    a1 = avg(x*x);
+    a2 = avg(x);
+    a3 = 1.0;
+    b1 = avg(x*y);
+    b2 = avg(y);
+  } else {
+    if (min(w) < 0) error, "bad weights";
+    wx = w*x;
+    a1 = avg(wx*x);
+    a2 = avg(wx);
+    a3 = avg(w);
+    b1 = avg(wx*y);
+    b2 = avg(w*y);
+  }
+  a = max(abs(a1), abs(a2), abs(a3));
+  if (a > 0.0) {
+    r = 1.0/a;
+    a1 *= r;
+    a2 *= r;
+    a3 *= r;
+    d = a1*a3 - a2*a2;
+    if (d > 0.0) {
+      r /= d;
+      b1 *= r;
+      b2 *= r;
+      return [a3*b1 - a2*b2, a1*b2 - a2*b1];
+    }
+  }
+  error, "singular system";
+}
+
+/*---------------------------------------------------------------------------*/
 /* Faddeev-Leverrier method */
 
 /*
