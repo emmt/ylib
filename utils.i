@@ -606,7 +606,8 @@ func lambda(args, code)
    SEE ALSO: map, include.
  */
 {
-  include,["func __lambda__(" + args + ") { " + code + " }"], 1;
+  local __lambda__;
+  include, grow("func __lambda__(", args, ") { ", code, " }"), 1;
   return __lambda__;
 }
 
