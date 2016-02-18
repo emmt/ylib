@@ -585,8 +585,9 @@ func reduce(f, x, ravel=)
 
 func lambda(args, code)
 /* DOCUMENT lambda(args, code);
-     Return an anonymous function with ARGS its argment list and CODE
-     the body of the function.  ARGS and CODE must be scalar strings.
+
+     Return an anonymous function with ARGS its argment list and CODE the
+     body of the function.  ARGS and CODE must be (arrays of) strings.
      For instance:
 
        f1 = lambda("x", "c = x*x; return sqrt(c + abs(x));");
