@@ -114,6 +114,7 @@ $(RELEASE_NAME):
 	  else \
 	    mkdir -p "$$dir"; \
 	    for file in $(RELEASE_FILES); do \
+	      file=`basename "$$file"`; \
 	      src="$(srcdir)/$$file"; \
 	      dst="$$dir/$$file"; \
 	      if test "$$file" = "Makefile"; then \
