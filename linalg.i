@@ -683,9 +683,10 @@ func pseudo_inverse(a, rcond=, lsq=, debug=)
 /* DOCUMENT pseudo_inverse(a)
 
      This function computes the pseudo-inverse of the matrix A.  Argument A
-     must be a M-by-N real or complex array.  Singular value decomposition
-     is used to handle numerically singular cases.  If A is square and
-     non-singular, LUsolve(A) is faster to compute the inverse of A.
+     must be a M-by-N real or complex array.  Singular value decomposition is
+     used to handle numerically singular cases.  If A is square and
+     non-singular, LUsolve(A) is faster than computing the (pseudo-)inverse
+     of A.
 
      If keyword LSQ (for "Least SQuares") is true, the result is the
      pseudo-inverse of A'.A (the matrix in the left hand side of the normal
