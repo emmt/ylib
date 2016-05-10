@@ -519,66 +519,66 @@ func cholesky(a, raw)
 
 local sv_intro;
 /* DOCUMENT sv_intro - introduction to SVD Yorick package
- *
- * Notes about matrix multiplication in Yorick:
- *
- *   A.B  = A(,+)*B(+,)
- *   A'.B = A(+,)*B(+,)  // transpose of A times B
- *   A.B' = A(,+)*B(,+)  // A times transpose of B
- *
- *   diag(s).A  = diag(s)(,+)*A(+,)
- *              = s*A = A*s
- *
- *   diag(s).A' = diag(s)(,+)*A(,+)
- *              = transpose(s(-,)*A) = transpose(A*s(-,))
- *
- *   A.diag(s)  = A(,+)*diag(s)(+,)
- *              = A*s(-,) = s(-,)*A
- *
- *   A'.diag(s) = A(+,)*diag(s)(+,) = A(+,)*diag(s)(,+)
- *              = transpose(A*s) = transpose(s*A)
- *
- * Singular Value Decomposition:
- *
- *   A = U.diag(SIGMA).V' = U.diag(SIGMA).VT
- *     = (U*SIGMA(-,))(,+)*VT(+,)
- *     = U(,+)*(SIGMA*VT)(+,)
- *
- * where:
- *
- *   SIGMA = SVdec(A, U, VT)
- *
- * Columns  of  U  and  V form  an  orthonormal basis  (i.e.  U  and V  are
- * column-orthonormal):
- *
- *   U'.U = V'.V = I
- *
- * in Yorick notation:
- *
- *   U(+,)*U(+,) = V(+,)*V(+,) = VT(,+)*VT(,+) = unit(N)
- *
- * Note (to be verified): if U and/or V are square, they are also
- * row-orthonormal:
- *
- *   U'.U = U.U' = I   (if U is square)
- *   V'.V = V.V' = I   (if V is square)
- *
- * Generalized-inverse of A:
- *
- *   AP = V.diag(1/SIGMA).U' = VT'.diag(1/SIGMA).U'
- *     = VT(+,)*((1.0/SIGMA)(-,)*U)(,+)
- *     = ((1.0/SIGMA)*VT)(+,)*U(,+)
- *
- * Solving a linear problem: A.x ~ b with SVD (taking care of index
- * ordering for faster matrix multiplication):
- *
- *   X = V.diag(W).U'.B
- *     = (W*VT)(+,)*U(,+))(,+)*B(+,..)
- *     = (W*VT)(+,)*(U(+,)*B(+,..))(+,..)  // sum over 1st indices: faster
- *
- * where W is an approximation of 1/SIGMA.
- *
- * SEE ALSO: sv_dcmp, sv_solve_trunc, sv_solve_wiener, SVdec, SVsolve.
+
+   Notes about matrix multiplication in Yorick:
+
+     A.B  = A(,+)*B(+,)
+     A'.B = A(+,)*B(+,)  // transpose of A times B
+     A.B' = A(,+)*B(,+)  // A times transpose of B
+
+     diag(s).A  = diag(s)(,+)*A(+,)
+                = s*A = A*s
+
+     diag(s).A' = diag(s)(,+)*A(,+)
+                = transpose(s(-,)*A) = transpose(A*s(-,))
+
+     A.diag(s)  = A(,+)*diag(s)(+,)
+                = A*s(-,) = s(-,)*A
+
+     A'.diag(s) = A(+,)*diag(s)(+,) = A(+,)*diag(s)(,+)
+                = transpose(A*s) = transpose(s*A)
+
+   Singular Value Decomposition:
+
+     A = U.diag(SIGMA).V' = U.diag(SIGMA).VT
+       = (U*SIGMA(-,))(,+)*VT(+,)
+       = U(,+)*(SIGMA*VT)(+,)
+
+   where:
+
+     SIGMA = SVdec(A, U, VT)
+
+   Columns of U and V form an orthonormal basis (i.e.  U and V are
+   column-orthonormal):
+
+     U'.U = V'.V = I
+
+   in Yorick notation:
+
+     U(+,)*U(+,) = V(+,)*V(+,) = VT(,+)*VT(,+) = unit(N)
+
+   Note (to be verified): if U and/or V are square, they are also
+   row-orthonormal:
+
+     U'.U = U.U' = I   (if U is square)
+     V'.V = V.V' = I   (if V is square)
+
+   Generalized-inverse of A:
+
+     AP = V.diag(1/SIGMA).U' = VT'.diag(1/SIGMA).U'
+       = VT(+,)*((1.0/SIGMA)(-,)*U)(,+)
+       = ((1.0/SIGMA)*VT)(+,)*U(,+)
+
+   Solving a linear problem: A.x ~ b with SVD (taking care of index ordering
+   for faster matrix multiplication):
+
+     X = V.diag(W).U'.B
+       = (W*VT)(+,)*U(,+))(,+)*B(+,..)
+       = (W*VT)(+,)*(U(+,)*B(+,..))(+,..)  // sum over 1st indices: faster
+
+   where W is an approximation of 1/SIGMA.
+
+   SEE ALSO: sv_dcmp, sv_solve_trunc, sv_solve_wiener, SVdec, SVsolve.
  */
 
 func sv_dcmp(a, full)
@@ -685,7 +685,7 @@ func pseudo_inverse(a, rcond=, lsq=, debug=)
      This function computes the pseudo-inverse of the matrix A.  Argument A
      must be a M-by-N real or complex array.  Singular value decomposition is
      used to handle numerically singular cases.  If A is square and
-     non-singular, LUsolve(A) is faster than computing the (pseudo-)inverse
+     non-singular, LUsolve(A) is faster than computing the pseudo-inverse
      of A.
 
      If keyword LSQ (for "Least SQuares") is true, the result is the
