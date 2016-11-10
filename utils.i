@@ -214,7 +214,7 @@ func undersample(a, nsub, which=, op=)
      By default, the median is taken (WARNING: with the median operator, the
      result depends in which order the dimensions of A are considered).
 
-   SEE ALSO: median. */
+     SEE ALSO: median, resample. */
 {
   if (nsub < 1) error, "NSUB must be >= 1";
   if (nsub == 1) return a;
@@ -255,15 +255,15 @@ func resample(a, f)
 /* DOCUMENT resample(a, f);
        -or- resample(a, dims);
 
-     Resample input array A so that its dimensions are rescaled by the factor(s)
-     F or become the new dimension list DIMS.
+     Resample input array A so that its dimensions are rescaled by the
+     factor(s) F or become the new dimension list DIMS.
 
      F is a floating point value or vector which specifies the scaling
      factor(s) to apply to the dimensions of the original array A.  If the
      scaling factors are all the same for all dimensions, F may be a scalar;
-     otherwise, F must be a vector with as many elements as the rank of A.
-     The dimensions of the result are the dimensions of the input array times
-     F and rounded to the nearest integer (though the dimension is at least 1).
+     otherwise, F must be a vector with as many elements as the rank of A.  The
+     dimensions of the result are the dimensions of the input array times F and
+     rounded to the nearest integer (though the dimension is at least 1).
 
      DIMS is an integer value or vector which specifies the dimensions of the
      result.  If the result dimensions are all the same, DIMS may be a scalar;
@@ -273,8 +273,8 @@ func resample(a, f)
      Along dimensions that are reduced, the sampling is decreased by
      integrating values at a lower resolution; along dimensions that are
      augmented, the sampling is increased by linear interpolating at an higher
-     resolution; nothing is done for dimensions that remain the same and have
-     a scaling factor equals to 1.
+     resolution; nothing is done for dimensions that remain the same and have a
+     scaling factor equals to 1.
 
      For instance, to resample an RBG image IMG1 of size 3-by-W1-by-H1 to size
      3-by-W2-by-H2:
@@ -287,7 +287,7 @@ func resample(a, f)
        img2 = char(max(0, min(255, resample(img1, [3,3,w2,h2]) + 0.5)));
 
 
-   SEE ALSO: bytescl, dimsof, interp, spline_zoom.
+   SEE ALSO: undersample, bytescl, dimsof, interp, spline_zoom.
  */
 {
   if (! is_array(a) || identof(a) >= Y_STRING) {
@@ -324,7 +324,7 @@ func resample(a, f)
     if (! err) {
       new_dims = array(long, ndims + 1);
       new_dims(1) = ndims;
-      new_dims(2:) = max(1, long(floor(f*old_dims(2:) + 0.5)));
+      new_dims(2:) = max(1, lround(f*old_dims(2:)));
     }
   }
   if (err) {
@@ -335,13 +335,11 @@ func resample(a, f)
      reduced to work with as small arrays as possible. */
   flags = (old_dims(2:) != new_dims(2:) | f != 1.0)*((f < 1.0) + 1);
   for (k = 1; k <= ndims; ++k) {
-    if (flags(k) == 2) {
+    if ((old_dim = old_dims(k+1)) > (new_dim = new_dims(k+1))) {
       /* Decrease sampling by integrating values at a lower resolution. */
       q = f(k);
-      old_len = old_dims(k+1);
-      new_len = new_dims(k+1);
-      old_pos = (indgen(old_len + 1) - (old_len + 2)/2.0)*q;
-      new_pos = (indgen(new_len + 1) - (new_len + 2)/2.0);
+      old_pos = (indgen(old_dim + 1) - (old_dim + 2)/2.0)*q;
+      new_pos = (indgen(new_dim + 1) - (new_dim + 2)/2.0);
       if (k == 1) {
         a = interp(unref(a)(cum,..), old_pos, new_pos, k)(dif,..)*q;
       } else if (k == 2) {
@@ -366,18 +364,16 @@ func resample(a, f)
         error, "too many dimensions";
       }
     }
-    for (k = 1; k <= ndims; ++k) {
-      if (flags(k) == 1) {
-        /* Increase sampling by linear interpolating at an higher resolution. */
-        q = f(k);
-        old_len = old_dims(k+1);
-        new_len = new_dims(k+1);
-        old_pos = (indgen(old_len) - (old_len + 1)/2.0)*q;
-        new_pos = (indgen(new_len) - (new_len + 1)/2.0);
-        a = interp(unref(a), old_pos, new_pos, k);
-        old_pos = (indgen(old_len + 1) - (old_len + 2)/2.0)*q;
-        new_pos = (indgen(new_len + 1) - (new_len + 2)/2.0);
-      }
+  }
+  for (k = 1; k <= ndims; ++k) {
+    if ((old_dim = old_dims(k+1)) < (new_dim = new_dims(k+1))) {
+      /* Increase sampling by linear interpolating at an higher resolution. */
+      q = f(k);
+      old_pos = (indgen(old_dim) - (old_dim + 1)/2.0)*q;
+      new_pos = (indgen(new_dim) - (new_dim + 1)/2.0);
+      a = interp(unref(a), old_pos, new_pos, k);
+      old_pos = (indgen(old_dim + 1) - (old_dim + 2)/2.0)*q;
+      new_pos = (indgen(new_dim + 1) - (new_dim + 2)/2.0);
     }
   }
   return a;
@@ -707,17 +703,28 @@ func rescale(a, .., scale=, rgb=, cubic=)
   return a;
 }
 
-func cast(a, type, dimlist)
-/* DOCUMENT cast(a, type, dims)
-     This function returns array A reshaped to an array with given TYPE and
-     dimension list.
+func cast(arr, type, dims)
+/* DOCUMENT cast(arr, type, dims);
+     Returns array ARR reshaped to an array with given TYPE and dimension
+     list.  Use reinterpret if you do not want to make a copy of ARR.
 
-   SEE ALSO: reshape.
+   SEE ALSO: reshape, reinterpret.
  */
 {
-  local r;
-  reshape, r, &a, type, dimlist;
-  return r;
+  reshape, arr, type, dims;
+  return arr;
+}
+
+func reinterpret(&dst, src, type, dims)
+/* DOCUMENT reinterpret, dst, src, type, dims;
+     Make variable DST shares the contents of array SRC assuming TYPE and DIMS
+     are the type and the dimensions of the array.
+
+   SEE ALSO: reshape, cast.
+ */
+{
+  eq_nocopy, dst, src;
+  reshape, dst, type, dims;
 }
 
 func collate(arg)
