@@ -9,8 +9,8 @@
  *
  * ----------------------------------------------------------------------------
  *
- * This file is part of YLib (Yorick Library) which is licensed under the MIT
- * "Expat" License:
+ * This file is part of YLib <https://github.com/emmt/ylib> which is licensed
+ * under the MIT "Expat" License:
  *
  * Copyright (C) 2001, 2014-2015: Éric Thiébaut.
  *
