@@ -2,6 +2,7 @@
 ##################
 ywrap.c
 build/
+work/
 
 # Automatic backups #
 #####################
