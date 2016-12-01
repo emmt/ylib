@@ -2119,8 +2119,8 @@ func benchmark(script, repeat)
      one per line of code).  Optional argument REPEAT gives the number of times
      the script is executed; if omitted, its default value is 100.  When called
      as a function,  the returned value is the elapsed  times [CPU,SYS,WALL] in
-     seconds  (see `timer`).   When called  as  a subroutine,  the results  are
-     printed to standard output.
+     seconds (see  `timer`) per evaluation.   When called as a  subroutine, the
+     results are printed to standard output.
 
      The  function `__benchmark_proc`  is created  on  the fly  to perform  the
      benchmark.  A consequence  is that it is not possible  to call `benchmark`
