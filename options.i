@@ -185,22 +185,28 @@ func opt_parse(tab, &argv)
         write, format="%s\n", tab(":usage");
         write, format="%s\n", tab(":brief");
         n = numberof(options);
+        col1 = array(string, n);
+        col2 = array(string, n);
+        col3 = array(string, n);
         for (k = 1; k <= n; ++k) {
           name = options(k);
           value = opt(name);
           type = tab(name + ":type");
           units = tab(name + ":units");
-          str = "-" + name;
+          str1 = "-" + name;
           if (! is_void(units)) {
-            str += "=" + tab(name + ":units");
+            str1 += "=" + tab(name + ":units");
           }
+          str2 = tab(name + ":descr");
           if (! is_void(value) && type != OPT_VERSION) {
-            def = " (default " + print(value) + ")";
-          } else {
-            def = "";
+           str2 += " (default " + print(value) + ")";
           }
-          write, format="  %-17s %s%s\n", str, tab(name + ":descr"), def;
+          col1(k) = str1;
+          col2(k) = str2;
         }
+        len = max(strlen(col1));
+        fmt = swrite(format = "  %%-%ds  %%s\n", len);
+        write, format=fmt, col1, col2, linesize=200;
         return;
       } else if (type == OPT_VERSION) {
         write, format="version: %s\n", opt(name);
@@ -269,14 +275,3 @@ func opt_error(msg)
 if (! batch()) {
   opt_error = error;
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 78
- * coding: utf-8
- * End:
- */
