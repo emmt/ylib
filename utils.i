@@ -1289,29 +1289,29 @@ func glob(pat, sorted=)
 }
 
 func dirname(path)
-/* DOCUMENT dirname(path)
-     Returns PATH with its  trailing "/component" removed; if PATH contains
-     no /'s, returns  "./" (meaning the current directory).   The result is
-     always terminated  by a "/", so that  dirname(dirname(PATH)) gives the
-     same result as dirname(PATH).
+/* DOCUMENT dirname(path);
 
-   SEE ALSO: basename, strrchr. */
+     Returns PATH with its trailing "/component" removed; if PATH contains no
+     /'s, returns "./" (meaning the current directory).  The result is always
+     terminated by a "/", so that dirname(dirname(PATH)) gives the same result
+     as dirname(PATH).
+
+   SEE ALSO: basename, strfind. */
 {
-  if (! (i = strrchr(path, '/'))) return "./";
-  return strpart(path, 1:i);
+  return (i = strfind("/", path, back=1)(2)) > 0 ? strpart(path, 1:i) : "./";
 }
 
 func basename(path, ext)
-/* DOCUMENT basename(path)
-       -or- basename(path, suffix)
-     Returns  PATH  with  any  leading directory  components  removed.   If
-     specified, also remove  a trailing SUFFIX if the  tail of PATH matches
-     SUFFIX.   Arguments PATH  and  SUFFIX, if  specified,  must be  scalar
-     strings.
+/* DOCUMENT basename(path);
+         or basename(path, suffix);
 
-   SEE ALSO: dirname, strrchr. */
+     Returns PATH with any leading directory components removed.  If specified,
+     also remove a trailing SUFFIX if the tail of PATH matches SUFFIX.
+     Arguments PATH and SUFFIX, if specified, must be scalar strings.
+
+   SEE ALSO: dirname, strfind. */
 {
-  if ((i = strrchr(path, '/'))) {
+  if ((i = strfind("/", path, back=1)(2)) > 0) {
     path = strpart(path, i+1:0);
   }
   if (ext) {
