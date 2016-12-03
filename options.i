@@ -6,9 +6,9 @@
  *-----------------------------------------------------------------------------
  *
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
- * licensed under the MIT "Expat" License:
+ * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2009-2011, Éric Thiébaut.
+ * Copyright (C) 2009-2016, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to

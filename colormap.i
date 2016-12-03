@@ -3,12 +3,12 @@
  *
  * Yorick functions to deal with colormaps.
  *
- * ----------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------
  *
- * This file is part of YLib <https://github.com/emmt/ylib> which is licensed
- * under the MIT "Expat" License:
+ * This file is part of YLib available at <https://github.com/emmt/ylib> and
+ * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2010: Éric Thiébaut.
+ * Copyright (C) 2010, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to

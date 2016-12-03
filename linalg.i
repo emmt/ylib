@@ -3,10 +3,10 @@
  *
  * Linear Algebra functions for Yorick.
  *
- * ----------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------
  *
- * This file is part of YLib <https://github.com/emmt/ylib> which is licensed
- * under the MIT "Expat" License:
+ * This file is part of YLib available at <https://github.com/emmt/ylib> and
+ * licensed under the MIT "Expat" License.
  *
  * Copyright (C) 2000, 2014, Éric Thiébaut.
  *
