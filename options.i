@@ -5,8 +5,8 @@
  *
  *-----------------------------------------------------------------------------
  *
- * This file is part of YLib <https://github.com/emmt/ylib> which is licensed
- * under the MIT "Expat" License:
+ * This file is part of YLib available at <https://github.com/emmt/ylib> and
+ * licensed under the MIT "Expat" License:
  *
  * Copyright (C) 2009-2011, Éric Thiébaut.
  *
@@ -124,6 +124,10 @@ OPT_REAL = 2;
 OPT_STRING = 3;
 OPT_HELP = 4;
 OPT_VERSION = 5;
+OPT_LIST = 16;
+OPT_INTEGER_LIST = (OPT_INTEGER | OPT_LIST);
+OPT_REAL_LIST    = (OPT_REAL    | OPT_LIST);
+OPT_STRING_LIST  = (OPT_STRING  | OPT_LIST);
 
 func opt_parse(tab, &argv)
 /* DOCUMENT opt = opt_parse(tab, argv);
@@ -142,13 +146,12 @@ func opt_parse(tab, &argv)
    SEE ALSO: opt_init, get_argv.
  */
 {
+  /* Get option table. */
   local options;
   eq_nocopy, options, tab(":options");
+
+  /* Parse cmaand line arguments. */
   opt = h_new();
-  for (k = numberof(options); k >= 1; --k) {
-    name = options(k);
-    h_set, opt, name, tab(name + ":defval");
-  }
   nil = string();
   argc = numberof(argv);
   for (k = 1; k <= argc; ++k) {
@@ -177,6 +180,9 @@ func opt_parse(tab, &argv)
     units = tab(name + ":units");
     if (is_void(type)) {
       opt_error, "unknown option: " + arg;
+    }
+    if (h_has(opt, name)) {
+      opt_error, "duplicate option: " + arg;
     }
     if (is_void(value)) {
       if (type == OPT_FLAG) {
@@ -234,13 +240,78 @@ func opt_parse(tab, &argv)
         if (strlen(value) <= 0) {
           value = nil;
         }
+      } else if (type == OPT_INTEGER_LIST) {
+        list = _opt_split_list(value);
+        numb = numberof(list);
+        vect = array(long, numb);
+        temp = 0L;
+        dummy = nil;
+        for (i = 1; i <= numb; ++i) {
+          if (sread(list(i), temp, dummy) != 1) {
+            opt_error, "expecting list of integers for option \"" + name + "\"";
+          }
+          vect(i) = temp;
+        }
+        value = vect;
+      } else if (type == OPT_REAL_LIST) {
+        list = _opt_split_list(value);
+        numb = numberof(list);
+        vect = array(double, numb);
+        temp = 0.0;
+        dummy = nil;
+        for (i = 1; i <= numb; ++i) {
+          if (sread(list(i), temp, dummy) != 1) {
+            opt_error, "expecting list of reals for option \"" + name + "\"";
+          }
+          vect(i) = temp;
+        }
+        value = vect;
+      } else if (type == OPT_STRING_LIST) {
+        value = _opt_split_list(value);
       } else {
         opt_error, "option \"" + name + "\" takes no value";
       }
     }
     h_set, opt, name, value;
   }
+
+  /* Set defaults. */
+  for (k = numberof(options); k >= 1; --k) {
+    name = options(k);
+    if (! h_has(opt, name)) {
+      h_set, opt, name, tab(name + ":defval");
+    }
+  }
   return opt;
+}
+
+func _opt_split_list(arg, sep)
+{
+  arg = strtrim(arg, 3);
+  len = strlen(arg);
+  if (len < 1) {
+    return arg;
+  }
+  if (is_void(sep)) {
+    sep = " *, *";
+  }
+  sel = strgrep(sep, arg, n=len);
+  i = where(sel < 0);
+  if (is_array(i)) {
+    i = i(1) - 2;
+    if (i < 2) {
+      return arg;
+    }
+    sel = sel(1:i);
+  }
+  n = numberof(sel)/2;
+  res = array(string, n + 1);
+  for (k = 0; k <= n; ++k) {
+    i = (k < 1 ? 1 : sel(2*k) + 1);
+    j = (k < n ? sel(2*k + 1) : len);
+    res(k+1) = (i <= j ? strtrim(strpart(arg, i:j)) : "");
+  }
+  return res;
 }
 
 func opt_usage(tab, msg)
