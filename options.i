@@ -150,7 +150,8 @@ func opt_parse(tab, &argv)
   local options;
   eq_nocopy, options, tab(":options");
 
-  /* Parse cmaand line arguments. */
+  /* Parse command line arguments. */
+  local value;
   opt = h_new();
   nil = string();
   argc = numberof(argv);
@@ -252,7 +253,7 @@ func opt_parse(tab, &argv)
           }
           vect(i) = temp;
         }
-        value = vect;
+        eq_nocopy, value, (numb == 1 ? vect(1) : vect);
       } else if (type == OPT_REAL_LIST) {
         list = _opt_split_list(value);
         numb = numberof(list);
@@ -265,9 +266,12 @@ func opt_parse(tab, &argv)
           }
           vect(i) = temp;
         }
-        value = vect;
+        eq_nocopy, value, (numb == 1 ? vect(1) : vect);
       } else if (type == OPT_STRING_LIST) {
         value = _opt_split_list(value);
+        if (numberof(value) == 1) {
+          value = value(1);
+        }
       } else {
         opt_error, "option \"" + name + "\" takes no value";
       }
