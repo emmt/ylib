@@ -31,11 +31,6 @@
  *-----------------------------------------------------------------------------
  */
 
-/* FIXME: check consistency of option list
- * FIXME: add an OPT_USAGE type
- * FIXME: deal with short/long option flags, and use more standard syntax
- */
-
 local opt_init;
 local OPT_FLAG, OPT_INTEGER, OPT_REAL, OPT_STRING, OPT_HELP, OPT_VERSION;
 func opt_init(usage, brief, ops)
@@ -164,6 +159,7 @@ func opt_parse(tab, &argv)
     if (strpart(arg, 2:2) == "-") {
       if (arg == "--") {
         argv = (++k < argc ? argv(k:) : []);
+        break;
       }
       off = 2;
     } else {
