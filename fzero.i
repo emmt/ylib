@@ -32,8 +32,6 @@
  * ----------------------------------------------------------------------------
  */
 
-_FZERO_VERSION = "$Date$";
-
 func fzero(f, a, b, atol=, rtol=, all=)
 /* DOCUMENT x = fzero(f, a, b);
          or [x,fx] = fzero(f, a, b, all=1);

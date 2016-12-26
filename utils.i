@@ -87,8 +87,6 @@
  * ----------------------------------------------------------------------------
  */
 
-_UTILS_VERSION = "$Date$";
-
 local old_eval;
 func eval(eval_code, eval_tmp, eval_debug)
 /* DOCUMENT eval, code [, tmp [, debug]];

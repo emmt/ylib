@@ -31,8 +31,6 @@
  * ----------------------------------------------------------------------------
  */
 
-_MDA_VERSION = "$Date$";
-
 func mda_save(data, file, &offset, byteorder=)
 /* DOCUMENT mda_save, data, file;
          or mda_save, data, file, offset;

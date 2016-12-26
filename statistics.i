@@ -35,8 +35,6 @@
  * ----------------------------------------------------------------------------
  */
 
-_STATISTICS_VERSION = "$Date$";
-
 func density(s, x, bw=, adjust=, verb=, kernel=, histo=, exact=,
              nsamples=, debug=)
 /* DOCUMENT density(s, x)
