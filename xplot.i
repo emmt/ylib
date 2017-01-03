@@ -613,7 +613,7 @@ func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
                legend=, type=, width=, fill=,
                color=, fillcolor=, edgecolor=, barcolor=)
 /* DOCUMENT pl_points, y, x;
- 	 or pl_points, y, x, dx=sigma_x, dy=sigma_y;
+         or pl_points, y, x, dx=sigma_x, dy=sigma_y;
 
      Plots points (X,Y) with symbols and/or error  bars.  X, and Y may have any
      dimensionality, but must  have the same number of elements.   If X is nil,
@@ -853,7 +853,7 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
      (x1,y1).
 
      Keywords LINECOLOR, TYPE  and WIDTH can be used to  specify the attributes
-     of the  line to drow  the box frame.  If  LINECOLOR is not  specified, the
+     of the  line to draw  the box frame.  If  LINECOLOR is not  specified, the
      value of keyword COLOR is used (which is "black" by default).  If WIDTH is
      ste to a strictly negative value, the frame is not drawn.
 
@@ -1543,10 +1543,13 @@ func pl_legend_add(lb, text, textcolor=,
                    fillcolor=, symbolwidth=, edgecolor=)
 /* DOCUMENT pl_legend_add, lb, text;
 
+     Add text TXT as a new line in the legend box LB. LB must have been created
+     by pl_legend_box and is updated on return.
+
      Keywords COLOR, TEXTCOLOR and SCOLOR can be used to specify the line,
      text and symbol colors.
 
-   SEE ALSO:
+   SEE ALSO plt, pl_legend_box.
  */
 {
   lx = lb(1);
@@ -1602,6 +1605,15 @@ P_DEFAULT_JUSTIFY = p_justify("NN");
 
 func pl_text(text, x, y, tosys=, legend=, hide=, opaque=, orient=,
              color=, font=, height=, justify=)
+/* DOCUMENT pl_text, txt, x, y;
+
+     Plots text TXT (a string) at position (X,Y).  This subroutine is identical
+     to `plt` except  that the value of  the HEIGHT keyword is  given in points
+     (not  in NDC)  units and  that the  COLOR, FONT  and JUSTIFY  keywords use
+     `p_color`, `p_font` and `p_justify` functions to parse their value.
+
+   SEE ALSO plt, p_color, p_font, p_justify.
+*/
 {
   plt, text, x, y, tosys = tosys, legend = legend, hide = hide,
     opaque = opaque, orient = orient,
