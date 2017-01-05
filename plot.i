@@ -35,7 +35,6 @@
  *	pl3dj: plot disjoint lines in 3D space;
  *	pl3s: plot 3D surface;
  *	pl3t: plot text in 3D space;
- *	pl_cbar: add a color bar to a plot;
  *	pl_get_axis_flags: parse axis settings;
  *	pl_get_color: parse color value/name;
  *	pl_get_font: parse font value/name;
@@ -583,24 +582,8 @@ func plfg(y, x, base=, vert=, color=, edges=, ecolor=, ewidth=, etype=,
 
 /*---------------------------------------------------------------------------*/
 
-func plhline(y, x0, x1, color=, width=, type=) {
-  if (! is_void(color)) color = pl_get_color(color);
-  lim = limits(); one = array(1.0, dimsof(y));
-  pldj, one*(is_void(x0) ? lim(1) : x0), y, one*(is_void(x1) ? lim(2) : x1), y,
-    color=color, width=width, type=type; }
-func plvline(x, y0, y1, color=, width=, type=) {
-  if (! is_void(color)) color = pl_get_color(color);
-  lim = limits(); one = array(1.0, dimsof(x));
-  pldj, x, one*(is_void(y0) ? lim(3) : y0), x, one*(is_void(y1) ? lim(4) : y1),
-    color=color, width=width, type=type; }
-/* DOCUMENT plhline, y;
-       -or- plhline, y, x0, x1;
-       -or- plvline, x;
-       -or- plhline, x, y0, y1;
-     Plots an horizontal/vertical line.
-
-   KEYWORDS color, type, width.
-   SEE ALSO pldj. */
+plvline = pl_vline;
+plhline = pl_hline;
 
 /*---------------------------------------------------------------------------*/
 /* PARSING OF PLOTTING KEYWORDS */
