@@ -5,7 +5,7 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2014-2015, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2014-2017, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This file is free software; as a special exception the author gives
  * unlimited permission to copy and/or distribute it, with or without
@@ -19,14 +19,19 @@
  */
 
 /*
- * NAMING CONVENTIONS:
+ * Naming Conventions
+ * ==================
+ *
+ * Defined in "xplot0.i":
  *
  *   p_name = function to manage graphical elements
  *   P_NAME = global variable related to graphical system
  *
+ *
+ * Defined in "xplot.i":
+ *
  *   pl_name = function to draw/plot something
  *   PL_NAME = global variable for plotting
- *
  */
 
 /* Miscellaneous constants. */
@@ -44,7 +49,7 @@ func p_pow10_labels(labs, ndig=, mult=)
      The returned strings can be drawn on a graphical window with `plt`.
 
    SEE ALSO plt.
- */
+*/
 {
   if (is_void(ndig)) ndig = 4;
   if (is_void(mult)) mult = P_ISO_8859_1_MULTIPLY;
@@ -69,7 +74,7 @@ func p_query_dpi(win)
          or dpi = p_query_dpi(win);
 
      Yield the dots per pixel (DPI) of window WIN, or of the current window if
-     win is unspecified.  Zero is returned if the window does not exist.
+     WIN is unspecified.  Zero is returned if the window does not exist.
 
    SEE ALSO window_geometry.
 */
@@ -2297,7 +2302,6 @@ func p_real_vector(&a, n, name)
   error, ((is_void(name) ? "argument" : name)
           + " must be  a 1-D real/integer array");
 }
-errs2caller, p_real_vector;
 
 local p_has_member, p_get_member;
 /* DOCUMENT tst = p_has_member(grp, key);
@@ -2322,15 +2326,6 @@ func p_get_member(grp, key)
   if (is_obj(grp, noop(key), 1n) != -1n) {
     return grp(noop(key));
   }
-}
-
-func p_warn(msg)
-/* DOCUMENT p_warn, msg;
-     Print a warning message.
-   SEE ALSO: write.
-*/
-{
-  write, format="WARNING - %s\n", msg;
 }
 
 func p_span(a, b, n)
@@ -2481,7 +2476,7 @@ func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
 /* DOCUMENT limits
          or limits, xmin, xmax, ymin, ymax,
                     square=0/1, nice=0/1, restrict=0/1
-         or old_limits= limits()
+         or old_limits = limits()
          or limits, old_limits
 
      In the first form, restores all four plot limits to extreme values.
@@ -2639,9 +2634,9 @@ func _p_init
            "magenta", "yellow", "grayd", "grayc", "grayb", "graya",
            "extra", "xor"];
   _P_GIST_COLOR_TABLE = save();
-  ncolors = numberof(names);
-  for (k = 1; k <= ncolors; ++k) {
-    name = names(k);
+  n = numberof(names);
+  for (i = 1; i <= n; ++i) {
+    name = names(i);
     save, _P_GIST_COLOR_TABLE, noop(name),
       symbol_def("P_" + strcase(1n, name));
   }
@@ -2652,9 +2647,9 @@ func _p_init
   _P_X11_COLOR_TABLE = save();
   _P_X11_COLOR_NAMES = strcase(0n, _P_X11_COLOR_NAMES);
   //_P_X11_COLOR_VALUES = char(_P_X11_COLOR_VALUES);
-  ncolors = numberof(_P_X11_COLOR_NAMES);
-  for (k = 1; k <= ncolors; ++k) {
-    save, _P_X11_COLOR_TABLE, _P_X11_COLOR_NAMES(k), _P_X11_COLOR_VALUES(k);
+  n = numberof(_P_X11_COLOR_NAMES);
+  for (i = 1; i <= n; ++i) {
+    save, _P_X11_COLOR_TABLE, _P_X11_COLOR_NAMES(i), _P_X11_COLOR_VALUES(i);
   }
   if (! P_DEBUG) {
     _P_X11_COLOR_NAMES = [];
@@ -2665,9 +2660,9 @@ func _p_init
   extern _P_FONT_TABLE;
   names = ["courier", "times", "helvetica", "symbol", "schoolbook"];
   _P_FONT_TABLE = save();
-  ncolors = numberof(names);
-  for (k = 1; k <= ncolors; ++k) {
-    name = names(k);
+  n = numberof(names);
+  for (i = 1; i <= n; ++i) {
+    name = names(i);
     value = symbol_def("P_" + strcase(1n, name));
     save, _P_FONT_TABLE,
       noop(name),   value,
@@ -2687,17 +2682,18 @@ func _p_init
   vcount = vert(*);
   vkeys = vert(*,);
   _P_JUSTIFY_TABLE = save();
-  for (j = 1; j <= hcount; ++j) {
-    h = hkeys(j);
-    for (k = 1; k <= vcount; ++k) {
-      v = vkeys(k);
+  for (i = 1; i <= hcount; ++i) {
+    h = hkeys(i);
+    for (i = 1; i <= vcount; ++i) {
+      v = vkeys(i);
       save, _P_JUSTIFY_TABLE, h + v, (horiz(noop(h)) | vert(noop(v)));
     }
   }
 
   if (! P_DEBUG) {
     errs2caller, p_color, p_icolor, p_parse_color, p_font, p_type,
-      p_symbol, p_marker, p_default, p_string, p_integer, p_real;
+      p_symbol, p_marker, p_default, p_string, p_boolean, p_integer,
+      p_real, p_real_vector;
   }
 }
 _p_init;
