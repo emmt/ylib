@@ -18,13 +18,42 @@
  *-----------------------------------------------------------------------------
  */
 
+/* Load prerequisites. */
 require, "xplot0.i";
 
-func _pl_pli(z, expr, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=)
-/* DOCUMENT pli, z
-          or pli, z, x1, y1
-          or pli, z, x0, y0, x1, y1
-      plots the image Z as a cell array -- an array of equal rectangular cells
+
+/* When substituting original plotting commands, the trick is to take into
+   account interleaved strings for each significant arguments (see YpQuine).
+
+   Command                   Number of named arguments
+   ---------------------------------------------------
+   plc, z, y, x, ireg;       4
+   pldj, x0, y0, x1, y1;     4
+   plf, z, y, x, ireg;       4
+   plg, x, y;                2
+   pli, z;                   1 (not x0, y0, x1, y1)
+   plm, y, x, ireg;          3
+   plv, vy, vx, y, x, ireg;  4 (not ireg?)
+   ---------------------------------------------------
+*/
+
+/* Save builtin version of the plotting commands. */
+if (is_func(plc)  == 2) _pl_builtin_plc  = plc;
+if (is_func(pldj) == 2) _pl_builtin_pldj = pldj;
+if (is_func(plf)  == 2) _pl_builtin_plf  = plf;
+if (is_func(plg)  == 2) _pl_builtin_plg  = plg;
+if (is_func(pli)  == 2) _pl_builtin_pli  = pli;
+if (is_func(plm)  == 2) _pl_builtin_plm  = plm;
+if (is_func(plt)  == 2) _pl_builtin_plt  = plt;
+if (is_func(plv)  == 2) _pl_builtin_plv  = plv;
+
+func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
+             cmap=)
+/* DOCUMENT pli, z;
+          or pli, z, x1, y1;
+          or pli, z, x0, y0, x1, y1;
+
+      Plots the image Z as a cell array -- an array of equal rectangular cells
       colored according to the 2-D array Z.  The first dimension of Z is
       plotted along x, the second dimension is along y.  If Z is of type char,
       it is used "as is", otherwise it is linearly scaled to fill the current
@@ -41,13 +70,19 @@ func _pl_pli(z, expr, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=)
       If only the Z array is given, each cell will be a 1x1 unit square, with
       the lower left corner of the image at (0.5,0.5).
 
+      Compared to the original Yorick command, this version correctly
+      set the default coordinates (X0,Y0) and adds the CMAP keyword.
+
+      Keyword CMAP can be used to specify a colormap (see cmap, or p_colormap).
+
       The following keywords are legal (each has a separate help entry):
     KEYWORDS: legend, hide, top, cmin, cmax
-    SEE ALSO: plg, plm, plc, plv, plf, pli, plt, pldj, plfp,
+    SEE ALSO: plg, plm, plc, plv, plf, pli, plt, pldj, plfp, cmap, p_colormap,
               limits, logxy, range, fma, hcp, palette, bytscl, histeq_scale
 */
 {
-  mode = is_void(x0) + is_void(y0)*2 + is_void(x1)*4 + is_void(y1)*8;
+  mode = (is_void(x0) | (is_void(y0) << 1) | (is_void(x1) << 2) |
+          (is_void(y1) << 3));
   if (mode == 3) {
     x1 = x0;
     y1 = y0;
@@ -72,30 +107,74 @@ func _pl_pli(z, expr, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=)
   } else if (mode != 0) {
     error, "pli needs either 0, 1, or 2 corner (x,y) points";
   }
-  _pl_builtin_pli, z, expr, x0, y0, x1, y1, hide=hide, top=top, legend=legend,
-    cmin=cmin, cmax=cmax;
+  if (! is_void(cmap)) p_colormap, cmap;
+  _pl_builtin_pli, z, _str1, x0, y0, x1, y1, hide=hide, top=top,
+    legend=legend, cmin=cmin, cmax=cmax;
 }
 errs2caller, _pl_pli;
 
-if (is_func(pli) == 2) {
-  _pl_builtin_pli = pli;
+func _pl_plg(y, _str1, x, _str2,
+             legend=, hide=, color=, type=, width=, marks=, mcolor=, marker=,
+             msize=, mspace=, mphase=, rays=, arrowl=, arroww=, rspace=,
+             rphase=, closed=, smooth=, n=)
+ /* DOCUMENT plg, y, x;
+          or plg, y;
+
+      Plots a graph of Y versus X.  Y and X must be 1-D arrays of equal length;
+      if X is omitted, it defaults to [1, 2, ..., numberof(Y)].  A keyword
+      n=[n1,n2,n3,...nN] can be used to add N curves.  In this case, sum(n)
+      must be numberof(y).
+
+      Compared to the original Yorick command, this version automatically
+      converts the values of keywords COLOR, MARKER and TYPE with p_color,
+      p_marker and p_type respectively.
+
+      The following keywords are legal (each has a separate help entry):
+
+    KEYWORDS: legend, hide
+              type, width, color, closed, smooth
+              marks, marker, mspace, mphase
+              rays, arrowl, arroww, rspace, rphase
+    SEE ALSO: plg, plm, plc, plv, plf, pli, plt, pldj, plfp, plmk
+              limits, logxy, range, fma, hcp
+  */
+{
+  if (! is_void(color)) p_color, color;
+  if (! is_void(marker) && structof(marker) != char) p_marker, marker;
+  if (! is_void(type) && structof(type) != string) p_type, type;
+  if (is_void(_str2)) {
+    _pl_builtin_plg, y, _str1,
+      legend=legend, hide=hide, color=color, type=type, width=width,
+      marks=marks, mcolor=mcolor, marker=marker, msize=msize, mspace=mspace,
+      mphase=mphase, rays=rays, arrowl=arrowl, arroww=arroww, rspace=rspace,
+      rphase=rphase, closed=closed, smooth=smooth, n=n;
+  } else {
+    _pl_builtin_plg, y, _str1, x, _str2,
+      legend=legend, hide=hide, color=color, type=type, width=width,
+      marks=marks, mcolor=mcolor, marker=marker, msize=msize, mspace=mspace,
+      mphase=mphase, rays=rays, arrowl=arrowl, arroww=arroww, rspace=rspace,
+      rphase=rphase, closed=closed, smooth=smooth, n=n;
+  }
 }
-if (is_func(_pl_builtin_pli) == 2) {
-  pli = _pl_pli;
-}
+errs2caller, _pl_plg;
+
+if (is_func(_pl_builtin_pli) == 2) pli = _pl_pli;
+if (is_func(_pl_builtin_plg) == 2) plg = _pl_plg;
 
 func pl_graph(y, x, legend=, hide=, color=, type=, width=,
               marks=, mcolor=, marker=, msize=, mspace=, mphase=,
               rays=, arrowl=, arroww=, rspace=, rphase=,
               closed=, smooth=, n=)
 {
-  plg, y, x, legend=legend, hide=hide, color=p_color(color, P_FG),
+  if (! is_void(color)) p_color, color;
+  if (! is_void(marker) && structof(marker) != char) p_marker, marker;
+  if (! is_void(type) && structof(type) != string) p_type, type;
+  plg, y, x, legend=legend, hide=hide, color=color,
     type=type, width=width, marks=marks, mcolor=mcolor, marker=marker,
     msize=msize, mspace=mspace, mphase=mphase, rays=rays, arrowl=arrowl,
     arroww=arroww, rspace=rspace, rphase=rphase, closed=closed,
     smooth=smooth, n=n;
 }
-
 
 func pl_bars(y, x, color=, fill=, edges=, ecolor=, ewidth=,
              thickness=, base=, rotate=)
@@ -251,7 +330,7 @@ func pl_hist(y, x, just=, legend=, hide=, type=, width=, color=,
     marks=marks, marker=marker, mspace=mspace, mphase=mphase;
 }
 
-func pl_img(img, clear=, cmin=, cmax=, lut=,
+func pl_img(img, clear=, cmin=, cmax=, cmap=,
             pixelbias=, pixelsize=, pixelref=, pixelunits=,
             cbar=, vert=, vport=, adjust=,
             nlabs=, labels=, levels=,
@@ -326,10 +405,7 @@ func pl_img(img, clear=, cmin=, cmax=, lut=,
   if (clear && clear > 0) {
     fma;
   }
-  if (! is_void(lut)) {
-    cmap, lut;
-  }
-  pli, img, x0, y0, x1, y1, cmin=cmin, cmax=cmax;
+  pli, img, x0, y0, x1, y1, cmin=cmin, cmax=cmax, cmap=cmap;
   if (! is_void(cbar)) {
     pl_cbar, cmin=cmin, cmax=cmax, position=cbar, vport=vport, adjust=adjust,
       nlabs=nlabs, labels=labels, levels=levels,
@@ -354,7 +430,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
              font=, height=, opaque=, orient=, textstyle=,
              ticklen=, laboff=, thickness=, format=)
 /* DOCUMENT pl_cbar, z;
-       -or- pl_cbar, cmin=CMIN, cmax=CMAX;
+         or pl_cbar, cmin=CMIN, cmax=CMAX;
 
      Draw a color bar below the  current coordinate system.  The colors and the
      default associated label values are  from min(Z) to max(Z); alternatively,
@@ -362,7 +438,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
 
      Keyword POSITION can be set with the position of the color bar relative to
      the  current coordinate  system.   For now  only  "bottom" (P_BOTTOM)  and
-     "right' (P_RIGHT) are possible.  By default,  the color bar appears to the
+     "right" (P_RIGHT) are possible.  By default,  the color bar appears to the
      right of the current coordinate system.
 
      By default,  the colorbar  is drawn  next to  the current  viewport; other
@@ -1615,7 +1691,7 @@ func pl_text(text, x, y, tosys=, legend=, hide=, opaque=, orient=,
    SEE ALSO plt, p_color, p_font, p_justify.
 */
 {
-  plt, text, x, y, tosys = tosys, legend = legend, hide = hide,
+  _pl_builtin_plt, text, x, y, tosys = tosys, legend = legend, hide = hide,
     opaque = opaque, orient = orient,
     color = p_color(color, P_DEFAULT_COLOR),
     font = p_font(font, P_DEFAULT_FONT),
