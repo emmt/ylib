@@ -262,26 +262,27 @@ func pl_bars(y, x, color=, fill=, edges=, ecolor=, ewidth=,
   _pl_fbox;
 }
 
-func pl_hist(y, x, just=, legend=, hide=, type=, width=, color=,
-             marks=, marker=, mspace=, mphase=)
-/* DOCUMENT pl_hist, y, x;
-         or pl_hist, y;
+local plh;
+func pl_steps(y, x, just=, justify=, legend=, hide=, type=, width=, color=,
+              marks=, marker=, mspace=, mphase=)
+/* DOCUMENT pl_steps, y, x;
+         or pl_steps, y;
 
      Plots a graph of Y versus X in an "histogram" style (i.e., with steps).  Y
      and X must be 1-D arrays of equal length; if X is omitted, it defaults to
      [1, 2, ..., numberof(Y)].
 
-     The optional keyword JUST set justification of the histogram: JUST=1, 2 or
-     3 makes the graph be left justified, centered or right justified
-     respectively along X axis.  Default is centered.
+     The optional keyword JUSTIFY set the justification of the histogram along
+     the X axis.  See p_justify for valid values, only the horizontal
+     justification is taken into account.  Default is centered.
 
-     Other plotting keywords (legend, hide, type, width, color, marks,
-     marker, mspace, and mphase) are passed to the plg routine.
+     Other plotting keywords (legend, hide, type, width, color, marks, marker,
+     mspace, and mphase) are passed to the plg routine.
 
-   SEE ALSO: pl_bars, p_color, p_type, plg.
+   SEE ALSO: pl_bars, p_color, p_type, p_justify, plg.
 */
 {
-  /* parse/check arguments */
+  /* Parse/check arguments. */
   if (! is_vector(y) || (n = numberof(y)) < 2) {
     error, "Y must be a vector of at least 2 elements";
   }
@@ -290,45 +291,56 @@ func pl_hist(y, x, just=, legend=, hide=, type=, width=, color=,
   } else if (! is_vector(x) || numberof(x) != n) {
     error, "X must be a vector of same length as Y";
   }
-  if (is_void(just)) {
-    just = 2;
+  if (! is_void(just)) {
+    if (is_void(justify)) {
+      eq_nocopy, justify, just;
+    } else {
+      error, "keyword JUST is provided for backward compatibility and cannot be specified with keyword JUSTIFY";
+    }
   }
+  justify = p_justify(justify, P_CENTER)&3;
+  if (! is_void(color)) p_color, color;
+  if (! is_void(type)) p_type, type;
+  if (! is_void(marker) && structof(marker) != char) p_marker, marker;
 
   /* build new X vector */
-  n2 = 2 * n;
+  n2 = 2*n;
   x2 = array(double, n2);
-  if (just == 1) {
-    /* left justify */
+  if (justify == P_LEFT) {
+    /* Left justified. */
     x2(1::2) = x;
     x2(2:-1:2) = x(2:);
-    x2(0) = 2 * x(0) - x(-1);
-  } else if (just == 2) {
-    /* center */
-    d = 0.5 * x(dif);
+    x2(0) = 2*x(0) - x(-1);
+  } else if (justify == P_NORMAL || justify == P_CENTER) {
+    /* Centered. */
+    d = 0.5*x(dif);
     dx = d(1);
     grow, dx, d, d(0);
     d = [];
     x2(1::2) = x - dx(:-1);
     x2(2::2) = x + dx(2:);
     dx = [];
-  } else if (just == 3) {
-    /* right justify */
-    x2(1) = 2 * x(1) - x(2);
+  } else if (justify == P_RIGHT) {
+    /* Right justified. */
+    x2(1) = 2*x(1) - x(2);
     x2(2::2) = x;
     x2(3::2) = x(:-1);
   } else {
-    error, "bad value for JUST";
+    error, "bad value for keyword JUSTIFY";
   }
 
-  /* build new Y vector */
+  /* Build new Y vector. */
   y2 = array(double, n2);
   y2(1::2) = y2(2::2) = y;
 
-  /* plot the graph */
-  plg, y2, x2, legend=legend, hide=hide,
-    type=p_type(type, P_SOLID), width=width, color=p_color(color, P_FG),
+  /* Plot the graph. */
+  nil = string();
+  _pl_builtin_plg, y2, nil, x2, nil,
+    legend=legend, hide=hide, type=type, width=width, color=color,
     marks=marks, marker=marker, mspace=mspace, mphase=mphase;
 }
+
+plh = pl_steps;
 
 func pl_img(img, clear=, cmin=, cmax=, cmap=,
             pixelbias=, pixelsize=, pixelref=, pixelunits=,

@@ -43,7 +43,6 @@
  *	pl_img: plot an image with many options;
  *	pl_map: apply a function to all the elements of an array;
  *	pla: plot several curves at the same time;
- *	plh: plot in an "histogram" style;
  *	plhline: plot horizontal line across viewport;
  *	plp: plot points/error bars;
  *	pls: plot surface as a filled mesh with contours;
@@ -521,72 +520,6 @@ func pls(z, y, x, cbar=, viewport=, title=, xtitle=, ytitle=,
 }
 
 /*---------------------------------------------------------------------------*/
-
-func plh(y, x, just=, legend=, hide=, type=, width=, color=, marks=, marker=,
-         mspace=, mphase=)
-/* DOCUMENT plh, y, x
-         or plh, y
-        plots a graph of Y versus X in an "histogram" style (i.e., with
-        steps).  Y and X must be 1-D arrays of equal length; if X is
-        omitted, it defaults to [1, 2, ..., numberof(Y)].
-
-        The optional keyword JUST set justification of the histogram:
-        JUST=1, 2 or 3 makes the graph be left justified, centered or
-        right justified respectively along X axis.  Default is centered.
-
-        Other plotting keywords (legend, hide, type, width, color, marks,
-        marker, mspace, and mphase) are passed to the plg routine.
-
-   SEE ALSO: plg, plm, plc, plv, plf, pli, plt, pldj, plfp
-             limits, logxy, range, fma, hcp
-*/
-{
-  /* parse/check arguments */
-  if (!is_array(y) || dimsof(y)(1)!=1 || (n = numberof(y)) < 2)
-    error, "Y must be a vector of at least 2 elements";
-  if (is_void(x))
-    x = double(indgen(numberof(y)));
-  else if (!is_array(x) || dimsof(x)(1)!=1 || numberof(x) != n)
-    error, "X must be a vector of same length as Y";
-  if (is_void(just))
-    just = 2;
-  if (! is_void(color)) color = pl_get_color(color);
-
-  /* build new X vector */
-  n2 = 2 * n;
-  x2 = array(double, n2);
-  if (just == 1) {
-    /* left justify */
-    x2(1::2) = x;
-    x2(2:-1:2) = x(2:);
-    x2(0) = 2 * x(0) - x(-1);
-  } else if (just == 2) {
-    /* center */
-    d = 0.5 * x(dif);
-    dx = d(1);
-    grow, dx, d, d(0);
-    d = [];
-    x2(1::2) = x - dx(:-1);
-    x2(2::2) = x + dx(2:);
-    dx = [];
-  } else if (just == 3) {
-    /* right justify */
-    x2(1) = 2 * x(1) - x(2);
-    x2(2::2) = x;
-    x2(3::2) = x(:-1);
-  } else {
-    error, "bad value for JUST";
-  }
-
-  /* build new Y vector */
-  y2 = array(double, n2);
-  y2(1::2) = y2(2::2) = y;
-
-  /* plot the graph */
-  plg, y2, x2,
-    legend=legend, hide=hide, type=type, width=width, color=color,
-    marks=marks, marker=marker, mspace=mspace, mphase=mphase;
-}
 
 func plfg(y, x, base=, vert=, color=, edges=, ecolor=, ewidth=, etype=,
           legend=, hide=)
