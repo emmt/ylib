@@ -697,6 +697,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
   plsys, sys;
 }
 
+local plp;
 func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
                legend=, type=, width=, fill=,
                color=, fillcolor=, edgecolor=, barcolor=)
@@ -807,51 +808,51 @@ func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
   if (! symbol) {
     return;
   }
-  if (symbol == 1) {
+  if (symbol == P_POINT) {
     /* point */
     fillable = 0n;
     xm = [0, 0];
     ym = [0, 0];
     fill = 0;
-  } else if (symbol == 2) {
+  } else if (symbol == P_PLUS) {
     /* + cross */
     fillable = 0n;
     xm = [-u1, u1, u0, u0, u0, u0];
     ym = [ u0, u0, u0, u1,-u1, u0];
     fill = 0;
-  } else if (symbol == 3) {
+  } else if (symbol == P_ASTERISK) {
     /* asterisk (x and +) */
     fillable = 0n;
     u2 = u1*sqrt(0.5);
     xm = [-u1, u1, u0, u0, u0, u0, u2,-u2, u0, u2,-u2, u0];
     ym = [ u0, u0, u0, u1,-u1, u0, u2,-u2, u0,-u2, u2, u0];
     fill = 0;
-  } else if (symbol == 4) {
+  } else if (symbol == P_CIRCLE) {
     /* hexagon */
     fillable = 1n;
     u2 = u1*0.5;
     u3 = u1*sqrt(0.75);
     xm = [ u1, u2,-u2,-u1,-u2, u2];
     ym = [ u0, u3, u3, u0,-u3,-u3];
-  } else if (symbol == 5) {
+  } else if (symbol == P_CROSS) {
     /* x cross (rotated 45 degrees) */
     fillable = 0n;
     u2 = u1*sqrt(0.5);
     xm = [u2,-u2, u0, u2,-u2, u0];
     ym = [u2,-u2, u0,-u2, u2, u0];
     fill = 0;
-  } else if (symbol == 6) {
+  } else if (symbol == P_SQUARE) {
     /* square */
     fillable = 1n;
     u2 = u1*sqrt(0.5);
     xm = [-u2, u2, u2,-u2];
     ym = [ u2, u2,-u2,-u2];
-  } else if (symbol == 7) {
+  } else if (symbol == P_DIAMOND) {
     /* diamond */
     fillable = 1n;
     xm = [u1, u0,-u1, u0];
     ym = [u0, u1, u0,-u1];
-  } else if (symbol == 8) {
+  } else if (symbol == P_STAR) {
     /* 5 branch star
      *   C18 = cos(18*ONE_DEGREE)
      *   S18 = sin(18*ONE_DEGREE)
@@ -869,26 +870,22 @@ func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
     u9 = 0.381966*u1; // S18/S54
     xm = [ u0, u2, u4, u5, u7, u0,-u7,-u5,-u4,-u2];
     ym = [ u1, u3, u3,-u6,-u8,-u9,-u8,-u6, u3, u3];
-  } else if (9 <= symbol && symbol <= 12) {
+  } else if (P_TRIANGLE_UP <= symbol && symbol <= P_TRIANGLE_RIGHT) {
     /* Draw triangles (the centre of gravity of the triangles are at the point
        locations). */
     fillable = 1n;
     u2 = u1*0.5;
     u3 = u1*0.866025; // sqrt(0.75)
-    if (symbol == 9) {
-      /* top */
+    if (symbol == P_TRIANGLE_UP) {
       xm = [u0, u3,-u3];
       ym = [u1,-u2,-u2];
-    } else if (symbol == 10) {
-      /* down */
+    } else if (symbol == P_TRIANGLE_DOWN) {
       xm = [ u0, u3,-u3];
       ym = [-u1, u2, u2];
-    } else if (symbol == 11) {
-      /* left */
+    } else if (symbol == P_TRIANGLE_LEFT) {
       xm = [-u1, u2, u2];
       ym = [ u0, u3,-u3];
-    } else {
-      /* right */
+    } else  /* P_TRIANGLE_RIGHT */ {
       xm = [ u1,-u2,-u2];
       ym = [ u0, u3,-u3];
     }
@@ -903,6 +900,8 @@ func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
   }
   _pl_points, y, x;
 }
+
+plp = pl_points;
 
 func _pl_points(y, x)
 /* DOCUMENT _pl_points, x, y;

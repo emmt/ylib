@@ -40,11 +40,9 @@
  *	pl_get_color: parse color value/name;
  *	pl_get_font: parse font value/name;
  *	pl_get_symbol: parse symbol value/name;
- *	pl_img: plot an image with many options;
  *	pl_map: apply a function to all the elements of an array;
  *	pla: plot several curves at the same time;
  *	plhline: plot horizontal line across viewport;
- *	plp: plot points/error bars;
  *	pls: plot surface as a filled mesh with contours;
  *	plvline: plot vertical line across viewport;
  *	ps2png, ps2jpeg: convert PostScript file into bitmap image;
@@ -605,221 +603,6 @@ func plvline(x, y0, y1, color=, width=, type=) {
    SEE ALSO pldj. */
 
 /*---------------------------------------------------------------------------*/
-/* PLP - PLOTTING POINTS */
-
-func plp(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
-         legend=, type=, width=, color=, fill=)
-/* DOCUMENT plp, y, x;
- *     -or- plp, y, x, dx=sigma_x, dy=sigma_y;
- *
- *   Plots points (X,Y) with symbols and/or  error bars.  X, and Y may have
- *   any dimensionality, but  must have the same number  of elements.  If X
- *   is nil, it defaults to indgen(numberof(Y)).
- *
- *   Keyword SYMBOL  may be used  to choose the  shape of each  symbol (see
- *   pl_get_symbol).
- *
- *   Keyword SIZE  may be used to change  the size of the  symbols and tick
- *   marks (SIZE acts as a multiplier, default value is 1.0).
- *
- *   If value of  keyword FILL is true (non-nil  and non-zero), symbols are
- *   filled  with COLOR.  The  default is  to draw  open symbols.   You can
- *   specify different colors for the  outline and the inside of the symbol
- *   by using keyword COLOR = [EDGE_COLOR, FILL_COLOR].
- *
- *   Keywords XLO, XHI, YLO, and/or YHI  can be used to indicate the bounds
- *   of the optional  error bars (default is to draw  no error bars).  Only
- *   specified bounds get plotted as  error bars. If value of keyword TICKS
- *   is true  (non-nil and non-zero), ticks  get drawn at  the endpoints of
- *   the error bars.   Alternatively, keywords DX and/or DY  can be used to
- *   plot  error bars  as segments  from XLO=X-DX  to XHI=X+DX  and/or from
- *   YLO=Y-DY to  YHI=Y+DY.  If keyword  DX (respectively DY) is  used, any
- *   value of XLO and XHI (respectively YLO and YHI) is ignored.
- *
- *   The  other keywords are  the same  as for  pldj: LEGEND,  TYPE, WIDTH,
- *   COLOR (TYPE is only used to draw error bars).
- *
- *
- * EXAMPLES:
- *   plp, y, x, symbol='*', color=["orange","DarkSlateBlue"], fill=1,
- *        size=3, width=5;
- *
- *
- * KEYWORDS:
- *   legend, type, width, color.
- *
- *
- * SEE ALSO:
- *   pl_get_symbol, pl_get_color,
- *   pldj, plg, plm, plc, plv, plf, pli, plt, pldj, plfp, plmk,
- *   limits, logxy, range, fma, hcp.
- */
-{
-  /* NDC units for symbols/ticks (one pixel = 0.00125268 NDC at 75 DPI) */
-  u0 = 0.0;       // zero
-  u1 = 0.0100214; // radius of about 8 pixels at 75 DPI
-  if (! is_void(size)) u1 *= size;
-
-  /* parse color(s) */
-  if (is_array(color) && dimsof(color)(0) == 2) {
-    edge_color = pl_get_color(color(..,1));
-    if (fill) {
-      fill_color = pl_get_color(color(..,2));
-    }
-  } else {
-    edge_color = pl_get_color(color);
-    if (fill) {
-      fill_color = edge_color;
-    }
-  }
-
-  /* default X */
-  if (is_void(x)) (x = array(double, dimsof(y)))(*) = indgen(numberof(y));
-
-  /* error bars */
-  if (is_void(dx)) {
-    err = (! is_void(xlo)) + 2*(! is_void(xhi));
-  } else {
-    xlo = x - dx;
-    xhi = x + dx;
-    err = 3;
-  }
-  if (err) {
-    pldj, (is_void(xlo) ? x : xlo), y, (is_void(xhi) ? x : xhi), y,
-      type=type, width=width, color=color;
-    if (ticks) {
-      xm = [ u0, u0];
-      ym = [-u1, u1];
-      if      (err == 1) __plp,   y,       xlo;
-      else if (err == 2) __plp,   y,       xhi;
-      else               __plp, [y, y], [xlo, xhi];
-    }
-    xhi = xlo = [];
-  }
-  if (is_void(dy)) {
-    err = (! is_void(ylo)) + 2*(! is_void(yhi));
-  } else {
-    ylo = y - dy;
-    yhi = y + dy;
-    err = 3;
-  }
-  if (err) {
-    pldj, x, (is_void(ylo) ? y : ylo), x, (is_void(yhi) ? y : yhi),
-      type=type, width=width, color=color;
-    if (ticks) {
-      xm = [-u1, u1];
-      ym = [ u0, u0];
-      if      (err == 1) __plp,    ylo,       x;
-      else if (err == 2) __plp,    yhi,       x;
-      else               __plp, [ylo, yhi], [x, x];
-    }
-    yhi = ylo = [];
-  }
-
-  /* symbols */
-  symbol = pl_get_symbol(symbol);
-  if (! symbol) {
-    return;
-  }
-  if (symbol == 1) {
-    /* square */
-    fillable = 1n;
-    u2 = u1*sqrt(0.5);
-    xm = [-u2, u2, u2,-u2];
-    ym = [ u2, u2,-u2,-u2];
-  } else if (symbol == 2) {
-    /* + cross */
-    fillable = 0n;
-    xm = [-u1, u1, u0, u0, u0, u0];
-    ym = [ u0, u0, u0, u1,-u1, u0];
-    fill = 0;
-  } else if (symbol == 3) {
-    /* triangle */
-    fillable = 1n;
-    u2 = u1*0.5;
-    u3 = u1*sqrt(0.75);
-    xm = [u0, u3,-u3];
-    ym = [u1,-u2,-u2];
-  } else if (symbol == 4) {
-    /* hexagon */
-    fillable = 1n;
-    u2 = u1*0.5;
-    u3 = u1*sqrt(0.75);
-    xm = [ u1, u2,-u2,-u1,-u2, u2];
-    ym = [ u0, u3, u3, u0,-u3,-u3];
-  } else if (symbol == 5) {
-    /* diamond */
-    fillable = 1n;
-    xm = [u1, u0,-u1, u0];
-    ym = [u0, u1, u0,-u1];
-  } else if (symbol == 6) {
-    /* x cross (rotated 45 degrees) */
-    fillable = 0n;
-    u2 = u1*sqrt(0.5);
-    xm = [u2,-u2, u0, u2,-u2, u0];
-    ym = [u2,-u2, u0,-u2, u2, u0];
-    fill = 0;
-  } else if (symbol == 7) {
-    /* triangle (upside down) */
-    fillable = 1n;
-    u2 = u1*0.5;
-    u3 = u1*sqrt(0.75);
-    xm = [ u0, u3,-u3];
-    ym = [-u1, u2, u2];
-  } else if (symbol == 8) {
-    /* 5 branch star
-     *   C18 = cos(18*ONE_DEGREE)
-     *   S18 = sin(18*ONE_DEGREE)
-     *   C54 = cos(54*ONE_DEGREE)
-     *   S54 = sin(54*ONE_DEGREE)
-     */
-    fillable = 1n;
-    u2 = 0.224514*u1; // C54*S18/S54
-    u3 = 0.309017*u1; // S18
-    u4 = 0.951057*u1; // C18
-    u5 = 0.363271*u1; // C18*S18/S54
-    u6 = 0.118034*u1; // S18*S18/S54
-    u7 = 0.587785*u1; // C54
-    u8 = 0.809017*u1; // S54
-    u9 = 0.381966*u1; // S18/S54
-    xm = [ u0, u2, u4, u5, u7, u0,-u7,-u5,-u4,-u2];
-    ym = [ u1, u3, u3,-u6,-u8,-u9,-u8,-u6, u3, u3];
-  } else {
-    /* N-side polygon in unit circle */
-    fillable = 1n;
-    PI = 3.141592653589793238462643383279503;
-    a = (2.0*PI/symbol)*indgen(0:symbol-1);
-    xm = u1*cos(a);
-    ym = u1*sin(a);
-  }
-  __plp, y, x;
-}
-
-func __plp(y, x)
-/* DOCUMENT __plp, x, y;
-     Private routine used by plp. */
-{
-  extern xm, ym, edge_color, fill_color, fill, legend, width;
-  local z;
-  n = array(1, 1 + numberof(y));
-  m = numberof(ym);
-  if (m > 2) {
-    if (fill) {
-      z = array(fill_color, numberof(n));
-    } else if (fillable) {
-      /* Draw inside and ouside edges to emulate 'open' (transparent)
-         symbols. */
-      m += m;
-      grow, xm, xm(1), xm(0:2:-1);
-      grow, ym, ym(1), ym(0:2:-1);
-    }
-  }
-  n(1) = m;
-  plfp, z, grow(ym,y(*)), grow(xm,x(*)), n,
-    legend=legend, edges=1, ewidth=width, ecolor=edge_color;
-}
-
-/*---------------------------------------------------------------------------*/
 /* PARSING OF PLOTTING KEYWORDS */
 
 local PL_BG, PL_FG, PL_BLACK, PL_WHITE, PL_RED, PL_GREEN, PL_BLUE, PL_CYAN;
@@ -1157,18 +940,17 @@ func pl_get_symbol(symbol)
  *   Get symbol value as an integer, SYMBOL must be a scalar and may be either
  *   an integer, a character or a string:
  *
- *     INT CHAR  STRING                 DESCRIPTION
- *     ----------------------------------------------------------------------
- *      0                               nothing (just draw error bars if any)
- *      1   #  "square"                 a square
- *      2   +  "plus"                   a plus sign
- *      3   ^  "triangle" "uptriangle"  a triangle
- *      4   o  "circle"                 a circle (actually an hexagon)
- *      5   @  "diamond"                a square rotated by 45 degrees
- *      6   x  "cross"                  an X-cross    <- this is the default
- *      7   v  "downtriangle"           an upside down triangle
- *      8   *  "star"                   a star
- *     >=9                              a polygon with SYMBOL sides
+ *     CHAR  STRING                 DESCRIPTION
+ *     ------------------------------------------------------------------
+ *                                  nothing (just draw error bars if any)
+ *      #  "square"                 a square
+ *      +  "plus"                   a plus sign
+ *      ^  "triangle" "uptriangle"  a triangle
+ *      o  "circle"                 a circle (actually an hexagon)
+ *      @  "diamond"                a square rotated by 45 degrees
+ *      x  "cross"                  an X-cross    <- this is the default
+ *      v  "downtriangle"           an upside down triangle
+ *      *  "star"                   a star
  *     ----------------------------------------------------------------------
  *
  *   The one-character symbol may given as lower/upper case and as a string
@@ -1195,14 +977,18 @@ func pl_get_symbol(symbol)
       /* Use Yeti hash-table to speed-up symbol identification. */
       extern _PL_SYMBOL_TABLE;
       if (! is_hash(_PL_SYMBOL_TABLE)) {
-        _PL_SYMBOL_TABLE = h_new("square",1, "#",1,
-                                 "plus",2, "+",2,
-                                 "triangle",3, "uptriangle",3, "^",3,
-                                 "circle",4, "o",4, "O",4,
-                                 "diamond",5, "@",5,
-                                 "cross",6, "x",6, "X",6,
-                                 "downtriangle",7, "v",7, "V",7,
-                                 "star",8, "*",8);
+        _PL_SYMBOL_TABLE = h_new("square",P_SQUARE, "#",P_SQUARE,
+                                 "plus",P_PLUS, "+",P_PLUS,
+                                 "triangle",P_TRIANGLE,
+                                 "uptriangle",P_TRIANGLE_UP,
+                                 "^",,P_TRIANGLE_UP,
+                                 "circle",P_CIRCLE,
+                                 "o",P_CIRCLE, "O",P_CIRCLE,
+                                 "diamond",P_DIAMOND, "@",P_DIAMOND,
+                                 "cross",P_CROSS, "x",P_CROSS, "X",P_CROSS,
+                                 "downtriangle",P_TRIANGLE_DOWN,
+                                 "v",P_TRIANGLE_DOWN, "V",P_TRIANGLE_DOWN,
+                                 "star",P_STAR, "*",P_STAR);
       }
       if (s == char) {
         symbol = strchar(symbol);
@@ -1222,31 +1008,31 @@ func pl_get_symbol(symbol)
         c = strchar(symbol)(1);
       }
       if (len == 1) {
-        if (c=='#') return 1;
-        if (c=='+') return 2;
-        if (c=='^') return 3;
-        if (c=='o' || c =='O') return 4;
-        if (c=='@') return 5;
-        if (c=='x' || c=='X') return 6;
-        if (c=='v' || c=='V') return 7;
-        if (c=='*') return 8;
+        if (c=='#') return P_SQUARE;
+        if (c=='+') return P_PLUS;
+        if (c=='^') return P_TRIANGLE_UP;
+        if (c=='o' || c =='O') return P_CIRCLE;
+        if (c=='@') return P_DIAMOND;
+        if (c=='x' || c=='X') return P_CROSS;
+        if (c=='v' || c=='V') return P_TRIANGLE_DOWN;
+        if (c=='*') return P_STAR;
       } else {
         /* must be a string */
         if (c=='s') {
-          if (symbol=="square") return 1;
-          if (symbol == "star") return 8;
+          if (symbol=="square") return P_SQUARE;
+          if (symbol == "star") return P_STAR;
         } else if (c=='p') {
-          if (symbol=="plus") return 2;
+          if (symbol=="plus") return P_PLUS;
         } else if (c=='t') {
-          if (symbol == "triangle") return 3;
+          if (symbol == "triangle") return P_TRIANGLE;
         } else if (c=='c') {
-          if (symbol == "circle") return 4;
-          if (symbol == "cross") return 6;
+          if (symbol == "circle") return P_CIRCLE;
+          if (symbol == "cross") return P_CROSS;
         } else if (c=='d') {
-          if (symbol == "diamond") return 5;
-          if (symbol == "downtriangle") return 7;
+          if (symbol == "diamond") return P_DIAMOND;
+          if (symbol == "downtriangle") return P_TRIANGLE_DOWN;
         } else if (c=='u') {
-          if (symbol=="uptriangle") return 3;
+          if (symbol=="uptriangle") return P_TRIANGLE_UP;
         }
       }
     }
@@ -1257,15 +1043,15 @@ func pl_get_symbol(symbol)
 }
 
 /* Symbol codes as used by 'plp': */
-PL_SQUARE        = 1;
-PL_PLUS          = 2;
-PL_TRIANGLE      = 3;
-PL_UP_TRIANGLE   = 3;
-PL_CIRCLE        = 4;
-PL_DIAMOND       = 5;
-PL_CROSS         = 6;
-PL_DOWN_TRIANGLE = 7;
-PL_STAR          = 8;
+PL_SQUARE        = P_SQUARE;
+PL_PLUS          = P_PLUS;
+PL_TRIANGLE      = P_TRIANGLE;
+PL_UP_TRIANGLE   = P_TRIANGLE_UP;
+PL_CIRCLE        = P_CIRCLE;
+PL_DIAMOND       = P_DIAMOND;
+PL_CROSS         = P_CROSS;
+PL_DOWN_TRIANGLE = P_TRIANGLE_DOWN;
+PL_STAR          = P_STAR;
 
 func pl_get_axis_flags(value, default)
 /* DOCUMENT pl_get_axis_flags(value, default);
