@@ -1249,6 +1249,51 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
   }
 }
 
+local pl_hline, pl_vline;
+/* DOCUMENT pl_hline, y;
+         or pl_hline, y, x0, x1;
+         or pl_vline, x;
+         or pl_hline, x, y0, y1;
+
+     Plots a horizontal or vertical lines.  If X0 and X1 (resp. Y0 and Y1) are
+     not specified, the current viewport limits are used.
+
+   KEYWORDS color, type, width.
+   SEE ALSO pldj, limits, p_color, p_type.
+*/
+
+func pl_hline(y, x0, x1, color=, width=, type=)
+{
+  if (! is_void(color)) p_color, color;
+  if (! is_void(type)) p_type, type;
+  bits = is_void(x0) | (is_void(x1) << 1);
+  if (bits != 0) {
+    lim = _p_builtin_limits();
+    if ((bits&1) != 0) x0 = lim(1);
+    if ((bits&2) != 0) x1 = lim(2);
+  }
+  nil = string();
+  one = array(1.0, dimsof(y));
+  _pl_builtin_pldj, one*x0, nil, y, nil, one*x1, nil, y, nil,
+    color=color, width=width, type=type;
+}
+
+func pl_vline(x, y0, y1, color=, width=, type=)
+{
+  if (! is_void(color)) p_color, color;
+  if (! is_void(type)) p_type, type;
+  bits = is_void(y0) | (is_void(y1) << 1);
+  if (bits != 0) {
+    lim = _p_builtin_limits();
+    if ((bits&1) != 0) y0 = lim(3);
+    if ((bits&2) != 0) y1 = lim(4);
+  }
+  nil = string();
+  one = array(1.0, dimsof(x));
+  _pl_builtin_pldj, x, nil, one*y0, nil, x, nil, one*y1, nil,
+    color=color, width=width, type=type;
+}
+
 /*---------------------------------------------------------------------------*/
 /* HINTON DIAGRAM */
 
