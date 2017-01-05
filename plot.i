@@ -8,7 +8,7 @@
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
  * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2000-2016, Éric Thiébaut.
+ * Copyright (C) 2000-2017, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,11 +35,7 @@
  *	pl3dj: plot disjoint lines in 3D space;
  *	pl3s: plot 3D surface;
  *	pl3t: plot text in 3D space;
- *	pl_box: draw a rectangle;
  *	pl_cbar: add a color bar to a plot;
- *	pl_cbox: draw a centered rectangle;
- *	pl_circle: draw a circle;
- *	pl_ellipse: draw an ellipse;
  *	pl_get_axis_flags: parse axis settings;
  *	pl_get_color: parse color value/name;
  *	pl_get_font: parse font value/name;
@@ -2299,134 +2295,6 @@ func xmouse_demo
 }
 
 /*---------------------------------------------------------------------------*/
-/* PLOTTING OF SIMPLE SHAPES */
-
-func pl_box(xmin,xmax,ymin,ymax,color=,width=,type=)
-/* DOCUMENT pl_box, xmin, xmax, ymin, ymax;
-       -or- pl_box, [xmin, xmax, ymin, ymax];
-     Plots a rectangular  box onto the current graphic  device.  As for plg
-     (which see), keywords COLOR, WIDTH and TYPE can be specified.
-
-   SEE ALSO: plg, pl_get_color, pl_cbox, pl_circle, pl_ellipse. */
-{
-  if (is_void(xmax) && numberof(xmin)==4) {
-    ymax = xmin(4);
-    ymin = xmin(3);
-    xmax = xmin(2);
-    xmin = xmin(1);
-  }
-  plg, [ymin,ymin,ymax,ymax], [xmin,xmax,xmax,xmin], closed=1,
-    color=pl_get_color(color), width=width, type=type;
-}
-
-func pl_cbox(x0, y0, xsize, ysize, color=, width=, type=, legend=)
-/* DOCUMENT pl_cbox, x0, y0, size;
-       -or- pl_cbox, x0, y0, xsize, ysize;
-     Draw a  SIZE by SIZE  square box or  a XSIZE by YSIZE  rectangular box
-     centered around (X0,Y0).   Keywords COLOR, WIDTH and TYPE  can be used
-     and have  the same  meaning as for  builtin routine "plg".  If keyword
-     LEGEND is not set, an empty legend will be used.
-
-   SEE ALSO plg, pl_box, pl_circle, pl_ellipse. */
-{
-  if (is_void(ysize)) ysize = xsize;
-  if (is_void(legend)) legend=string(0);
-  plg,
-    y0 + ysize * [-0.5, +0.5, +0.5, -0.5],
-    x0 + xsize * [-0.5, -0.5, +0.5, +0.5],
-    color=color, width=width, type=type, marks=0, closed=1, legend=legend;
-}
-
-func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
-/* DOCUMENT pl_circle, x0, y0, r;
-     Draw circle(s)  of radius R  around (X0,Y0).  Value of  keyword NUMBER
-     tells how many segments to use to approximate the circle (default 20).
-     Keywords COLOR, WIDTH  and TYPE can be used and  have the same meaning
-     as for  "plg" routine (which  see). If keyword  LEGEND is not  set, an
-     empty legend  will be  used.  Arguments may  be conformable  arrays to
-     draw several circles in one call (but keywords must have scalar values
-     if any).
-
-   SEE ALSO plg, pl_box, pl_cbox, pl_ellipse. */
-{
-  if (is_void(legend)) legend = string();
-  if (is_void(number)) number = 20;
-  PI = 3.14159265358979323848;
-  t = (2.0*PI/number)*indgen(number);
-  cos_t = cos(t);
-  sin_t = sin(t);
-  if (is_void((dims = dimsof(x0, y0, r))))
-    error, "non conformable arguments";
-  if (dims(1)) {
-    /* Draw several circles. */
-    dummy = array(double, dims);
-    x0 += dummy;
-    y0 += dummy;
-    r  += dummy;
-    n = numberof(dummy);
-    for (i=1 ; i<=n ; ++i) {
-      plg, y0(i) + r(i)*cos_t, x0(i) + r(i)*sin_t,
-        width=width, color=color, type=type, marks=0, closed=1, legend=legend;
-    }
-  } else {
-    /* Draw a single circle. */
-    plg, y0 + r*cos_t, x0 + r*sin_t,
-      width=width, color=color, type=type, marks=0, closed=1, legend=legend;
-  }
-}
-
-func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
-/* DOCUMENT pl_ellipse, x0, y0, a, b, theta;
-     Draw ellipse(s) centered at (X0,Y0)  with semi-axis A and B.  THETA is
-     the angle (in  degrees counterclockwise) of the axis  of semi-length A
-     with horizontal axis.  Value of keyword NUMBER tells how many segments
-     to use to approximate the  circle (default 20).  Keywords COLOR, WIDTH
-     and TYPE  can be used and have  the same meaning as  for "plg" routine
-     (which see).   If keyword LEGEND is  not set, an empty  legend will be
-     used.  Arguments may be conformable arrays to draw several ellipses in
-     one call (but keywords must have scalar values if any).
-
-   SEE ALSO plg, pl_box, pl_cbox, pl_circle. */
-{
-  if (is_void(legend)) legend = string();
-  if (is_void(number)) number = 20;
-  PI = 3.14159265358979323848;
-  t = (2.0*PI/number)*indgen(number);
-  cos_t = cos(t);
-  sin_t = sin(t);
-  if (is_void((dims = dimsof(x0, y0, a, b, theta))))
-    error, "non conformable arguments";
-  if (dims(1)) {
-    /* Draw several ellipses. */
-    dummy = array(double, dims);
-    x0 += dummy;
-    y0 += dummy;
-    a  += dummy;
-    b  += dummy;
-    theta = (PI/180.0)*theta + dummy;
-    n = numberof(dummy);
-    for (i=1 ; i<=n ; ++i) {
-      u = a(i)*cos_t;
-      v = b(i)*sin_t;
-      t = theta(i);
-      cs = cos(t);
-      sn = sin(t);
-      plg, y0(i) + u*sn + v*cs, x0(i) + u*cs - v*sn,
-        width=width, color=color, type=type, marks=0, closed=1, legend=legend;
-    }
-  } else {
-    /* Draw a single ellipse. */
-    theta *= (PI/180.0);
-    u = a*cos_t;
-    v = b*sin_t;
-    cs = cos(theta);
-    sn = sin(theta);
-    plg, y0 + u*sn + v*cs, x0 + u*cs - v*sn,
-      width=width, color=color, type=type, marks=0, closed=1, legend=legend;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
 /* CONVERT POSTSCRIPT FILE INTO BITMAP IMAGE */
 
 local ps2png, ps2jpeg, _ps2any_worker;
@@ -2779,19 +2647,7 @@ func _win2any_worker(filename, counter, jpg)
 /*---------------------------------------------------------------------------*/
 /* UTILITIES */
 
-func pl_span(a, b, n)
-/* DOCUMENT pl_span(a, b, n)
-     The function pl_span() returns an array of N doubles equally spaced from
-     A to B.  This function is more simple than built-in span() -- in
-     particular, A and B must be scalars -- but avoids rounding errors.
-
-   SEE ALSO: span.
- */
-{
-  a += 0.0; // make sure A is floating point
-  if (a == b || n == 1) return array(a, n);
-  return ((b - a)/(n - 1.0))*(indgen(n) - (n + 1)/2.0) + (a + b)/2.0;
-}
+pl_span = p_span; /* use the version defined in xplot0.i */
 
 func pl_map(op, arg, default)
 /* DOCUMENT pl_map(op, arg)
