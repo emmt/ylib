@@ -937,12 +937,149 @@ func p_marker(&arg, val)
 }
 
 /*---------------------------------------------------------------------------*/
+/* COLOR MAPS */
+
+/* Make sure "cmap.i" is loaded and make an alias for the `cmap` function
+   so that `cmap` can be used as a keyword. */
+if (! (is_func(cmap) && is_string(gist_names) && is_string(msh_names) &&
+       is_string(mpl_names) && is_string(gmt_names) && is_string(cb_names))) {
+  include, Y_SITE + "i/cmap.i", 1;
+  if (! is_func(cmap)) {
+    error, "cmap function not defined";
+  }
+}
+_p_original_cmap = cmap;
+_P_COLORMAPS = [];
+
+local _P_COLORMAPS;
+func p_colormap(p, n, hist=, hsv=, hsl=, rev=, gamma=, lgamma=, usehue=, nmax=)
+/* DOCUMENT p_colormap, p, n;
+         or p_colormap(p, n);
+
+     When called as a subroutine, set the current palette with the colormap
+     defined by parameter P; when called as a function, returns the colormap as
+     a list of colors.
+
+     This function is a wrapper over `cmap` (help, cmap) whose behavior is only
+     modified when P is the name of a colormap.  In that case, the colormap
+     name can be prefixed with "gist:", "gmt:", "mpl:", "seq:", "msh:" or
+     "brewer:" to explicitely specify a family of palettes and avoid conflicts.
+     The name of a colormap is case insensitive.
+
+   SEE ALSO: cmap.
+*/
+{
+  if (is_string(p) && is_scalar(p)) {
+    if (is_void(_P_COLORMAPS)) {
+      /* Create a hash table of konown colormaps. */
+      _P_COLORMAPS = save();
+
+      /* Add installed Gist palettes. */
+      files = lsdir(Y_SITE+"g");
+      files = files(where(strpart(files, -2:0) == ".gp"));
+      _p_add_colormaps, files, 8;
+
+      /* Add known colormaps. */
+      _p_add_colormaps, gist_names,  7, "gist:";
+      _p_add_colormaps, gmt_names,   6, "gmt:";
+      _p_add_colormaps, mpl_names,   5, "mpl:";
+      _p_add_colormaps, seq_names,   4, "seq:";
+      _p_add_colormaps, msh_names,   3, "msh:";
+      _p_add_colormaps, "cubehelix", 2;
+      _p_add_colormaps, cb_names,    1, "brewer:";
+    }
+
+    /* Parse name and extract parameters. */
+    n0 = n;
+    name = cmap_name(strcase(0, p), n, rev);
+    value = p_get_member(_P_COLORMAPS, name);
+    if (is_void(value)) {
+      p = _cmap_gist_scan(name);
+      if (is_void(p)) error, "unknown colormap \""+name+"\"";
+    } else {
+      type = value(1);
+      index = value(2);
+      if (type == 1) {
+        /* Brewer colormap. */
+        local t;
+        p = cb_map(index, ((n && n<13)?n:[]), t);
+        if ((n != n0) && is_void(hist)) hist = 1;
+        n = n0;
+        if (is_void(hist) && t == 3) hist = 1;
+      } else if (type == 2) {
+        /* Cubehelix colormap. */
+        rgb = cubehelix(n, gamma=gamma);
+        if (rev) rgb = rgb(::-1,);
+        if (am_subroutine()) palette, rgb(,1), rgb(,2), rgb(,3);
+        return rgb;
+      } else if (type == 3) {
+        /* MSH colormap */
+        p = msh_maps(..,index);
+        p = mshct(p(,1), p(,2), n0); // FIXME: transpose?
+      } else if (type == 4) {
+        /* Sequential colormap */
+        h = seq_params(,index);
+        l1 = h(2);
+        if (l1 < 0) {
+          l1 = rgb_saturate(seq_params(1,-l1), seq_params(2,-l1), cmax=1);
+        }
+        l2 = h(3);
+        if (l2 < 0) {
+          l2 = rgb_saturate(seq_params(1,-l2), seq_params(3,-l2), cmax=1);
+        }
+        h = h(1);
+        p = seqct(h, n0, l1, 2); // FIXME: transpose?
+      } else if (type == 5) {
+        /* Matplotlib colormap */
+        p = *mpl_maps(index);
+      } else if (type == 6) {
+        /* GMT (generic mapping tools) colormap */
+        p = *gmt_maps(index);
+        flags = gmt_flags(index);
+        hist = (flags == 1);
+        hsv = (flags == 2);
+      } else if (type == 7) {
+        /* Gist colormap */
+        p = *gist_maps(index);
+        if (name == "earth" || name == "gist:earth") hsv = 1;
+      } else if (type == 8) {
+        /* Gist palette */
+        p = _cmap_gist_scan(Y_SITE + "g/" + name);
+        if (is_void(p)) error, "unknown palette \""+name+"\"";
+      }
+    }
+  }
+  if (am_subroutine()) {
+    _p_original_cmap, p, n, hist=hist, hsv=hsv, hsl=hsl, rev=rev,
+      gamma=gamma, lgamma=lgamma, usehue=usehue, nmax=nmax;
+  } else {
+    return _p_original_cmap(p, n, hist=hist, hsv=hsv, hsl=hsl, rev=rev,
+                            gamma=gamma, lgamma=lgamma, usehue=usehue,
+                            nmax=nmax);
+  }
+}
+
+func _p_add_colormaps(names, type, prefix)
+{
+  extern _P_COLORMAPS;
+  n = numberof(names);
+  for (i = 1; i <= n; ++i) {
+    name = strcase(0, names(i));
+    value = [type, i];
+    save, _P_COLORMAPS, noop(name), value;
+    if (! is_void(prefix)) {
+      save, _P_COLORMAPS, prefix + name, value;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
 /* GRAPHIC STYLES */
 
 /* Autoloading does not work for structures defined in "style.i"; we must
    therefore check whether the style functions are really loaded. */
 if (is_void(GfakeSystem) != Y_STRUCTDEF) {
-  include, "style.i", 1;
+  include, Y_SITE + "i/style.i", 1;
 }
 
 func p_split_systems
