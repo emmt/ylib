@@ -5,7 +5,7 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2014-2015, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2014-2017, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This file is free software; as a special exception the author gives
  * unlimited permission to copy and/or distribute it, with or without
@@ -500,7 +500,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
     SEE ALSO: pl_img, p_span, pli, plt, pldj, plg, viewport.
  */
 {
-  nil = string(0);
+  nil = string();
   if (is_void(cmin)) {
     if (is_void(z)) error, "keyword CMIN must be given";
     cmin = min(z);
@@ -677,7 +677,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
     }
     height_in_points = height/P_NDC_POINT;
     for (i = 1; i <= nlabs; ++i) {
-      plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
+      _pl_builtin_plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
         font=font, height=height_in_points, opaque=opaque,
         orient=orient, justify=justify;
     }
@@ -957,7 +957,8 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
    SEE ALSO: plg, plt, pl_cbox, p_color, p_type, p_font;
  */
 {
-  if (is_void(legend)) legend=string(0);
+  nil = string();
+  if (is_void(legend)) legend=nil;
   p_color, color, P_BLACK;
   p_real, width, 4.0;
   if (is_void(y0) && numberof(x0) == 4) {
@@ -970,8 +971,8 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
     /* Draw box frame. */
     p_color, linecolor, color;
     p_type, type, P_SOLID;
-    if (is_void(legend)) legend=string(0);
-    plg, [y0, y0, y1, y1], [x0, x1, x1, x0], closed=1n,
+    if (is_void(legend)) legend=nil;
+    _pl_builtin_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil, closed=1n,
       width=width, type=type, color=linecolor, marks=0n, legend=legend;
   }
   if (label && strlen(label)) {
@@ -1044,9 +1045,9 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
       x = x0;
       y = y1 - margin;
     }
-    plt, " " + label + " ", x, y, tosys=plsys(), opaque=1n, orient=orient,
-      justify=justify, height=p_real(height, P_DEFAULT_HEIGHT)/P_NDC_POINT,
-      font=font, color=textcolor;
+    _pl_builtin_plt, " " + label + " ", x, y, tosys=plsys(), opaque=1n,
+      orient=orient, justify=justify, font=font, color=textcolor,
+      height=p_real(height, P_DEFAULT_HEIGHT)/P_NDC_POINT;
   }
 }
 
@@ -1146,7 +1147,8 @@ func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
    SEE ALSO plg, pl_box, pl_cbox, pl_ellipse,
             p_color, p_type. */
 {
-  if (is_void(legend)) legend = string();
+  nil = string();
+  if (is_void(legend)) legend = nil;
   if (is_void(number)) number = 20;
   p_color, color, P_FG;
   p_type, type, P_SOLID;
@@ -1157,21 +1159,21 @@ func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
   if (is_void((dims = dimsof(x0, y0, r)))) {
     error, "non conformable arguments";
   }
-  if (dims(1)) {
+  if (dims(1) != 0) {
     /* Draw several circles. */
-    dummy = array(double, dims);
-    x0 += dummy;
-    y0 += dummy;
-    r  += dummy;
-    n = numberof(dummy);
+    zero = array(double, dims);
+    n = numberof(zero);
+    x0 += zero;
+    y0 += zero;
+    r  += zero;
     for (i = 1; i <= n; ++i) {
-      plg, y0(i) + r(i)*cos_t, x0(i) + r(i)*sin_t,
+      _pl_builtin_plg, y0(i) + r(i)*cos_t, nil, x0(i) + r(i)*sin_t, nil,
         width=width, color=color, type=type, marks=P_FALSE, closed=P_TRUE,
         legend=legend;
     }
   } else {
     /* Draw a single circle. */
-    plg, y0 + r*cos_t, x0 + r*sin_t,
+    _pl_builtin_plg, y0 + r*cos_t, nil, x0 + r*sin_t, nil,
       width=width, color=color, type=type, marks=P_FALSE, closed=P_TRUE,
       legend=legend;
   }
@@ -1192,7 +1194,8 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
    SEE ALSO plg, pl_box, pl_cbox, pl_circle,
             p_color, p_type. */
 {
-  if (is_void(legend)) legend = string();
+  nil = string();
+  if (is_void(legend)) legend = nil;
   if (is_void(number)) number = 20;
   p_color, color, P_FG;
   p_type, type, P_SOLID;
@@ -1203,22 +1206,22 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
   if (is_void((dims = dimsof(x0, y0, a, b, theta)))) {
     error, "non conformable arguments";
   }
-  if (dims(1)) {
+  if (dims(1) != 0) {
     /* Draw several ellipses. */
-    dummy = array(double, dims);
-    x0 += dummy;
-    y0 += dummy;
-    a  += dummy;
-    b  += dummy;
-    theta = (PI/180.0)*theta + dummy;
-    n = numberof(dummy);
+    zero = array(double, dims);
+    n = numberof(zero);
+    x0 += zero;
+    y0 += zero;
+    a  += zero;
+    b  += zero;
+    theta = (PI/180.0)*theta + zero;
     for (i=1 ; i<=n ; ++i) {
       u = a(i)*cos_t;
       v = b(i)*sin_t;
       t = theta(i);
       cs = cos(t);
       sn = sin(t);
-      plg, y0(i) + u*sn + v*cs, x0(i) + u*cs - v*sn,
+      _pl_builtin_plg, y0(i) + u*sn + v*cs, nil, x0(i) + u*cs - v*sn, nil,
         width=width, color=color, type=type, marks=P_FALSE,
         closed=P_TRUE, legend=legend;
     }
@@ -1229,7 +1232,7 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
     v = b*sin_t;
     cs = cos(theta);
     sn = sin(theta);
-    plg, y0 + u*sn + v*cs, x0 + u*cs - v*sn,
+    _pl_builtin_plg, y0 + u*sn + v*cs, nil, x0 + u*cs - v*sn, nil,
       width=width, color=color, type=type, marks=P_FALSE,
       closed=P_TRUE, legend=legend;
   }
@@ -1477,35 +1480,35 @@ func pl_title(str1, str2, str3, str4,
 
   if (mode == 1) {
     /* draw the plot title */
-    plt, str1, port(zcen:1:2)(1), port(4) + top,
+    _pl_builtin_plt, str1, port(zcen:1:2)(1), port(4) + top,
       font=topfont, justify="CB", height=toptextheight, color=color;
   } else if (mode == 3) {
     /* draw the normal x and y axis titles */
     if (str1 && strlen(str1)) {
-      plt, str1, port(zcen:1:2)(1), port(3) - bottom, orient=0,
+      _pl_builtin_plt, str1, port(zcen:1:2)(1), port(3) - bottom, orient=0,
         font=font, justify="CT", height=textheight, color=color;
     }
     if (str2 && strlen(str2)) {
-      plt, str2, port(1) - left, port(zcen:3:4)(1), orient=1,
+      _pl_builtin_plt, str2, port(1) - left, port(zcen:3:4)(1), orient=1,
         font=font, justify="CB", height=textheight, color=color;
     }
   } else {
     /* draw the surrounding labels */
     if (str1 && strlen(str1)) {
-      plt, str1, port(zcen:1:2)(1), port(4) + top,
+      _pl_builtin_plt, str1, port(zcen:1:2)(1), port(4) + top,
         font=topfont, justify="CB", height=toptextheight,
         color=color, orient=0;
     }
     if (str2 && strlen(str2)) {
-      plt, str2, port(zcen:1:2)(1), port(3) - bottom, orient=0,
+      _pl_builtin_plt, str2, port(zcen:1:2)(1), port(3) - bottom, orient=0,
         font=font, justify="CT", height=textheight, color=color;
     }
     if (str3 && strlen(str3)) {
-      plt, str3, port(1) - left, port(zcen:3:4)(1), orient=1,
+      _pl_builtin_plt, str3, port(1) - left, port(zcen:3:4)(1), orient=1,
         font=font, justify="CB", height=textheight, color=color;
     }
     if (str4 && strlen(str4)) {
-      plt, str4, port(2) + right, port(zcen:3:4)(1), orient=3,
+      _pl_builtin_plt, str4, port(2) + right, port(zcen:3:4)(1), orient=3,
         font=font, justify="CB", height=textheight, color=color;
     }
   }
@@ -1602,9 +1605,10 @@ func pl_legend_box(nrows, ncols, vport=, anchor=,
 
   if (is_void(width) || width >= 0) {
     /* draw the legend box */
+    nil = string();
     sys = plsys(0);
-    plg, [y0, y0, y1, y1], [x0, x1, x1, x0],
-      closed=1n, legend=string(0), marks=0n,
+    _pl_builtin_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil,
+      closed=1n, legend=nil, marks=0n,
       type=p_type(type, P_SOLID),
       color=p_color(color, P_FG), width=width;
     plsys, sys;
@@ -1663,7 +1667,7 @@ func pl_legend_add(lb, text, textcolor=,
       fillcolor = fillcolor,
       width = p_real(symbolwidth, width);
   }
-  plt, text, lx + ll + lo, ly,
+  _pl_builtin_plt, text, lx + ll + lo, ly,
     color = p_color(textcolor, color),
     font = p_font(font, P_HELVETICA),
     height = height/P_NDC_POINT,
