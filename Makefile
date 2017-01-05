@@ -22,7 +22,9 @@ PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/rgb2.i \
       ${srcdir}/rgb3.i \
       ${srcdir}/rgb.i \
-      ${srcdir}/utils.i
+      ${srcdir}/utils.i \
+      ${srcdir}/xplot0.i \
+      ${srcdir}/xplot.i
 
 # autoload file for this package, if any
 PKG_I_START= ${srcdir}/ylib-start.i
