@@ -522,9 +522,11 @@ func p_packed_color_as_rgb_triplet(p)
 
 local _P_COLOR_TABLE, p_add_named_colors, p_add_named_color;
 /* DOCUMENT p_add_named_color, name, value;
-         or p_add_named_colors, names, values;
+         or p_add_named_colors, names, values, ...;
 
-     These subroutines add new named color(s) to the global database.
+     These subroutines add new named color(s) to the global database.  The
+     first routine can only accept a single color definition, the second
+     routine be used to define many colors.
 
    SEE ALSO p_parse_color.
 */
@@ -536,14 +538,19 @@ func p_add_named_color(name, value)
   save, _P_COLOR_TABLE, strcase(0n, name), value;
 }
 
-func p_add_named_colors(names, values)
+func p_add_named_colors(..)
 {
-  n = numberof(names);
-  if (numberof(values) != n) {
-    error, "there must be as many color values as names";
-  }
-  for (i = 1; i <= n; ++i) {
-    p_add_named_color, names(i), values(i);
+  local names, values;
+  while (more_args()) {
+    eq_nocopy, names, next_arg();
+    eq_nocopy, values, (more_args() ? next_arg() : []);
+    n = numberof(names);
+    if (numberof(values) != n) {
+      error, "there must be as many color values as names";
+    }
+    for (i = 1; i <= n; ++i) {
+      p_add_named_color, names(i), values(i);
+    }
   }
 }
 
@@ -2436,6 +2443,77 @@ _P_X11_COLOR_VALUES = \
   0x01667e8bn, 0x01f5f5f5n, 0x0100ffffn, 0x0100eeeen, 0x0100cdcdn, 0x01008b8bn,
   0x0132cd9an];
 
+
+/*---------------------------------------------------------------------------*/
+/* SVG COLORS */
+
+func p_add_svg_colors
+/* DOCUMENT p_add_svg_colors;
+
+     Add the named colors recognized by SVG in the global database.
+
+   SEE ALSO: p_add_named_color, p_add_x11_colors;
+ */
+{
+  p_add_named_colors, "aliceblue",0x01fff8f0n, "antiquewhite",0x01d7ebfan,
+    "aqua",0x01ffff00n, "aquamarine",0x01d4ff7fn, "azure",0x01fffff0n,
+    "beige",0x01dcf5f5n, "bisque",0x01c4e4ffn, "black",0x01000000n,
+    "blanchedalmond",0x01cdebffn, "blue",0x01ff0000n, "blueviolet",0x01e22b8an,
+    "brown",0x012a2aa5n, "burlywood",0x0187b8den, "cadetblue",0x01a09e5fn,
+    "chartreuse",0x0100ff7fn, "chocolate",0x011e69d2n, "coral",0x01507fffn,
+    "cornflowerblue",0x01ed9564n, "cornsilk",0x01dcf8ffn,
+    "crimson",0x013c14dcn, "cyan",0x01ffff00n, "darkblue",0x018b0000n,
+    "darkcyan",0x018b8b00n, "darkgoldenrod",0x010b86b8n,
+    "darkgray",0x01a9a9a9n, "darkgreen",0x01006400n, "darkgrey",0x01a9a9a9n,
+    "darkkhaki",0x016bb7bdn, "darkmagenta",0x018b008bn,
+    "darkolivegreen",0x012f6b55n, "darkorange",0x01008cffn,
+    "darkorchid",0x01cc3299n, "darkred",0x0100008bn, "darksalmon",0x017a96e9n,
+    "darkseagreen",0x018fbc8fn, "darkslateblue",0x018b3d48n,
+    "darkslategray",0x014f4f2fn, "darkslategrey",0x014f4f2fn,
+    "darkturquoise",0x01d1ce00n, "darkviolet",0x01d30094n,
+    "deeppink",0x019314ffn, "deepskyblue",0x01ffbf00n, "dimgray",0x01696969n,
+    "dimgrey",0x01696969n, "dodgerblue",0x01ff901en, "firebrick",0x012222b2n,
+    "floralwhite",0x01f0faffn, "forestgreen",0x01228b22n,
+    "fuchsia",0x01ff00ffn, "gainsboro",0x01dcdcdcn, "ghostwhite",0x01fff8f8n,
+    "gold",0x0100d7ffn, "goldenrod",0x0120a5dan, "gray",0x01808080n,
+    "green",0x01008000n, "greenyellow",0x012fffadn, "grey",0x01808080n,
+    "honeydew",0x01f0fff0n, "hotpink",0x01b469ffn, "indianred",0x015c5ccdn,
+    "indigo",0x0182004bn, "ivory",0x01f0ffffn, "khaki",0x018ce6f0n,
+    "lavender",0x01fae6e6n, "lavenderblush",0x01f5f0ffn,
+    "lawngreen",0x0100fc7cn, "lemonchiffon",0x01cdfaffn,
+    "lightblue",0x01e6d8adn, "lightcoral",0x018080f0n, "lightcyan",0x01ffffe0n,
+    "lightgoldenrodyellow",0x01d2fafan, "lightgray",0x01d3d3d3n,
+    "lightgreen",0x0190ee90n, "lightgrey",0x01d3d3d3n, "lightpink",0x01c1b6ffn,
+    "lightsalmon",0x017aa0ffn, "lightseagreen",0x01aab220n,
+    "lightskyblue",0x01face87n, "lightslategray",0x01998877n,
+    "lightslategrey",0x01998877n, "lightsteelblue",0x01dec4b0n,
+    "lightyellow",0x01e0ffffn, "lime",0x0100ff00n, "limegreen",0x0132cd32n,
+    "linen",0x01e6f0fan, "magenta",0x01ff00ffn, "maroon",0x01000080n,
+    "mediumaquamarine",0x01aacd66n, "mediumblue",0x01cd0000n,
+    "mediumorchid",0x01d355ban, "mediumpurple",0x01db7093n,
+    "mediumseagreen",0x0171b33cn, "mediumslateblue",0x01ee687bn,
+    "mediumspringgreen",0x019afa00n, "mediumturquoise",0x01ccd148n,
+    "mediumvioletred",0x018515c7n, "midnightblue",0x01701919n,
+    "mintcream",0x01fafff5n, "mistyrose",0x01e1e4ffn, "moccasin",0x01b5e4ffn,
+    "navajowhite",0x01addeffn, "navy",0x01800000n, "oldlace",0x01e6f5fdn,
+    "olive",0x01008080n, "olivedrab",0x01238e6bn, "orange",0x0100a5ffn,
+    "orangered",0x010045ffn, "orchid",0x01d670dan, "palegoldenrod",0x01aae8een,
+    "palegreen",0x0198fb98n, "paleturquoise",0x01eeeeafn,
+    "palevioletred",0x019370dbn, "papayawhip",0x01d5efffn,
+    "peachpuff",0x01b9daffn, "peru",0x013f85cdn, "pink",0x01cbc0ffn,
+    "plum",0x01dda0ddn, "powderblue",0x01e6e0b0n, "purple",0x01800080n,
+    "red",0x010000ffn, "rosybrown",0x018f8fbcn, "royalblue",0x01e16941n,
+    "saddlebrown",0x0113458bn, "salmon",0x017280fan, "sandybrown",0x0160a4f4n,
+    "seagreen",0x01578b2en, "seashell",0x01eef5ffn, "sienna",0x012d52a0n,
+    "silver",0x01c0c0c0n, "skyblue",0x01ebce87n, "slateblue",0x01cd5a6an,
+    "slategray",0x01908070n, "slategrey",0x01908070n, "snow",0x01fafaffn,
+    "springgreen",0x017fff00n, "steelblue",0x01b48246n, "tan",0x018cb4d2n,
+    "teal",0x01808000n, "thistle",0x01d8bfd8n, "tomato",0x014763ffn,
+    "turquoise",0x01d0e040n, "violet",0x01ee82een, "wheat",0x01b3def5n,
+    "white",0x01ffffffn, "whitesmoke",0x01f5f5f5n, "yellow",0x0100ffffn,
+    "yellowgreen",0x0132cd9an;
+}
+
 /*---------------------------------------------------------------------------*/
 /* UTILITIES */
 
@@ -2918,6 +2996,9 @@ func _p_init
     _P_X11_COLOR_NAMES = [];
     _P_X11_COLOR_VALUES = [];
   }
+
+  /* Add SVG colors. */
+  p_add_svg_colors;
 
   /* Build the database of fonts. */
   extern _P_FONT_TABLE;
