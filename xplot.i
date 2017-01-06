@@ -64,14 +64,14 @@ func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
       char giving the [r,g,b] components of each color.  See the color keyword
       for cautions about using this if you do not have a true color display.
 
-      If X1 and Y1 are given, they represent the coordinates of the upper
-      right corner of the image.  If X0, and Y0 are given, they represent the
+      If X1 and Y1 are given, they represent the coordinates of the upper right
+      corner of the image.  If X0, and Y0 are given, they represent the
       coordinates of the lower left corner, which is at (0.5,0.5) by default.
       If only the Z array is given, each cell will be a 1x1 unit square, with
       the lower left corner of the image at (0.5,0.5).
 
-      Compared to the original Yorick command, this version correctly
-      set the default coordinates (X0,Y0) and adds the CMAP keyword.
+      Compared to the original Yorick command, this version correctly set the
+      default coordinates (X0,Y0) and adds the CMAP keyword.
 
       Keyword CMAP can be used to specify a colormap (see cmap, or p_colormap).
 
@@ -192,9 +192,9 @@ func pl_bars(y, x, color=, fill=, edges=, ecolor=, ewidth=,
      :    | | | |       | |
      :    +-+-+ +- ... -+-+
 
-     Keyword COLOR can be used to specify the color(s) of the bars.  By
-     default all bars are colored in gray.  There may be different colors for
-     the different bars.
+     Keyword COLOR can be used to specify the color(s) of the bars.  By default
+     all bars are colored in gray.  There may be different colors for the
+     different bars.
 
      Keyword THICKNESS can be used to specify the width of the bars relatively
      to the spacing of their abscissae.  By default THICKNESS is 0.8.
@@ -243,12 +243,11 @@ func pl_bars(y, x, color=, fill=, edges=, ecolor=, ewidth=,
   s *= (thickness/2.0);
 
   /* Each bar is separated by an undrawn cell, so there are 2*N - 1 cells
-   * delimited by coordinates BX and BY of dimensions 2*N-by-2.  The colors of
-   * the bars are stored into an (2*N - 1)-by-1 array BZ. The IREG array has
-   * same size as BX and BY.  Regions are drawn in same order as their number
-   * given by IREG.  IREG = 0 for undrawn cells, IREG > 0 otherwise.  First
-   * row and column of IREG must be zero.
-   */
+     delimited by coordinates BX and BY of dimensions 2*N-by-2.  The colors of
+     the bars are stored into an (2*N - 1)-by-1 array BZ. The IREG array has
+     same size as BX and BY.  Regions are drawn in same order as their number
+     given by IREG.  IREG = 0 for undrawn cells, IREG > 0 otherwise.  First row
+     and column of IREG must be zero. */
   local x0, x1, y0, y1;
   eq_nocopy, y0, base;
   eq_nocopy, y1, y;
@@ -344,7 +343,7 @@ plh = pl_steps;
 
 func pl_img(img, clear=, cmin=, cmax=, cmap=,
             pixelbias=, pixelsize=, pixelref=, pixelunits=,
-            cbar=, vert=, vport=, adjust=,
+            cbar=, vert=, viewport=, adjust=,
             nlabs=, labels=, levels=,
             color=, font=, height=, opaque=, orient=,
             width=, ticklen=, laboff=, thickness=, format=)
@@ -374,7 +373,7 @@ func pl_img(img, clear=, cmin=, cmax=, cmap=,
      to specify same or different settings for the X and Y axis.
 
      Keyword CBAR can be set to a non-zero value to draw a color bar (see
-     pl_cbar) whose position is given by the value of CBAR.  Keywords VPORT,
+     pl_cbar) whose position is given by the value of CBAR.  Keywords VIEWPORT,
      ADJUST, NLABS, LABELS, LEVELS, COLOR, FONT, HEIGHT, OPAQUE, ORIENT, WIDTH,
      TICKLEN, LABOFF, THICKNESS, and FORMAT can be used to customize the color
      bar.
@@ -419,8 +418,8 @@ func pl_img(img, clear=, cmin=, cmax=, cmap=,
   }
   pli, img, x0, y0, x1, y1, cmin=cmin, cmax=cmax, cmap=cmap;
   if (! is_void(cbar)) {
-    pl_cbar, cmin=cmin, cmax=cmax, position=cbar, vport=vport, adjust=adjust,
-      nlabs=nlabs, labels=labels, levels=levels,
+    pl_cbar, cmin=cmin, cmax=cmax, position=cbar, viewport=viewport,
+      adjust=adjust, nlabs=nlabs, labels=labels, levels=levels,
       color=color, font=font, height=height, opaque=opaque, orient=orient,
       width=width, ticklen=ticklen, laboff=laboff, thickness=thickness,
       format=format;
@@ -434,7 +433,7 @@ func pl_img(img, clear=, cmin=, cmax=, cmap=,
   }
 }
 
-func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
+func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
              nlabs=, labels=, levels=, ncolors=,
              linetype=, frametype=, ticktype=,
              width=, linewidth=, framewidth=, tickwidth=,
@@ -444,48 +443,48 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
 /* DOCUMENT pl_cbar, z;
          or pl_cbar, cmin=CMIN, cmax=CMAX;
 
-     Draw a color bar below the  current coordinate system.  The colors and the
-     default associated label values are  from min(Z) to max(Z); alternatively,
-     keywords CMIN  and CMAX can be  specified.
+     Draw a color bar below the current coordinate system.  The colors and the
+     default associated label values are from min(Z) to max(Z); alternatively,
+     keywords CMIN and CMAX can be specified.
 
      Keyword POSITION can be set with the position of the color bar relative to
-     the  current coordinate  system.   For now  only  "bottom" (P_BOTTOM)  and
-     "right" (P_RIGHT) are possible.  By default,  the color bar appears to the
+     the current coordinate system.  For now only "bottom" (P_BOTTOM) and
+     "right" (P_RIGHT) are possible.  By default, the color bar appears to the
      right of the current coordinate system.
 
-     By default,  the colorbar  is drawn  next to  the current  viewport; other
-     viewport coordinates can be given by VPORT=[xmin,xmax,ymin,ymax].  Keyword
-     ADJUST can be  used to move the  bar closer to (adjust<0)  or further from
-     (adjust>0) the viewport.
+     By default, the colorbar is drawn next to the current viewport; other
+     viewport coordinates can be given by VIEWPORT=[xmin,xmax,ymin,ymax].
+     Keyword ADJUST can be used to move the bar closer to (adjust<0) or further
+     from (adjust>0) the viewport.
 
-     Keyword LEVELS  can be  used to  specify the positions  of the  labels and
+     Keyword LEVELS can be used to specify the positions of the labels and
      ticks to draw in units of Z.
 
-     Keyword LABELS can be used to specify  the labels to print along the color
-     bar.   If keyword  LABELS is  not specified,  the labels  are the  textual
-     values of the  levels and the format  of the labels can  be specified with
-     keyword FORMAT.  FORMAT  can be a format  string to use with  swrite or an
-     integer, say  N, to use a  scientific notation with N  significant digits.
-     By default FORMAT="%.3g" or FORMAT=3  dependending on the magnitude of the
-     label values.   The font type,  font height  and text orientation  for the
-     labels can  be set with  keywords FONT (default  FONT="helvetica"), HEIGHT
-     (default HEIGHT=14 points) and ORIENT  respectively.  By default, the same
-     parameters as  the axis  labels are  used for  the labels.   The TEXTSTYLE
-     keyword  can  be used  to  specify  a  GpTextAttribs structure  with  text
+     Keyword LABELS can be used to specify the labels to print along the color
+     bar.  If keyword LABELS is not specified, the labels are the textual
+     values of the levels and the format of the labels can be specified with
+     keyword FORMAT.  FORMAT can be a format string to use with swrite or an
+     integer, say N, to use a scientific notation with N significant digits.
+     By default FORMAT="%.3g" or FORMAT=3 dependending on the magnitude of the
+     label values.  The font type, font height and text orientation for the
+     labels can be set with keywords FONT (default FONT="helvetica"), HEIGHT
+     (default HEIGHT=14 points) and ORIENT respectively.  By default, the same
+     parameters as the axis labels are used for the labels.  The TEXTSTYLE
+     keyword can be used to specify a GpTextAttribs structure with text
      attributes.
 
-     If neither  LEVELS nor NLABS are  specified, keyword NLABS can  be used to
-     choose  the  number  of  displayed  labels;  by  default,  NLABS=11  which
-     correspond to  a label every 10%  of the dynamic; use  NLABS=0 to suppress
+     If neither LEVELS nor NLABS are specified, keyword NLABS can be used to
+     choose the number of displayed labels; by default, NLABS=11 which
+     correspond to a label every 10% of the dynamic; use NLABS=0 to suppress
      all labels.
 
-     Keyword NCOLORS can  be used to specify  the number of color  cells in the
-     color bar.   By default, the  number of colors  of the current  palette is
+     Keyword NCOLORS can be used to specify the number of color cells in the
+     color bar.  By default, the number of colors of the current palette is
      used.
 
      Keywords COLOR, LINECOLOR, TEXTCOLOR, FRAMECOLOR and TICKCOLOR can be used
-     to specify  the colors of  different elements  in a hierarchical  way (see
-     figure below).  TEXTCOLOR  is used for the labels, FRAMECOLOR  is used for
+     to specify the colors of different elements in a hierarchical way (see
+     figure below).  TEXTCOLOR is used for the labels, FRAMECOLOR is used for
      the frame and TICKCOLOR is used for the ticks.
 
      |    TEXTCOLOR <------ TEXTSTYLE.color <--+
@@ -494,12 +493,12 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
      |    TICKCOLOR <---+
 
 
-     Keyword WIDTH can be  used to set the width of the lines  used to draw the
-     frame and the ticks  of the colorbar.  If WIDTH is  negative, no frame and
+     Keyword WIDTH can be used to set the width of the lines used to draw the
+     frame and the ticks of the colorbar.  If WIDTH is negative, no frame and
      no ticks are drawn.
 
      Keyword TICKLEN can be used to set the length (in NDC units) of the ticks.
-     Default  is 0.40*HEIGHT.   If  TICKLEN is  zero, no  ticks  get drawn,  if
+     Default is 0.40*HEIGHT.  If TICKLEN is zero, no ticks get drawn, if
      TICKLEN is negative, the ticks get drawn inward.
 
      Keyword LABOFF can be used to set the offset of the label with respect to
@@ -529,7 +528,7 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
     error, "only \"right\" and \"bottom\" positions are implemented";
   }
   vert = (position == P_RIGHT || position == P_LEFT);
-  if (is_void(vport)) vport = viewport();
+  if (is_void(viewport)) viewport = _p_builtin_viewport();
   if (is_void(textstyle) && (is_void(font) || is_void(color) ||
                              is_void(height) || is_void(orient))) {
     textstyle = p_query_text_style((vert ? 2 : 1));
@@ -589,17 +588,17 @@ func pl_cbar(z, cmin=, cmax=, position=, vport=, adjust=,
   drawline = (is_void(width) || width >= 0);
 
   if (position == P_RIGHT) {
-    x0 = vport(2) + adjust + 0.022;
+    x0 = viewport(2) + adjust + 0.022;
     x1 = x0 + thickness;
-    y0 = vport(3);
-    y1 = vport(4);
+    y0 = viewport(3);
+    y1 = viewport(4);
     cells = cells(-,);
     z0 = y0;
     z1 = y1;
   } else if (position == P_BOTTOM) {
-    x0 = vport(1);
-    x1 = vport(2);
-    y0 = vport(3) - adjust - 0.045;
+    x0 = viewport(1);
+    x1 = viewport(2);
+    y0 = viewport(3) - adjust - 0.045;
     y1 = y0 - thickness;
     cells = cells(,-);
     z0 = x0;
@@ -704,33 +703,33 @@ func pl_points(y, x, dx=, xlo=, xhi=, dy=, ylo=, yhi=, size=, symbol=, ticks=,
 /* DOCUMENT pl_points, y, x;
          or pl_points, y, x, dx=sigma_x, dy=sigma_y;
 
-     Plots points (X,Y) with symbols and/or error  bars.  X, and Y may have any
-     dimensionality, but must  have the same number of elements.   If X is nil,
+     Plots points (X,Y) with symbols and/or error bars.  X, and Y may have any
+     dimensionality, but must have the same number of elements.  If X is nil,
      it defaults to indgen(numberof(Y)).
 
-     Keyword  SYMBOL may  be  used to  choose  the shape  of  the symbols  (see
-     p_symbol), by default an  'x' cross is used.  Keyword SIZE  may be used to
-     change the size of the symbols and  tick marks (SIZE acts as a multiplier,
-     default value  is 1.0).   If value  of keyword FILL  is true  (non-nil and
+     Keyword SYMBOL may be used to choose the shape of the symbols (see
+     p_symbol), by default an 'x' cross is used.  Keyword SIZE may be used to
+     change the size of the symbols and tick marks (SIZE acts as a multiplier,
+     default value is 1.0).  If value of keyword FILL is true (non-nil and
      non-zero), symbols are filled.  The default is to draw open symbols.
 
-     Keyword  COLOR  can be  used  to  specify  the  symbol color  (default  is
-     foreground  color),  see `p_color`  for  allowed  color values.   Keywords
-     EDGECOLOR and  FILLCOLOR can be used  to specify different colors  for the
+     Keyword COLOR can be used to specify the symbol color (default is
+     foreground color), see `p_color` for allowed color values.  Keywords
+     EDGECOLOR and FILLCOLOR can be used to specify different colors for the
      outline and the inside of the symbol.
 
-     Keywords XLO, XHI, YLO,  and/or YHI can be used to  indicate the bounds of
-     the  optional  error bars  (default  is  to  draw  no error  bars).   Only
-     specified bounds get  plotted as error bars. If value  of keyword TICKS is
+     Keywords XLO, XHI, YLO, and/or YHI can be used to indicate the bounds of
+     the optional error bars (default is to draw no error bars).  Only
+     specified bounds get plotted as error bars. If value of keyword TICKS is
      true (non-nil and non-zero), ticks get drawn at the endpoints of the error
      bars.  Alternatively, keywords DX and/or DY can be used to plot error bars
-     as segments  from XLO=X-DX to  XHI=X+DX and/or from YLO=Y-DY  to YHI=Y+DY.
-     If  keyword  DX (respectively  DY)  is  used, any  value  of  XLO and  XHI
+     as segments from XLO=X-DX to XHI=X+DX and/or from YLO=Y-DY to YHI=Y+DY.
+     If keyword DX (respectively DY) is used, any value of XLO and XHI
      (respectively YLO and YHI) is ignored.  The error bars and their ticks, if
-     any, are  drawn with the color  specified by keyword BARCOLOR  or, if this
+     any, are drawn with the color specified by keyword BARCOLOR or, if this
      keyword is unspecified, to the same color as the edges of the symbols.
 
-     The other  keywords are the same  as for pldj: LEGEND,  TYPE, WIDTH, COLOR
+     The other keywords are the same as for pldj: LEGEND, TYPE, WIDTH, COLOR
      (TYPE is only used to draw error bars).
 
 
@@ -936,23 +935,23 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
 /* DOCUMENT pl_box, x0, y0, x1, y1;
          or pl_box, [x0, x1, y0, y1];
 
-     Draw a  the outline of  rectangular box  with oposite corners  (x0,y0) and
+     Draw a the outline of rectangular box with oposite corners (x0,y0) and
      (x1,y1).
 
-     Keywords LINECOLOR, TYPE  and WIDTH can be used to  specify the attributes
-     of the  line to draw  the box frame.  If  LINECOLOR is not  specified, the
+     Keywords LINECOLOR, TYPE and WIDTH can be used to specify the attributes
+     of the line to draw the box frame.  If LINECOLOR is not specified, the
      value of keyword COLOR is used (which is "black" by default).  If WIDTH is
      ste to a strictly negative value, the frame is not drawn.
 
-     Keyword LABEL can be used to specify a  label to write at one of the sides
+     Keyword LABEL can be used to specify a label to write at one of the sides
      of the box.  Keyword ANCHOR indicates where to draw the label if any.  The
-     label position  for the different  anchor values (an integer  taken modulo
-     12) is indicated  in the figure below.  The default  anchor is 0 (top-left
-     and horizontal).  Keyword  MARGIN can be used to specify  the distance (in
-     the same units as the coordinates  of the box corners) the spacing between
+     label position for the different anchor values (an integer taken modulo
+     12) is indicated in the figure below.  The default anchor is 0 (top-left
+     and horizontal).  Keyword MARGIN can be used to specify the distance (in
+     the same units as the coordinates of the box corners) the spacing between
      the label and anchor position.  Keywords TEXTCOLOR, FONT and HEIGHT can be
-     used to  specify the attributes  of the drawn  text.  If TEXTCOLOR  is not
-     specified,  the value  of  keyword  COLOR is  used  (which  is "black"  by
+     used to specify the attributes of the drawn text.  If TEXTCOLOR is not
+     specified, the value of keyword COLOR is used (which is "black" by
      default).
 
      +- 0 --- 1 --- 2 -+
@@ -1068,9 +1067,9 @@ func pl_cbox(x0, y0, xsize, ysize, color=, legend=,
 /* DOCUMENT pl_cbox, x0, y0, size;
          or pl_cbox, x0, y0, xsize, ysize;
 
-     Draw  a SIZE  by SIZE  square  box or  a  XSIZE by  YSIZE rectangular  box
-     centered around (X0,Y0).   Keywords COLOR, WIDTH and TYPE can  be used and
-     have the same meaning as for  builtin routine "plg".  If keyword LEGEND is
+     Draw a SIZE by SIZE square box or a XSIZE by YSIZE rectangular box
+     centered around (X0,Y0).  Keywords COLOR, WIDTH and TYPE can be used and
+     have the same meaning as for builtin routine "plg".  If keyword LEGEND is
      not set, an empty legend will be used.
 
    SEE ALSO plg, pl_box, pl_circle, pl_ellipse,
@@ -1148,11 +1147,11 @@ func _pl_fbox /* plot filled rectangles, *PRIVATE* function, all arguments
 func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
 /* DOCUMENT pl_circle, x0, y0, r;
 
-     Draw circle(s) of radius R around  (X0,Y0).  Value of keyword NUMBER tells
+     Draw circle(s) of radius R around (X0,Y0).  Value of keyword NUMBER tells
      how many segments to use to approximate the circle (default 20).  Keywords
-     COLOR, WIDTH and TYPE  can be used and have the same  meaning as for "plg"
+     COLOR, WIDTH and TYPE can be used and have the same meaning as for "plg"
      routine (which see). If keyword LEGEND is not set, an empty legend will be
-     used.  Arguments may be conformable arrays  to draw several circles in one
+     used.  Arguments may be conformable arrays to draw several circles in one
      call (but keywords must have scalar values if any).
 
    SEE ALSO plg, pl_box, pl_cbox, pl_ellipse,
@@ -1193,13 +1192,13 @@ func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
 func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
 /* DOCUMENT pl_ellipse, x0, y0, a, b, theta;
 
-     Draw ellipse(s) centered at (X0,Y0) with  semi-axis A and B.  THETA is the
-     angle  (in degrees  counterclockwise) of  the axis  of semi-length  A with
-     horizontal axis.  Value  of keyword NUMBER tells how many  segments to use
-     to approximate  the circle (default  20).  Keywords COLOR, WIDTH  and TYPE
-     can be used  and have the same  meaning as for "plg"  routine (which see).
+     Draw ellipse(s) centered at (X0,Y0) with semi-axis A and B.  THETA is the
+     angle (in degrees counterclockwise) of the axis of semi-length A with
+     horizontal axis.  Value of keyword NUMBER tells how many segments to use
+     to approximate the circle (default 20).  Keywords COLOR, WIDTH and TYPE
+     can be used and have the same meaning as for "plg" routine (which see).
      If keyword LEGEND is not set, an empty legend will be used.  Arguments may
-     be conformable arrays  to draw several ellipses in one  call (but keywords
+     be conformable arrays to draw several ellipses in one call (but keywords
      must have scalar values if any).
 
    SEE ALSO plg, pl_box, pl_cbox, pl_circle,
@@ -1303,25 +1302,25 @@ func pl_hinton(a, x0, y0, x1, y1, cmin=, cmax=,
 /* DOCUMENT pl_hinton, a;
          or pl_hinton, a, x0, y0, x1, y1;
 
-     This  subroutine plots  a Hinton  diagram which  is a  way of  visualizing
-     numerical values  in the matrix/vector  A, popular in the  neural networks
-     and machine  learning literature.  Each element  of A is represented  by a
-     square, the area  occupied by the square is proportional  to the magnitude
-     of the value,  and the colour (black/white by default)  indicates its sign
+     This subroutine plots a Hinton diagram which is a way of visualizing
+     numerical values in the matrix/vector A, popular in the neural networks
+     and machine learning literature.  Each element of A is represented by a
+     square, the area occupied by the square is proportional to the magnitude
+     of the value, and the colour (black/white by default) indicates its sign
      (negative/positive).
 
-     Optional  arguments  X0,  Y0,  X1  and  Y1 can  be  used  to  specify  the
+     Optional arguments X0, Y0, X1 and Y1 can be used to specify the
      coordinates of the centers of the first and last cells.
 
-     Keywords  BG, NEG  and  POS can  be  used  to specify  the  colors of  the
+     Keywords BG, NEG and POS can be used to specify the colors of the
      background, the negative cells and the positive cells (respectively).  See
      p_color for means to specify a color.
 
-     Keyword PAD can  be used to specify the minimum  amount of padding between
-     cells.  PAD  is a relative value  in the range  0 (no padding) to  1 (full
+     Keyword PAD can be used to specify the minimum amount of padding between
+     cells.  PAD is a relative value in the range 0 (no padding) to 1 (full
      padding).  The default value is PAD = 0.05.
 
-     Keywords CMIN  and CMAX  can be  used to specify  the minimum  and maximum
+     Keywords CMIN and CMAX can be used to specify the minimum and maximum
      values to consider.
 
    SEE ALSO: plf, p_color.
@@ -1460,31 +1459,31 @@ func pl_title(str1, str2, str3, str4,
          or pl_title, title, xtitle, ytitle;
          or pl_title, top_title, bottom_title, left_title, right_title;
 
-     Plot title(s) and/or label(s) around  the current viewport.  With a single
-     argument,  TITLE  is  plotted  centered   above  the  viewport;  with  two
+     Plot title(s) and/or label(s) around the current viewport.  With a single
+     argument, TITLE is plotted centered above the viewport; with two
      arguments, XTITLE and YTITLE are plotted on the bottom and the left of the
-     viewport; otherwise, the different labels  are plotted around the viewport
+     viewport; otherwise, the different labels are plotted around the viewport
      (an empty string can be used to omit any of the labels).
 
      Keywords TOP, BOTTOM, LEFT and RIGHT can be used to adjust the position of
-     the text  on a given  side. The  value is in  NDC units, a  positive value
-     moves the label away  for the viewport while a negative  value moves it in
+     the text on a given side. The value is in NDC units, a positive value
+     moves the label away for the viewport while a negative value moves it in
      the opposite direction.
 
-     Keywords FONT, COLOR, and HEIGHT can  be used to customize the text style.
-     Alternatively,  the   TEXTSTYLE  keyword   can  be   used  to   specify  a
-     GpTextAttribs  structure  with  text  attributes.  By  default,  the  text
+     Keywords FONT, COLOR, and HEIGHT can be used to customize the text style.
+     Alternatively, the TEXTSTYLE keyword can be used to specify a
+     GpTextAttribs structure with text attributes.  By default, the text
      attributes of the x-axis are used except that, with a single argument, the
-     title is plotted in boldface and in  a slightly larger size.  As all other
-     lengths, text height  is given in NDC  units (not in points  as assumed by
+     title is plotted in boldface and in a slightly larger size.  As all other
+     lengths, text height is given in NDC units (not in points as assumed by
      the `plt` command).
 
-     Keyword EMPH  can be set  to specify how to  emphasis the TITLE  text (not
-     other labels).   EMPH can be a  scalar integer whose bits  indicate how to
-     emphasis text title:  use bold face if the lowest  significant bit of EMPH
-     is set  and/or magnify  text size  by a  factor 1.4  if the  second lowest
-     significant bit of EMPH is set.  For  finer tuning, EMPH can be set with a
-     floating  point value:  the absolute  value of  EMPH is  the magnification
+     Keyword EMPH can be set to specify how to emphasis the TITLE text (not
+     other labels).  EMPH can be a scalar integer whose bits indicate how to
+     emphasis text title: use bold face if the lowest significant bit of EMPH
+     is set and/or magnify text size by a factor 1.4 if the second lowest
+     significant bit of EMPH is set.  For finer tuning, EMPH can be set with a
+     floating point value: the absolute value of EMPH is the magnification
      factor and bold face is used if EMPH is strictly positive.  The default is
      to have no emphasis.
 
@@ -1511,7 +1510,7 @@ func pl_title(str1, str2, str3, str4,
   bottom = p_real(bottom, 0.0) + 2.3*height;
   left   = p_real(left,   0.0) + 3.2*height;
   right  = p_real(right,  0.0) + 1.3*height;
-  port = viewport();
+  port = _p_builtin_viewport();
 
   /* plt command takes the text height in points */
   textheight = height/P_NDC_POINT;
@@ -1570,31 +1569,30 @@ func pl_title(str1, str2, str3, str4,
   }
 }
 
-func pl_legend_box(nrows, ncols, vport=, anchor=,
+func pl_legend_box(nrows, ncols, viewport=, anchor=,
                    units=, length=, offset=,
                    type=, color=, width=)
 /* DOCUMENT lb = pl_legend_box(nrows, ncols);
 
-     Create a new legend bow in the current graphic.  The returned value is
-     an array of 3 values which be used by pl_legend_add() to add a line in
-     the legend box.
+     Create a new legend bow in the current graphic.  The returned value is an
+     array of 3 values which be used by pl_legend_add() to add a line in the
+     legend box.
 
-     Keywords WIDTH, TYPE and COLOR can be used to set the line width, type
-     and color  for the  frame of  the legend box.   If WIDTH  is set  to a
-     negative value the frame is not drawn.
+     Keywords WIDTH, TYPE and COLOR can be used to set the line width, type and
+     color for the frame of the legend box.  If WIDTH is set to a negative
+     value the frame is not drawn.
 
-     Keyword  ANCHOR can  be used  to set  the position  of the  legend box
-     within the viewport.   Keyword VP can be used to  specify the viewport
-     of  the plot  in NDC  coordinates.  By  default, the  viewport of  the
-     current plotting system is used.
+     Keyword ANCHOR can be used to set the position of the legend box within
+     the viewport.  Keyword VP can be used to specify the viewport of the plot
+     in NDC coordinates.  By default, the viewport of the current plotting
+     system is used.
 
-     The size  of the box is  NCOLS-by-NROWS muliplied by the  value of the
-     UNITS keyword ( by default) in  NDC units.  The default value of UNITS
-     corresponds the height  of the text used to label  the axis.  There is
-     an internal  UNITS/2 margin  in the  legend box.   The number  of rows
-     NROWS  should be  integer,  but the  number of  columns  NCOLS can  be
-     fractional.  The  items in  the legend  box are  left aligned  and the
-     legend box looks like:
+     The size of the box is NCOLS-by-NROWS muliplied by the value of the UNITS
+     keyword ( by default) in NDC units.  The default value of UNITS
+     corresponds the height of the text used to label the axis.  There is an
+     internal UNITS/2 margin in the legend box.  The number of rows NROWS
+     should be integer, but the number of columns NCOLS can be fractional.  The
+     items in the legend box are left aligned and the legend box looks like:
 
                      ncols
          <-------------------------->
@@ -1605,21 +1603,21 @@ func pl_legend_box(nrows, ncols, vport=, anchor=,
          | ----Z----        text2   |
          +--------------------------+
 
-     where the  first column is  to draw a  line (possibly with  a symbol).
-     Keywords LENGTH  and OFFSET can  be used to  specify the width  of the
-     first column and the spacing with the  text, both in the same units as
-     NCOLS and NROWS (by default LENGTH=2 and OFFSET=0.5).
+     where the first column is to draw a line (possibly with a symbol).
+     Keywords LENGTH and OFFSET can be used to specify the width of the first
+     column and the spacing with the text, both in the same units as NCOLS and
+     NROWS (by default LENGTH=2 and OFFSET=0.5).
 
 
    SEE ALSO: pl_legend_add, p_viewport_ndc.
  */
 {
-  /* get the viewport in NDC units */
-  if (is_void(vport)) vport = p_viewport_ndc();
-  x0 = vport(1);
-  x1 = vport(2);
-  y0 = vport(3);
-  y1 = vport(4);
+  /* Get the viewport in NDC units. */
+  if (is_void(viewport)) viewport = p_viewport_ndc();
+  x0 = viewport(1);
+  x1 = viewport(2);
+  y0 = viewport(3);
+  y1 = viewport(4);
 
   /* get the sizes and units */
   if (is_void(units)) {
@@ -1744,8 +1742,8 @@ func pl_text(text, x, y, tosys=, legend=, hide=, opaque=, orient=,
 /* DOCUMENT pl_text, txt, x, y;
 
      Plots text TXT (a string) at position (X,Y).  This subroutine is identical
-     to `plt` except  that the value of  the HEIGHT keyword is  given in points
-     (not  in NDC)  units and  that the  COLOR, FONT  and JUSTIFY  keywords use
+     to `plt` except that the value of the HEIGHT keyword is given in points
+     (not in NDC) units and that the COLOR, FONT and JUSTIFY keywords use
      `p_color`, `p_font` and `p_justify` functions to parse their value.
 
    SEE ALSO plt, p_color, p_font, p_justify.

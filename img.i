@@ -106,7 +106,7 @@ func img_plot(img, first=, scale=, cmin=, cmax=, top=, cbar=,
   if (cbar) {
     pl_cbar, img, cmin=cmin, cmax=cmax,
       levels=levels, labels=labels, nlabs=nticks, vert=vert,
-      adjust=adjust, vport=vport, format=format, color=color,
+      adjust=adjust, viewport=vport, format=format, color=color,
       width=width, height=height, ticklen=ticklen, font=font;
   }
 }
@@ -118,8 +118,8 @@ func img_cbar(z, cmin=, cmax=, vert=, vport=, adjust=,
 {
   write, format="WARNING - %s\n",
     "img_cbar is deprecated, use pl_cbar instead";
-  pl_cbar, z, cmin=cmin, cmax=cmax, vert=vert, vport=vport, adjust=adjust,
-    nlabs=nticks, levels=levels, labels=labels,
+  pl_cbar, z, cmin=cmin, cmax=cmax, vert=vert, viewport=vport,
+    adjust=adjust, nlabs=nticks, levels=levels, labels=labels,
     color=color, font=font, height=height, opaque=opaque, orient=orient,
     width=width, ticklen=ticklen, thickness=thickness, format=format;
 }

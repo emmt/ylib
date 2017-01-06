@@ -34,6 +34,15 @@
  *   PL_NAME = global variable for plotting
  */
 
+/* Save builtin version of the plotting commands. */
+if (is_func(limits)   == 2) _p_builtin_limits   = limits;
+if (is_func(range)    == 2) _p_builtin_range    = range;
+if (is_func(viewport) == 2) _p_builtin_viewport = viewport;
+if (is_func(logxy)    == 2) _p_builtin_logxy    = logxy;
+if (is_func(gridxy)   == 2) _p_builtin_gridxy   = gridxy;
+if (is_func(plsys)    == 2) _p_builtin_plsys    = plsys;
+if (is_func(window)   == 2) _p_builtin_window   = window;
+
 /* Miscellaneous constants. */
 P_TRUE = 1n;
 P_FALSE = 0n;
@@ -87,17 +96,17 @@ func p_query_text_style(axis, sys=, win=)
 /* DOCUMENT style = p_query_text_style();
          or style = p_query_text_style(axis);
 
-     Query  the   text  style(s)  of  the   plot  system  in  the   form  of  a
-     `GpTextAttribs` structure(s).   If AXIS  is unspecified,  an array  of two
-     `GpTextAttribs` is returned with the  horizontal and vertical axis styles.
-     Otherwise, the  style for the  specified axis (1  or 2 for  horizontal and
-     vertical  respectively,  although  Yorick  indexing  rules  are  used)  is
+     Query the text style(s) of the plot system in the form of a
+     `GpTextAttribs` structure(s).  If AXIS is unspecified, an array of two
+     `GpTextAttribs` is returned with the horizontal and vertical axis styles.
+     Otherwise, the style for the specified axis (1 or 2 for horizontal and
+     vertical respectively, although Yorick indexing rules are used) is
      returned.
 
-     Keyword  SYS can  be used  to query  the settings  of a  specific plotting
+     Keyword SYS can be used to query the settings of a specific plotting
      system.  By default, the current plotting system is considered.
 
-     Keyword WIN can  be used to query  the settings of a  specific window.  By
+     Keyword WIN can be used to query the settings of a specific window.  By
      default, the current window is considered.  Upon return the current window
      is left unchanged.
 
@@ -270,24 +279,24 @@ local p_color, p_icolor;
          or p_color, arg, def;         or p_icolor, arg, def;
 
      Parse the color argument ARG or (if ARG is void) the default value DEF and
-     return something  understandable by Yorick graphic  routines.  When called
+     return something understandable by Yorick graphic routines.  When called
      as a subroutine, ARG is redefined with the parsed color.
 
-     Recognized  colors  are: color  constants  (see  table below)  or  indexed
-     colors, RGB  triplets (as 3-element  char array), packed RGB  values, HTML
-     colors like  "#RRGGBB" (with "RR", "GG"  and "BB" the red,  green and blue
-     levels in  hexadecimal), X11 colors  as "firebrick" (case  is irrelevant),
-     and Gist  colors as  "magenta".  A  packed RGB color  is a  32-bit integer
+     Recognized colors are: color constants (see table below) or indexed
+     colors, RGB triplets (as 3-element char array), packed RGB values, HTML
+     colors like "#RRGGBB" (with "RR", "GG" and "BB" the red, green and blue
+     levels in hexadecimal), X11 colors as "firebrick" (case is irrelevant),
+     and Gist colors as "magenta".  A packed RGB color is a 32-bit integer
      built as:
 
         0x01000000 | (blue << 16) | (green << 8) | red
 
-     the function  `p_rgb()` implements  this.  An indexed  color is  either an
+     the function `p_rgb()` implements this.  An indexed color is either an
      integer in the range [0,255] or a real in the range [0,1].
 
-     The difference  between `p_color()`  and `p_icolor()`  is that  the former
-     returns  either an  indexed color  or a  RGB triplet  and is  suitable for
-     plotting routines  while the latter returns  either an indexed color  or a
+     The difference between `p_color()` and `p_icolor()` is that the former
+     returns either an indexed color or a RGB triplet and is suitable for
+     plotting routines while the latter returns either an indexed color or a
      packed RGB color and is suitable for graphic style sheets.
 
      Some color constants are pre-defined as global (external) symbols:
@@ -368,7 +377,7 @@ _P_PREDEFINED_COLORS = [0x01ffffffn,  // EXTRA (as WHITE)
 func p_rgb_colors(color, dims, default)
 /* DOCUMENT p_rgb_colors(col, dims, def);
 
-     Returns a 3-by-DIMS  array of RGB color(s) initialized with  the values of
+     Returns a 3-by-DIMS array of RGB color(s) initialized with the values of
      COL (or DEF if COL is void).
 
    SEE ALSO: p_parse_color, p_color.
@@ -424,7 +433,7 @@ func p_rgb_colors(color, dims, default)
 }
 
 /*
- * Below is how Yorick/Play deal with color values:
+ * Below is how Yorick/Play deals with color values:
  *
  *  #define P_IS_NDX(color) ((p_col_t)(color)<256UL)
  *  #define P_IS_RGB(color) ((p_col_t)(color)>=256UL)
@@ -455,10 +464,10 @@ local p_rgb_triplet_as_packed_color, p_packed_color_as_rgb_triplet;
 
       The functions converts between different color representations.  PKD is a
       packed color (red, green and blue levels encoded in a 32-bit int), IDX is
-      an indexed  color (in the  range 0:255 modulo 256),  RGB is a  triplet of
-      red,  green and  blue  levels.   The types  of  the  returned values  are
-      strictly enforced: `int` for a packed  color, `long` for an indexed color
-      and  `char`  for an  RBG  triplet.   Theses  functions are  however  more
+      an indexed color (in the range 0:255 modulo 256), RGB is a triplet of
+      red, green and blue levels.  The types of the returned values are
+      strictly enforced: `int` for a packed color, `long` for an indexed color
+      and `char` for an RBG triplet.  Theses functions are however more
       tolerant on the type of their inputs.
 
    SEE ALSO: p_color, p_parse_color, p_rgb.
@@ -515,14 +524,14 @@ local p_parse_color_type;
 func p_parse_color(val)
 /* DOCUMENT clr = p_parse_color(val);
 
-     Retrieve a color  in a form understandable by Yorick  plotting routines or
-     suitable for graphic style sheets.   See `p_color()` for the various forms
+     Retrieve a color in a form understandable by Yorick plotting routines or
+     suitable for graphic style sheets.  See `p_color()` for the various forms
      of a valid color value.
 
-     The global variable `p_parse_color_type` can be  used to check the type of
-     color which is returned: 1 for an  indexed color, 2 for a packed RGB color
-     and 3  for a  triplet of RGB  values.  Alternately, the  data type  of the
-     result informs about  the color representation: `int` for  a packed color,
+     The global variable `p_parse_color_type` can be used to check the type of
+     color which is returned: 1 for an indexed color, 2 for a packed RGB color
+     and 3 for a triplet of RGB values.  Alternately, the data type of the
+     result informs about the color representation: `int` for a packed color,
      `long` for an indexed color and `char` for an RBG triplet.
 
    SEE ALSO: p_color, color.
@@ -595,15 +604,15 @@ local _P_JUSTIFY_TABLE, p_justify;
          or p_justify, arg;
          or p_justify, arg, def;
 
-     Convert the argument ARG (or the default  value DEF if ARG is void and DEF
-     is specified)  into an integer  value for  the justify graphic  keyword of
-     Yorick graphic  routines.  When called  as a subroutine, ARG  is redefined
+     Convert the argument ARG (or the default value DEF if ARG is void and DEF
+     is specified) into an integer value for the justify graphic keyword of
+     Yorick graphic routines.  When called as a subroutine, ARG is redefined
      with the result.
 
-     The input justify value (of ARG or of  DEF) can be a string built from the
-     concatenation of the  horizontal alignment and the  vertical alignment (in
-     that order)  or an  integer equal  to the  sum of  the horizontal  and the
-     vertical  alignment  values.  The  tables  below  summarize the  different
+     The input justify value (of ARG or of DEF) can be a string built from the
+     concatenation of the horizontal alignment and the vertical alignment (in
+     that order) or an integer equal to the sum of the horizontal and the
+     vertical alignment values.  The tables below summarize the different
      possibilities.
 
        Horizontal alignment        Vertical alignment
@@ -657,12 +666,12 @@ local _P_ANCHOR_TABLE, p_anchor;
          or p_anchor, arg;
          or p_anchor, arg, def;
 
-     Convert the argument ARG (or the default  value DEF if ARG is void and DEF
-     is  specified) into  an integer  value for  the `anchor`  graphic keyword.
+     Convert the argument ARG (or the default value DEF if ARG is void and DEF
+     is specified) into an integer value for the `anchor` graphic keyword.
      When called as a subroutine, ARG is redefined with the result.
 
-     The input anchor value  (of ARG or of DEF) can be a  string or an integer.
-     The table below summarizes the  different possibilities and the predefined
+     The input anchor value (of ARG or of DEF) can be a string or an integer.
+     The table below summarizes the different possibilities and the predefined
      global symbols.
 
        Symbol         Expression          Value  String
@@ -779,12 +788,12 @@ local _P_SYMBOL_TABLE, p_symbol;
          or p_symbol, arg;
          or p_symbol, arg, def;
 
-     Convert the argument ARG (or the default  value DEF if ARG is void and DEF
-     is  specified) into  an integer  value for  the `symbol`  graphic keyword.
+     Convert the argument ARG (or the default value DEF if ARG is void and DEF
+     is specified) into an integer value for the `symbol` graphic keyword.
      When called as a subroutine, ARG is redefined with the result.
 
-     The input symbol value  (of ARG or of DEF) can be a  string or an integer.
-     The table below summarizes the  different possibilities:
+     The input symbol value (of ARG or of DEF) can be a string or an integer.
+     The table below summarizes the different possibilities:
 
          Value                          Description
          --------------------------------------------------------------------
@@ -804,13 +813,13 @@ local _P_SYMBOL_TABLE, p_symbol;
          -32 <= N < 0                   a polygon with -N sides
          --------------------------------------------------------------------
 
-     The one-character symbol may given as  lower/upper case and as a string or
-     a char.  For instance, 'v', 'V', "v"  and "V" all stand for an upside down
+     The one-character symbol may given as lower/upper case and as a string or
+     a char.  For instance, 'v', 'V', "v" and "V" all stand for an upside down
      triangle.
 
-     For convenience,  global variables P_POINT, P_PLUS,  P_ASTERISK, P_CIRCLE,
-     P_CROSS,   P_SQUARE,   P_DIAMOND,   P_STAR,   P_TRIANGLE,   P_TRIANGLE_UP,
-     P_TRIANGLE_DOWN,  P_TRIANGLE_LEFT, and  P_TRIANGLE_RIGHT are  defined with
+     For convenience, global variables P_POINT, P_PLUS, P_ASTERISK, P_CIRCLE,
+     P_CROSS, P_SQUARE, P_DIAMOND, P_STAR, P_TRIANGLE, P_TRIANGLE_UP,
+     P_TRIANGLE_DOWN, P_TRIANGLE_LEFT, and P_TRIANGLE_RIGHT are defined with
      the corresponding symbol code.
 
    SEE ALSO: pl_pnt, p_marker, p_color.
@@ -857,31 +866,33 @@ P_TRIANGLE_UP    =  9;
 P_TRIANGLE_DOWN  = 10;
 P_TRIANGLE_LEFT  = 11;
 P_TRIANGLE_RIGHT = 12;
-_P_SYMBOL_TABLE = save("point",1, ".",1,
-                       "plus",2, "+",2,
-                       "asterisk",3,
-                       "circle",4, "o",4, "O",4,
-                       "cross",5, "x",5, "X",5,
-                       "square",6, "#",6,
-                       "diamond",7, "@",7,
-                       "star",8, "*",8,
-                       "triangle",9, "triangleup",9, "^",9,
-                       "triangledown",10, "v",10, "V",10,
-                       "triangleleft",11, "<",11,
-                       "triangleright",12, ">",12);
+_P_SYMBOL_TABLE = save("point",P_POINT, ".",P_POINT,
+                       "plus",P_PLUS, "+",P_PLUS,
+                       "asterisk",P_ASTERISK,
+                       "circle",P_CIRCLE, "o",P_CIRCLE, "O",P_CIRCLE,
+                       "cross",P_CROSS, "x",P_CROSS, "X",P_CROSS,
+                       "square",P_SQUARE, "#",P_SQUARE,
+                       "diamond",P_DIAMOND, "@",P_DIAMOND,
+                       "star",P_STAR, "*",P_STAR,
+                       "triangle",P_TRIANGLE,
+                       "triangleup",P_TRIANGLE_UP, "^",P_TRIANGLE_UP,
+                       "triangledown",P_TRIANGLE_DOWN, "v",P_TRIANGLE_DOWN,
+                       "V",P_TRIANGLE_DOWN,
+                       "triangleleft",P_TRIANGLE_LEFT, "<",P_TRIANGLE_LEFT,
+                       "triangleright",P_TRIANGLE_RIGHT, ">",P_TRIANGLE_RIGHT);
 
-local p_marker;
+func p_marker(&arg, val)
 /* DOCUMENT p_marker(arg);
          or p_marker(arg, def);
          or p_marker, arg;
          or p_marker, arg, def;
 
-     Convert the argument ARG (or the default  value DEF if ARG is void and DEF
-     is specified)  into a char value  for the `marker` graphic  keyword.  When
+     Convert the argument ARG (or the default value DEF if ARG is void and DEF
+     is specified) into a char value for the `marker` graphic keyword.  When
      called as a subroutine, ARG is redefined with the result.
 
      The input marker value (of ARG or of DEF) can be a string or an integer (a
-     char or an integer ASCII code).   The table below summarizes the different
+     char or an integer ASCII code).  The table below summarizes the different
      possibilities:
 
          Symbol      Value   String       Marker
@@ -896,8 +907,7 @@ local p_marker;
          ----------------------------------------------------------------
 
    SEE ALSO: marker, marks, p_symbol, p_color.
- */
-func p_marker(&arg, val)
+*/
 {
   if (! is_void(arg)) {
     eq_nocopy, val, arg;
@@ -935,6 +945,57 @@ func p_marker(&arg, val)
   }
   error, "unrecognized marker value";
 }
+
+local P_NDC, P_RELATIVE, P_PIXEL, P_WORLD, _P_UNITS_TABLE;
+func p_units(&arg, val)
+/* DOCUMENT p_units(arg);
+         or p_units(arg, def);
+         or p_units, arg;
+         or p_units, arg, def;
+
+     Convert the argument ARG (or the default value DEF if ARG is void and DEF
+     is specified) into an integer value for the `units` graphic keyword.  When
+     called as a subroutine, ARG is redefined with the result.
+
+     The input units value (of ARG or of DEF) can be a string or an integer.
+     The table below summarizes the different possibilities:
+
+         Symbol      Value   String       Units
+         ----------------------------------------------------------------
+         P_NDC       0       "ndc", "NDC" Normalized Device Coordinates
+         P_RELATIVE  1       "relative"   Relative units in [0,1]
+         P_PIXEL     2       "pixel"      Pixel units
+         P_WORLD     3       "world"      World (data) units
+         ----------------------------------------------------------------
+
+   SEE ALSO: p_style.
+*/
+{
+  if (! is_void(arg)) {
+    eq_nocopy, val, arg;
+  }
+  if (is_scalar(val)) {
+    if (is_string(val)) {
+      /* Use the table of symbol names. */
+      val = p_get_member(_P_UNITS_TABLE, val);
+    }
+    if (is_integer(val) && 0 <= val && val <= 3) {
+      if (am_subroutine()) {
+        arg = long(val);
+        return;
+      } else {
+        return long(val);
+      }
+    }
+  }
+  error, "unknown units value";
+}
+P_NDC = 0;
+P_RELATIVE = 1;
+P_PIXEL = 2;
+P_WORLD = 3;
+_P_UNITS_TABLE = save("ndc",P_NDC, "NDC",P_NDC, "relative",P_RELATIVE,
+                      "pixel", P_PIXEL, "world", P_WORLD);
 
 /*---------------------------------------------------------------------------*/
 /* COLOR MAPS */
@@ -1084,7 +1145,7 @@ if (is_void(GfakeSystem) != Y_STRUCTDEF) {
 
 func p_split_systems
 /* DOCUMENT p_split_systems;
-     Split  each  current plotting  system  in  two  systems sharing  the  same
+     Split each current plotting system in two systems sharing the same
      viewport, the first one having its axis at bottom and left, the second one
      having its axis at top and right.
 
@@ -1109,11 +1170,11 @@ func p_subdivide_viewport(g, w, h, vp, keepaspect=, dpi=)
 /* DOCUMENT p_subdivide_viewport(g, w, h, vp);
          or p_subdivide_viewport(g, w, h);
 
-     Subdivide  a viewport  into smaller  viewports  arranged on  a grid.   The
-     result  is  a  4-by-NVP  array  of coordinates  with  NVP  the  number  of
+     Subdivide a viewport into smaller viewports arranged on a grid.  The
+     result is a 4-by-NVP array of coordinates with NVP the number of
      sub-viewports.
 
-     Argument G is  the description of the sub-viewports arrangement  of a grid
+     Argument G is the description of the sub-viewports arrangement of a grid
      of rectangular cells, it is a 4-by-NVP array of integers:
 
        G(1,k) = initial column number of k-th sub-viewport;
@@ -1121,29 +1182,29 @@ func p_subdivide_viewport(g, w, h, vp, keepaspect=, dpi=)
        G(3,k) = width (in number of cells) of k-th sub-viewport;
        G(4,k) = height (in number of cells) of k-th sub-viewport;
 
-     G can also  be flattened into a vector of  4*NVP integers.  Column numbers
+     G can also be flattened into a vector of 4*NVP integers.  Column numbers
      run from left to right, row numbers from top to bottom.
 
      Arguments W and H gives respectively the width and the height of the cells
-     of the grid.  They are both  vectors of nonnegative values with a strictly
+     of the grid.  They are both vectors of nonnegative values with a strictly
      positive sum.  W(j) is the width of the j-th column and H(i) is the height
-     of the i-th  row.  These sizes are  in relative units, they  are scaled so
-     that the global  bounding box of all the sub-viewports  are included in VP
-     (see below).  If keyword KEEPASPECT is  true, then the scaling is the same
+     of the i-th row.  These sizes are in relative units, they are scaled so
+     that the global bounding box of all the sub-viewports are included in VP
+     (see below).  If keyword KEEPASPECT is true, then the scaling is the same
      for both dimensions.  If there is any remaining space, the global bounding
-     box is centered  in VP.  In order to insert  spaces between sub-viewports,
-     rows and  columns (with  appropriate sizes)  have to  be left  between the
+     box is centered in VP.  In order to insert spaces between sub-viewports,
+     rows and columns (with appropriate sizes) have to be left between the
      viewports (see example below).
 
-     Optional argument VP is  the viewport [LEFT,RIGHT,BOTTOM,TOP] to subdivide
-     (coordinates  inclusive).  If  it  is  missing, the  size  of the  current
-     viewport is  used and NDC  coordinates are assumed.   If VP is  of integer
-     type, it is assumed to be given  in pixels.  Otherwise, VP must be of real
+     Optional argument VP is the viewport [LEFT,RIGHT,BOTTOM,TOP] to subdivide
+     (coordinates inclusive).  If it is missing, the size of the current
+     viewport is used and NDC coordinates are assumed.  If VP is of integer
+     type, it is assumed to be given in pixels.  Otherwise, VP must be of real
      type.  If VP is of real type and the DPI keyword (see below) is specified,
-     then VP is  assumed be in NDC coordinates and  small adjustements are made
+     then VP is assumed be in NDC coordinates and small adjustements are made
      to avoid overlapping sub-viewports.
 
-     Keyword DPI  can be  used to specify  the number of  pixels per  inch.  If
+     Keyword DPI can be used to specify the number of pixels per inch.  If
      unspecified, DPI is taken from the current graphics window.
 
   EXAMPLE:
@@ -1157,7 +1218,7 @@ func p_subdivide_viewport(g, w, h, vp, keepaspect=, dpi=)
 
        v = p_subdivide_viewport(g, [400, 10, 100], [250, 10, 250]);
 
-     will subdivide the current viewport in  3 sub-viewports as sketched in the
+     will subdivide the current viewport in 3 sub-viewports as sketched in the
      left part of the figure below.  Without spacing, i.e. with:
 
        v = p_subdivide_viewport(g, [400, 0, 100], [250, 0, 250], dpi=75);
@@ -1174,10 +1235,10 @@ func p_subdivide_viewport(g, w, h, vp, keepaspect=, dpi=)
          +------------+            +------------+
 
    SEE ALSO: viewport, p_geometry.
- */
+*/
 {
   if (is_void(vp)) {
-    vp = viewport();
+    vp = p_viewport_world();
   } else if (identof(vp) > Y_DOUBLE || numberof(vp) != 4) {
     error, "bad type/dimension for viewport";
   }
@@ -1321,7 +1382,7 @@ local P_NDC_PAGE_WIDTH, P_NDC_PAGE_HEIGHT;
          or P_NDC_PAGE_HEIGHT  US letter width in DNC units.
 
       The normalized device coordinates (NDC for short) are specific units used
-      by Gist (the Yorick graphic engine)  to measure dimensions in graphics in
+      by Gist (the Yorick graphic engine) to measure dimensions in graphics in
       a device independent way (one NDC units is about 11 inches).
 
       In order to set dimensions in NDC units, you may use the following
@@ -1333,7 +1394,7 @@ local P_NDC_PAGE_WIDTH, P_NDC_PAGE_HEIGHT;
                         = length_in_centimeters*P_NDC_CENTIMETER;
                         = length_in_millimeters*P_NDC_MILLIMETER;
 
-      where DPI  (for dots per inch)  is the resolution of  the graphic device.
+      where DPI (for dots per inch) is the resolution of the graphic device.
       Typically Yorick graphic windws have 75 or 100 dpi.
 */
 
@@ -1346,15 +1407,28 @@ P_NDC_INCH = 72.27*P_NDC_POINT;      /* one inch in NDC units */
 P_NDC_CENTIMETER = 2.54*P_NDC_INCH;  /* one centimeter in NDC units */
 P_NDC_MILLIMETER = 0.254*P_NDC_INCH; /* one centimeter in NDC units */
 
-func p_viewport_ndc(sys)
-/* DOCUMENT vp = p_viewport_ndc();
+func p_viewport_world(sys)
+/* DOCUMENT vp = p_viewport_world();
+         or vp = p_viewport_world(sys);
+         or vp = p_viewport_ndc();
          or vp = p_viewport_ndc(sys);
-     This function returns the viewport of  a plotting system in NDC units.  If
-     SYS  is  not  specified,  the   current  plotting  system  is  considered;
-     otherwise, SYS is the number of the plotting system.
 
-   SEE ALSO: get_style, plsys, viewport.
- */
+     These functions return the viewport of a plotting system in world or in
+     NDC units.  Optional parameter SYS is the plotting system number; if SYS
+     is not specified, the current plotting system is considered.  The result
+     is [xmin,xmax,ymin,ymax] or [0,0,0,0] if the plotting system is 0.
+
+   SEE ALSO: limits, gridxy, get_style, plsys, viewport.
+*/
+{
+  if (is_void(sys)) return _p_builtin_viewport();
+  old = plsys(sys);
+  res = _p_builtin_viewport();
+  if (old != sys) plsys, old;
+  return res;
+}
+
+func p_viewport_ndc(sys)
 {
   local landscape, systems, legends, clegends;
   get_style, landscape, systems, legends, clegends;
@@ -1365,7 +1439,7 @@ func p_viewport_ndc(sys)
 func p_geometry(win, landscape=)
 /* DOCUMENT g = p_geometry(win);
 
-     Yield parameters  to transform  pixel coordinates  to NDC  coordinates for
+     Yield parameters to transform pixel coordinates to NDC coordinates for
      window WIN.  If WIN is unspecified, the current window is considered.  The
      result is a vector of 6 doubles:
 
@@ -1380,24 +1454,24 @@ func p_geometry(win, landscape=)
           WIDTH ....... width of drawable region in pixels;
           HEIGHT ...... height of drawable region in pixels;
 
-     Coordinates  (XPIX,YPIX) of  drawable pixels  run from  top-left (0,0)  to
+     Coordinates (XPIX,YPIX) of drawable pixels run from top-left (0,0) to
      bottom-right (WIDTH-1,HEIGHT-1).  The conversion to NDC coordinates is:
 
           XNDC = XOFF + XPIX*ONE_PIXEL;
           YNDC = YOFF - YPIX*ONE_PIXEL;
 
-     The result G is the same as  `window_geometry` except that the size of the
-     drawing area is correctly set and  that the offsets are correctly computed
-     even after  a resize which  may change the  orientation of the  page.  The
-     drawing area  may be smaller  than the window  size (which is  returned by
+     The result G is the same as `window_geometry` except that the size of the
+     drawing area is correctly set and that the offsets are correctly computed
+     even after a resize which may change the orientation of the page.  The
+     drawing area may be smaller than the window size (which is returned by
      `window_geometry`) because it is limited to a page size (US letter format)
-     and corresponds to the part which  is correctly erased by `fma` and redraw
-     by  `redraw`.  The  region  used by  Gist to  display  coordinates is  not
+     and corresponds to the part which is correctly erased by `fma` and redraw
+     by `redraw`.  The region used by Gist to display coordinates is not
      considered as part of the drawing region.
 
-     Keyword LANDSCAPE  can be  explicitly set to  force landscape  or portrait
-     mode.   The default  page orientation  is landscape  if the  width of  the
-     plotting  area  is   strictly  larger  than  its   height;  otherwise  the
+     Keyword LANDSCAPE can be explicitly set to force landscape or portrait
+     mode.  The default page orientation is landscape if the width of the
+     plotting area is strictly larger than its height; otherwise the
      orientation is portrait.
 
      If window WIN does not exists, all output values are zero.
@@ -1484,10 +1558,10 @@ local p_get_style, p_set_style;
          or p_set_style, ptr;
          or p_set_style, ptr, win;
 
-     The `p_get_style()`  function retrieves  the style  of the  graphic window
+     The `p_get_style()` function retrieves the style of the graphic window
      WIN, or of the current window is WIN is unspecified.
 
-     The  `p_set_style()` function  applies  the  style stored  by  PTR to  the
+     The `p_set_style()` function applies the style stored by PTR to the
      graphic window WIN, or to the current window is WIN is unspecified.
 
      If WIN is specified, the current graphic window remains unchanged.
@@ -1532,7 +1606,7 @@ func p_get_style(win)
   return [&landscape, &systems, &legends, &clegends];
 }
 
-func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
+func p_style(win, geom=, verb=, aspect=, viewport=, units=, size=, color=,
              linecolor=, linetype=, linewidth=,
              gridlevel=, gridtype=, gridcolor=, gridwidth=,
              frame=, frametype=, framecolor=, framewidth=,
@@ -1541,21 +1615,21 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
 /* DOCUMENT p_style, win, key=val, ...;
          or p_style(win, key=val, ...);
 
-     Helper routine  to build  a style  sheet from  optional keywords  and with
-     otherwise sensible settings.  Optional argument  WIN is the graphic window
-     for  which the  style is  designed,  if unspecified,  the current  graphic
-     window is  used.  When called  as a subroutine,  the style of  the graphic
-     window is modified.   When called as a function, the  current style is not
+     Helper routine to build a style sheet from optional keywords and with
+     otherwise sensible settings.  Optional argument WIN is the graphic window
+     for which the style is designed, if unspecified, the current graphic
+     window is used.  When called as a subroutine, the style of the graphic
+     window is modified.  When called as a function, the current style is not
      modified and the return value is:
 
          [&landscape, &systems, &legends, &clegends]
 
      which can be applied to a given window with `p_set_style()`.
 
-     If  there  are more  than  one  viewport, they  will  all  share the  same
-     settings.   If  that is  inappropriate,  you  can  call `p_style()`  as  a
-     function to  get the  attributes of  all the plotting  systems (as  many a
-     there are viewports),  edit these attributes and finally set  the style to
+     If there are more than one viewport, they will all share the same
+     settings.  If that is inappropriate, you can call `p_style()` as a
+     function to get the attributes of all the plotting systems (as many a
+     there are viewports), edit these attributes and finally set the style to
      the target window.
 
 
@@ -1564,25 +1638,30 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
      Keywords are used to specify the attributes of the graphic style elements.
      Some attributes inherit from others, so that several attributes can be set
      by a single keyword.  The values of the attributes are filtered by helpers
-     like p_color, p_font,  etc.; as a result, all X11  colors or HTML notation
+     like p_color, p_font, etc.; as a result, all X11 colors or HTML notation
      are supported.  The following keywords are supported:
 
-     vport = The  viewport(s)  in NDC  coordinates as  [XMIN,XMAX,YMIN,YMAX] or
-            [[XMIN1,XMAX1,YMIN1,YMAX1],[XMIN2,XMAX2,YMIN2,YMAX2],...].       If
-            unspecified,  a single  viewport is  chosen to  fit in  the graphic
-            window (with some  margins for the axis labels and  the titles) and
-            according to the aspect ratio.
+     viewport = The viewport(s) as [XMIN,XMAX,YMIN,YMAX] or
+            [[XMIN1,XMAX1,YMIN1,YMAX1],[XMIN2,XMAX2,YMIN2,YMAX2],...].  If
+            unspecified, a single viewport is chosen to fit in the graphic
+            window (with some margins for the axis labels and the titles) and
+            according to the aspect ratio.  Keyword UNITS can be used to
+            specify the units of the viewport(s) coordinates which are NDC
+            (Normalized Device Coordinates) by default.
 
-     aspect = Aspect ratio (default to fit  the window) as the width divided by
+     units = Units for the viewport(s) coordinates.  Allowed values are "ndc"
+            (the default), "relative", or "pixel" (see p_units).
+
+     aspect = Aspect ratio (default to fit the window) as the width divided by
             the height of the viewport.
 
-     size =  Default size (in  NDC units) for  attributes such as  tick length,
+     size = Default size (in NDC units) for attributes such as tick length,
             font height, etc.  The default value is computed from the height of
-            the viewport(s) to warrant a  certain constant aspect of the plots.
-            This  is  however  "not  quite   an  exact  science"  (Karadoc,  in
+            the viewport(s) to warrant a certain constant aspect of the plots.
+            This is however "not quite an exact science" (Karadoc, in
             Kamelott).
 
-     geom  = Geometrical  parameters  of  the window  for  which  the style  is
+     geom = Geometrical parameters of the window for which the style is
             designed (see p_geometry).  If not set, it is taken from WIN.
 
      ndigits = Number of digits for axis labels (default is 4).
@@ -1609,7 +1688,7 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
 
      gridwidth = Width of the grid lines; inherits from LINEWIDTH/2.
 
-     gridlevel = The tick  level up to which draw grid lines  (default is 1, to
+     gridlevel = The tick level up to which draw grid lines (default is 1, to
             draw grid lines only at major ticks).
 
      ticktype = Line type for the axis ticks; inherits from LINETYPE.
@@ -1635,29 +1714,6 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
  */
 {
   local landscape;
-  if (is_void(vport)) {
-    if (! is_void(aspect)) {
-      landscape = (aspect > 1.0);
-    }
-  } else {
-    /* Use the specified viewport to guess the lanscape mode. */
-    if (! is_void(aspect)) {
-      error, "viewport and aspect cannot be both specified";
-    }
-    vpdims = dimsof(vport);
-    if (! (is_integer(vport) || is_real(vport)) ||
-        vpdims(1) > 2 || vpdims(1) < 1 || vpdims(2) != 4) {
-      error, "invalid viewport";
-    }
-    vport = double(vport);
-    xmin = vport(1,..);
-    xmax = vport(2,..);
-    ymin = vport(3,..);
-    ymax = vport(4,..);
-    nvp = numberof(xmin);
-    landscape = ((max(max(xmin),max(xmax)) - min(min(xmin),min(xmax))) >
-                 (max(max(ymin),max(ymax)) - min(min(ymin),min(ymax))));
-  }
   if (is_void(geom)) {
     if (is_void(win) && ! am_subroutine()) {
       /* Takes the geometry of a standard 75 DPI Gist window to avoid the
@@ -1678,11 +1734,7 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
   ybias     = geom(4);
   width     = geom(5);
   height    = geom(6);
-  if (is_void(landscape)) {
-    landscape = (width > height);
-  }
-
-  if (is_void(vport)) {
+  if (is_void(viewport)) {
     /* Compute a default single viewport with some margins. */
     nvp = 1;
     xmargin = width/7.5;
@@ -1697,11 +1749,59 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
         xmargin = (width - aspect*(height - 2.0*ymargin))/2.0;
       }
     }
+    if (is_void(landscape)) {
+      landscape = (aspect > 1.0);
+    }
     xmin = xbias + xmargin*ONE_PIXEL;
     xmax = xbias + (width - xmargin)*ONE_PIXEL;
     ymin = ybias - (height - ymargin)*ONE_PIXEL;
     ymax = ybias - ymargin*ONE_PIXEL;
-    vport = [xmin, xmax, ymin, ymax];
+    viewport = [xmin, xmax, ymin, ymax];
+  } else {
+    /* Use the specified viewport to guess the lanscape mode. */
+    if (! is_void(aspect)) {
+      error, "viewport and aspect cannot be both specified";
+    }
+    vpdims = dimsof(viewport);
+    if (identof(viewport) > Y_DOUBLE || vpdims(1) < 1 || vpdims(2) != 4) {
+      error, "invalid viewport";
+    }
+    viewport = double(viewport);
+    xmin = viewport(1,..);
+    xmax = viewport(2,..);
+    ymin = viewport(3,..);
+    ymax = viewport(4,..);
+    nvp = numberof(xmin);
+    p_units, units, P_NDC;
+    if (units != P_NDC) {
+      if (units == P_RELATIVE) {
+        /* Relative size. */
+        xscl = width*ONE_PIXEL;
+        yscl = height*ONE_PIXEL;
+        xoff = xbias;
+        yoff = ybias - yscl;
+      } else if (units == P_PIXEL) {
+        /* Pixel units. */
+        xscl = +ONE_PIXEL;
+        yscl = -ONE_PIXEL;
+        xoff = xbias;
+        yoff = ybias;
+      } else {
+        error, "invalid units";
+      }
+      xmin = xoff + xscl*xmin;
+      xmax = xoff + xscl*xmax;
+      ymin = yoff + yscl*ymin;
+      ymax = yoff + yscl*ymax;
+      viewport(1,..) = xmin;
+      viewport(2,..) = xmax;
+      viewport(3,..) = ymin;
+      viewport(4,..) = ymax;
+    }
+    if (is_void(landscape)) {
+      landscape = ((max(max(xmin),max(xmax)) - min(min(xmin),min(xmax))) >
+                   (max(max(ymin),max(ymax)) - min(min(ymin),min(ymax))));
+    }
   }
 
   p_real, size, 0.035*max(abs(ymax - ymin));
@@ -1783,11 +1883,15 @@ func p_style(win, geom=, verb=, aspect=, vport=, size=, color=,
                        yOver = ymax -  3.0*textheight);
   ticks = p_tick_style(horiz=horiz, vert=vert,
                        frame=frame, frameStyle=framestyle);
-  systems = p_system(viewport=vport(,1), ticks=ticks, legend="Viewport 1");
+  systems = p_system(viewport=viewport(,1), ticks=ticks, legend="Viewport 1");
   if (nvp > 1) {
-    systems = array(systems, nvp);
-    systems.viewport = vport;
-    systems.legend = swrite(format="Viewport %d", indgen(nvp));
+    dims = vpdims(2:0);
+    dims(1) = vpdims(1) - 1;
+    systems = array(systems, dims);
+    systems.viewport = viewport;
+    legend = swrite(format="Viewport %d", indgen(nvp));
+    reshape, legend, string, dims;
+    systems.legend = legend;
   }
   if (am_subroutine()) {
     if (is_void(win)) {
@@ -1830,11 +1934,11 @@ local P_DEFAULT_LINE_ATTRIBS;
 func p_line_attribs(def, color=, type=, width=)
 /* DOCUMENT p_line_attribs(def, key1=val1, key2=val2, ...);
 
-     Helper function to  define a GpLineAttribs structure.  DEF  is an optional
+     Helper function to define a GpLineAttribs structure.  DEF is an optional
      GpLineAttribs structure to provide default values for the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF  is not  specified,  P_DEFAULT_LINE_ATTRIBS is  used.   All the  other
-     arguments are attributes specified  by keywords.  The available attributes
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_LINE_ATTRIBS is used.  All the other
+     arguments are attributes specified by keywords.  The available attributes
      are:
 
        color=
@@ -1858,11 +1962,11 @@ func p_text_attribs(def, color=, font=, height=, orient=,
                     alignH=, alignV=, opaque=)
 /* DOCUMENT p_text_attribs(def, key1=val1, key2=val2, ...);
 
-     Helper function to  define a GpTextAttribs structure.  DEF  is an optional
+     Helper function to define a GpTextAttribs structure.  DEF is an optional
      GpTextAttribs structure to provide default values for the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF  is not  specified,  P_DEFAULT_TEXT_ATTRIBS is  used.   All the  other
-     arguments are attributes specified  by keywords.  The available attributes
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_TEXT_ATTRIBS is used.  All the other
+     arguments are attributes specified by keywords.  The available attributes
      are:
 
        color=
@@ -1898,11 +2002,11 @@ func p_axis_style(def, nMajor=, nMinor=, logAdjMajor=, logAdjMinor=,
                   tickStyle=, gridStyle=, textStyle=, xOver=, yOver=)
 /* DOCUMENT p_axis_style(def, key1=val1, key2=val2, ...);
 
-     Helper function to  define a GpTextAttribs structure.  DEF  is an optional
+     Helper function to define a GpTextAttribs structure.  DEF is an optional
      GpTextAttribs structure to provide default values for the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF  is  not  specified,  P_DEFAULT_AXIS_STYLE is  used.   All  the  other
-     arguments are attributes specified  by keywords.  The available attributes
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_AXIS_STYLE is used.  All the other
+     arguments are attributes specified by keywords.  The available attributes
      are:
 
        nMajor=
@@ -1966,11 +2070,11 @@ local P_DEFAULT_TICK_STYLE;
 func p_tick_style(def, horiz=, vert=, frame=, frameStyle=)
 /* DOCUMENT p_tick_style(def, key1=val1, key2=val2, ...);
 
-     Helper function to  define a GpTickAttribs structure.  DEF  is an optional
+     Helper function to define a GpTickAttribs structure.  DEF is an optional
      GpTickAttribs structure to provide default values for the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF  is  not  specified,  P_DEFAULT_AXIS_STYLE is  used.   All  the  other
-     arguments are attributes specified  by keywords.  The available attributes
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_AXIS_STYLE is used.  All the other
+     arguments are attributes specified by keywords.  The available attributes
      are:
 
        horiz = GaAxisStyle structure for the horizontal axis.
@@ -1997,10 +2101,10 @@ local P_DEFAULT_VIEWPORT, P_DEFAULT_LEGEND, P_DEFAULT_SYSTEM;
 func p_system(def, viewport=, ticks=, legend=)
 /* DOCUMENT p_system(def, key1=val1, key2=val2, ...);
 
-     Helper function  to define  a GFakeSystem structure.   DEF is  an optional
-     GFakeSystem structure to  provide default values for  the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF is not  specified, P_DEFAULT_SYSTEM is used.  All  the other arguments
+     Helper function to define a GFakeSystem structure.  DEF is an optional
+     GFakeSystem structure to provide default values for the attributes which
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_SYSTEM is used.  All the other arguments
      are attributes specified by keywords.  The available attributes are:
 
        viewport = the viewport coordinates [xmin,xmax,ymin,ymax] in NDC units.
@@ -2026,11 +2130,11 @@ local P_DEFAULT_LEGEND_BOX, P_DEFAULT_CLEGEND_BOX;
 func p_legend_box(def, x=, y=, dx=, dy=, textStyle=, nchars=, nlines=, nwrap=)
 /* DOCUMENT p_system(def, key1=val1, key2=val2, ...);
 
-     Helper function  to define  a GeLegendBox structure.   DEF is  an optional
-     GeLegendBox structure to  provide default values for  the attributes which
-     are not explicitly specified as  keywords (key1=val1, key2=val2, ...).  If
-     DEF  is  not  specified,  P_DEFAULT_LEGEND_BOX is  used.   All  the  other
-     arguments are attributes specified  by keywords.  The available attributes
+     Helper function to define a GeLegendBox structure.  DEF is an optional
+     GeLegendBox structure to provide default values for the attributes which
+     are not explicitly specified as keywords (key1=val1, key2=val2, ...).  If
+     DEF is not specified, P_DEFAULT_LEGEND_BOX is used.  All the other
+     arguments are attributes specified by keywords.  The available attributes
      are:
 
        x, y      - NDC location of this legend box;
@@ -2305,8 +2409,9 @@ _P_X11_COLOR_VALUES = \
 func p_default(&arg, def)
 /* DOCUMENT p_default(arg, def);
          or p_default, arg, def;
-     When  called as  a  function, returns  DEF  if ARG  is  void; returns  ARG
-     otherwise.   When called  as  a subroutine,  if ARG  is  undefined, it  is
+
+     When called as a function, returns DEF if ARG is void; returns ARG
+     otherwise.  When called as a subroutine, if ARG is undefined, it is
      redefined with the value of DEF.
 
    SEE ALSO: p_boolean, p_integer, p_real, p_string.
@@ -2324,7 +2429,8 @@ func p_default(&arg, def)
 func p_boolean(&arg, def)
 /* DOCUMENT p_boolean(arg, def);
          or p_boolean, arg, def;
-     When called as a  function, returns a boolean value given by  ARG if it is
+
+     When called as a function, returns a boolean value given by ARG if it is
      non-void and DEF otherwise.  When called as a subroutine, ARG is redefined
      with the result.
 
@@ -2346,8 +2452,9 @@ func p_boolean(&arg, def)
 func p_integer(&arg, def)
 /* DOCUMENT p_integer(arg, def);
          or p_integer, arg, def;
+
      When called as a function, returns a long integer value given by ARG if it
-     is  non-void and  DEF  otherwise.  When  called as  a  subroutine, ARG  is
+     is non-void and DEF otherwise.  When called as a subroutine, ARG is
      redefined with the result.
 
    SEE ALSO: p_default, p_boolean, p_real, p_string.
@@ -2368,8 +2475,9 @@ func p_integer(&arg, def)
 func p_real(&arg, def)
 /* DOCUMENT p_real(arg, def);
          or p_real, arg, def;
+
      When called as a function, returns a double precision floating point value
-     given  by ARG  if it  is non-void  and DEF  otherwise.  When  called as  a
+     given by ARG if it is non-void and DEF otherwise.  When called as a
      subroutine, ARG is redefined with the result.
 
    SEE ALSO: p_default, p_boolean, p_integer, p_string.
@@ -2390,8 +2498,9 @@ func p_real(&arg, def)
 func p_string(&arg, def)
 /* DOCUMENT p_string(arg, def);
          or p_string, arg, def;
-     When called as a  function, returns a scalar string value  given by ARG if
-     it is  non-void and DEF  otherwise.  When called  as a subroutine,  ARG is
+
+     When called as a function, returns a scalar string value given by ARG if
+     it is non-void and DEF otherwise.  When called as a subroutine, ARG is
      redefined with the result.
 
    SEE ALSO: p_default, p_boolean, p_integer, p_real.
@@ -2415,8 +2524,8 @@ func p_string(&arg, def)
 func p_real_vector(&a, n, name)
 /* DOCUMENT na = p_real_vector(a, n, name);
 
-     Make argument A into  a vector of reals and return its length.   If N > 0,
-     the vector length must be N (if A  is a scalar, it is duplicated N times).
+     Make argument A into a vector of reals and return its length.  If N > 0,
+     the vector length must be N (if A is a scalar, it is duplicated N times).
      Argument NAME is used for error messages.
 
    SEE ALSO: is_vector.
@@ -2444,11 +2553,11 @@ local p_has_member, p_get_member;
 /* DOCUMENT tst = p_has_member(grp, key);
          or val = p_get_member(grp, key);
 
-     The `p_has_member()`  function checks  whether KEY is  a member  of Yorick
+     The `p_has_member()` function checks whether KEY is a member of Yorick
      group object GRP.
 
      The `p_get_member()` function returns the value VAL stored in Yorick group
-     object GRP for  the string KEY.  The result is  the same as GRP(noop(KEY))
+     object GRP for the string KEY.  The result is the same as GRP(noop(KEY))
      except that an empty result is returned if the key is not found (or if GRP
      is not a group object).
 
@@ -2467,7 +2576,8 @@ func p_get_member(grp, key)
 
 func p_span(a, b, n)
 /* DOCUMENT p_span(a, b, n);
-     The function p_span() returns an array  of N doubles equally spaced from A
+
+     The function p_span() returns an array of N doubles equally spaced from A
      to B.  This function is more simple than built-in span() -- in particular,
      A and B must be scalars -- but avoids rounding errors.
 
@@ -2486,13 +2596,13 @@ local p_printf, p_fprintf, p_sprintf, p_warn, p_error;
          or p_warn, fmt, ...;
          or p_error, fmt, ...;
 
-     The functions p_printf,  p_fprintf and p_sprintf micimics  the C functions
-     printf,  fprintf  and sprintf:  p_printf  writes  a formatted  message  to
-     standard output, p_fprintf  writes a formatted message to  the text stream
+     The functions p_printf, p_fprintf and p_sprintf micimics the C functions
+     printf, fprintf and sprintf: p_printf writes a formatted message to
+     standard output, p_fprintf writes a formatted message to the text stream
      FILE and p_sprintf returns a formatted string.  The format is specified by
      FMT which is a string with "%" directives for each other arguments.
 
-     The subroutines p_warn  and p_error are simple wrappers  to print warnings
+     The subroutines p_warn and p_error are simple wrappers to print warnings
      or raise errors with a formatted message.
 
    SEE ALSO: write, swrite, error.
@@ -2618,55 +2728,52 @@ func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
 
      In the first form, restores all four plot limits to extreme values.
 
-     In the second form, sets the plot limits in the current coordinate
-     system to XMIN, XMAX, YMIN, YMAX, which may be nil or omitted to leave
-     the corresponding limit unchanged, a number to fix the corresponding
-     limit to a specified value, or the string "e" to make the
-     corresponding limit take on the extreme value of the currently
-     displayed data.
+     In the second form, sets the plot limits in the current coordinate system
+     to XMIN, XMAX, YMIN, YMAX, which may be nil or omitted to leave the
+     corresponding limit unchanged, a number to fix the corresponding limit to
+     a specified value, or the string "e" to make the corresponding limit take
+     on the extreme value of the currently displayed data.
 
-     If present, the square keyword determines whether limits marked as
-     extreme values will be adjusted to force the x and y scales to be
-     equal (square=1) or not (square=0, the default).  If present, the nice
-     keyword determines whether limits will be adjusted to nice values
-     (nice=1) or not (nice=0, the default).  There is a subtlety in the
-     meaning of "extreme value" when one or both of the limits on the
-     OPPOSITE axis have fixed values -- does the "extreme value" of the
-     data include points which will not be plotted because their other
-     coordinate lies outside the fixed limit on the opposite axis
-     (restrict=0, the default), or not (restrict=1)?
+     If present, the square keyword determines whether limits marked as extreme
+     values will be adjusted to force the x and y scales to be equal (square=1)
+     or not (square=0, the default).  If present, the nice keyword determines
+     whether limits will be adjusted to nice values (nice=1) or not (nice=0,
+     the default).  There is a subtlety in the meaning of "extreme value" when
+     one or both of the limits on the OPPOSITE axis have fixed values -- does
+     the "extreme value" of the data include points which will not be plotted
+     because their other coordinate lies outside the fixed limit on the
+     opposite axis (restrict=0, the default), or not (restrict=1)?
 
      If called as a function, limits returns an array of 5 doubles;
      OLD_LIMITS(1:4) are the current xmin, xmax, ymin, and ymax, and
      int(OLD_LIMITS(5)) is a set of flags indicating extreme values and the
      square, nice, restrict, and log flags.
 
-     In the fourth form, OLD_LIMITS is as returned by a previous limits
-     call, to restore the limits to a previous state.
+     In the fourth form, OLD_LIMITS is as returned by a previous limits call,
+     to restore the limits to a previous state.
 
      In an X window, the limits may also be adjusted interactively with the
      mouse.  Drag left to zoom in and pan (click left to zoom in on a point
-     without moving it), drag middle to pan, and click (and drag) right to
-     zoom out (and pan).  If you click just above or below the plot, these
-     operations will be restricted to the x-axis; if you click just to the
-     left or right, the operations are restricted to the y-axis.  A
-     ctrl-left click, drag, and release will expand the box you dragged
-     over to fill the plot (other popular software zooms with this
-     paradigm).  If the rubber band box is not visible with ctrl-left
-     zooming, try ctrl-middle or ctrl-right for alternate XOR masks.  Such
-     mouse-set limits are equivalent to a limits command specifying all
-     four limits EXCEPT that the unzoom command can revert to the limits
-     before a series of mouse zooms and pans.
+     without moving it), drag middle to pan, and click (and drag) right to zoom
+     out (and pan).  If you click just above or below the plot, these
+     operations will be restricted to the x-axis; if you click just to the left
+     or right, the operations are restricted to the y-axis.  A ctrl-left click,
+     drag, and release will expand the box you dragged over to fill the plot
+     (other popular software zooms with this paradigm).  If the rubber band box
+     is not visible with ctrl-left zooming, try ctrl-middle or ctrl-right for
+     alternate XOR masks.  Such mouse-set limits are equivalent to a limits
+     command specifying all four limits EXCEPT that the unzoom command can
+     revert to the limits before a series of mouse zooms and pans.
 
-     Holding the shift key and pressing the left mouse button is equivalent
-     to pressing the middle mouse button.  Similarly, pressing meta-left is
+     Holding the shift key and pressing the left mouse button is equivalent to
+     pressing the middle mouse button.  Similarly, pressing meta-left is
      equivalent to the right button.  This permits access to the middle and
-     right button functions on machines (e.g.- most laptops) with two
-     button or one button mice.
+     right button functions on machines (e.g.- most laptops) with two button or
+     one button mice.
 
-     The limits you set using the limits or range functions carry over to
-     the next plot -- that is, an fma operation does NOT reset the limits
-     to extreme values.
+     The limits you set using the limits or range functions carry over to the
+     next plot -- that is, an fma operation does NOT reset the limits to
+     extreme values.
 
    SEE ALSO: plsys, range, logxy, zoom_factor, unzoom, plg, viewport
  */
@@ -2703,19 +2810,16 @@ func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
   return old_limits;
 }
 errs2caller, _p_limits;
-if (is_func(limits) == 2) {
-  _p_builtin_limits = limits;
-}
 limits = _p_limits;
 
 _P_LIN_TICKS_RELATIVE_LENGTH = [1.0, 0.64, 0.36, 0.18, 0.09];
 _P_LOG_TICKS_RELATIVE_LENGTH = [1.0, 0.0, 0.0, 0.0, 0.0];
 func _p_logxy(xflag, yflag)
 /* DOCUMENT logxy, xflag, yflag;
-     Sets the linear/log axis scaling flags for the current coordinate
-     system.  XFLAG and YFLAG may be nil or omitted to leave the
-     corresponding axis scaling unchanged, 0 to select linear scaling,
-     or 1 to select log scaling.
+
+     Sets the linear/log axis scaling flags for the current coordinate system.
+     XFLAG and YFLAG may be nil or omitted to leave the corresponding axis
+     scaling unchanged, 0 to select linear scaling, or 1 to select log scaling.
 
     SEE ALSO: plsys, limits, range, plg, gridxy
  */
@@ -2754,9 +2858,6 @@ func _p_logxy(xflag, yflag)
   _p_builtin_logxy, xflag, yflag;
 }
 errs2caller, _p_logxy;
-if (is_func(logxy) == 2) {
-  _p_builtin_logxy = logxy;
-}
 logxy = _p_logxy;
 
 /*---------------------------------------------------------------------------*/
