@@ -357,6 +357,7 @@ P_GRAYB   = 243;
 P_GRAYA   = 242; /* lightest gray */
 P_XOR     = 241;
 P_EXTRA   = 240;
+
 _P_PREDEFINED_COLORS = [0x01ffffffn,  // EXTRA (as WHITE)
                         0x01000000n,  // XOR (as BLACK)
                         0x01d6d6d6n,  // GRAYA
@@ -519,7 +520,33 @@ func p_packed_color_as_rgb_triplet(p)
   return char([p&0xff, (p>>8)&0xff, (p>>16)&0xff]);
 }
 
-local _P_GIST_COLOR_TABLE, _P_X11_COLOR_TABLE;
+local _P_COLOR_TABLE, p_add_named_colors, p_add_named_color;
+/* DOCUMENT p_add_named_color, name, value;
+         or p_add_named_colors, names, values;
+
+     These subroutines add new named color(s) to the global database.
+
+   SEE ALSO p_parse_color.
+*/
+
+if (is_void(_P_COLOR_TABLE)) _P_COLOR_TABLE = save();
+
+func p_add_named_color(name, value)
+{
+  save, _P_COLOR_TABLE, strcase(0n, name), value;
+}
+
+func p_add_named_colors(names, values)
+{
+  n = numberof(names);
+  if (numberof(values) != n) {
+    error, "there must be as many color values as names";
+  }
+  for (i = 1; i <= n; ++i) {
+    p_add_named_color, names(i), values(i);
+  }
+}
+
 local p_parse_color_type;
 func p_parse_color(val)
 /* DOCUMENT clr = p_parse_color(val);
@@ -538,6 +565,21 @@ func p_parse_color(val)
  */
 {
   extern p_parse_color_type;
+
+  /* If argument is a scalar string, search the color databases (using an OXY
+     object as a hash table is about 20 times faster than strfind). */
+  name = [];
+  named = 0n;
+  if (is_string(val) && is_scalar(val)) {
+    col = p_get_member(_P_COLOR_TABLE, strcase(0n, val));
+    if (! is_void(col)) {
+      eq_nocopy, name, val;
+      eq_nocopy, val, col;
+      named = 1n;
+    }
+  }
+
+  /* Parse the color value. */
   if (is_scalar(val)) {
     if (is_integer(val)) {
       val = long(val);
@@ -550,40 +592,31 @@ func p_parse_color(val)
         p_parse_color_type = 1;
         return (val&0xff); /* indexed colors are taken modulo 256 */
       }
+      error, swrite(format="unrecognized color: 0x%08x", val);
     } else if (is_string(val)) {
-      /* First, search the color databases (using an OXY object as a hash table
-         is about 20 times faster than strfind). */
-      key = strcase(0n, val);
-      col = p_get_member(_P_GIST_COLOR_TABLE, key);
-      if (! is_void(col)) {
-        p_parse_color_type = 1;
-        return col;
-      }
-      col = p_get_member(_P_X11_COLOR_TABLE, key);
-      if (! is_void(col)) {
-        p_parse_color_type = 2;
-        return col;
-      }
-
-      /* Second, try to parse HTML-like value. */
+      /* Try to parse HTML-like value. */
       r = g = b = 0;
       len = strlen(val);
       if (len == 7 && sread(val, format="#%2x%2x%2x", r, g, b) == 3) {
-        p_parse_color_type = 2;
-        return (int(r) | (int(g) << 8n) | (int(b) << 16n) | 0x01000000n);
+        value = (int(r) | (int(g) << 8n) | (int(b) << 16n) | 0x01000000n);
+      } else if (len == 4 && sread(val, format="#%1x%1x%1x", r, g, b) == 3) {
+        value = ((int(r) <<  4n) |
+                 (int(g) << 12n) |
+                 (int(b) << 20n) | 0x01000000n);
+
+      } else if (len == 13 && sread(val, format="#%4x%4x%4x", r, g, b) == 3) {
+        value = (((int(r) >> 8n) & 0x0000ffn) |
+                 ( int(g)        & 0x00ff00n) |
+                 ((int(b) << 8n) & 0xff0000n) | 0x01000000n);
+      } else {
+        error, ("unrecognized color: \"" + val + "\"");
       }
-      if (len == 4 && sread(val, format="#%1x%1x%1x", r, g, b) == 3) {
-        p_parse_color_type = 2;
-        return ((int(r) <<  4n) |
-                (int(g) << 12n) |
-                (int(b) << 20n) | 0x01000000n);
+      if (named) {
+        /* Save value for further speedup. */
+        p_add_named_color, name, value;
       }
-      if (len == 13 && sread(val, format="#%4x%4x%4x", r, g, b) == 3) {
-        p_parse_color_type = 2;
-        return (((int(r) >> 8n) & 0x0000ffn) |
-                ( int(g)        & 0x00ff00n) |
-                ((int(b) << 8n) & 0xff0000n) | 0x01000000n);
-      }
+      p_parse_color_type = 2;
+      return value;
     } else if (is_real(val)) {
       /* Fractional indexed color: map [0,1] to [0,239]. */
       p_parse_color_type = 1;
@@ -593,7 +626,7 @@ func p_parse_color(val)
     p_parse_color_type = 3;
     return val;
   }
-  error, ("unrecognized color: \"" + val + "\"");
+  error, "color must be a string, an integer or a real";
 }
 
 local P_NORMAL, P_LEFT, P_CENTER, P_RIGHT;
@@ -2867,28 +2900,20 @@ if (is_void(P_DEBUG)) P_DEBUG = P_FALSE;
 func _p_init
 {
   /* Build the database of Gist colors. */
-  extern _P_GIST_COLOR_TABLE;
   names = ["bg", "fg", "black", "white", "red", "green", "blue", "cyan",
            "magenta", "yellow", "grayd", "grayc", "grayb", "graya",
            "extra", "xor"];
-  _P_GIST_COLOR_TABLE = save();
   n = numberof(names);
   for (i = 1; i <= n; ++i) {
     name = names(i);
-    save, _P_GIST_COLOR_TABLE, noop(name),
-      symbol_def("P_" + strcase(1n, name));
+    value = symbol_def("P_" + strcase(1n, name));
+    p_add_named_color, name, value;
   }
 
   /* Build the X11 color database (and destroy the original arrays to save some
      memory). */
-  extern _P_X11_COLOR_TABLE, _P_X11_COLOR_NAMES, _P_X11_COLOR_VALUES;
-  _P_X11_COLOR_TABLE = save();
-  _P_X11_COLOR_NAMES = strcase(0n, _P_X11_COLOR_NAMES);
-  //_P_X11_COLOR_VALUES = char(_P_X11_COLOR_VALUES);
-  n = numberof(_P_X11_COLOR_NAMES);
-  for (i = 1; i <= n; ++i) {
-    save, _P_X11_COLOR_TABLE, _P_X11_COLOR_NAMES(i), _P_X11_COLOR_VALUES(i);
-  }
+  extern _P_X11_COLOR_NAMES, _P_X11_COLOR_VALUES;
+  p_add_named_colors, _P_X11_COLOR_NAMES, _P_X11_COLOR_VALUES;
   if (! P_DEBUG) {
     _P_X11_COLOR_NAMES = [];
     _P_X11_COLOR_VALUES = [];
