@@ -188,7 +188,7 @@ func color_bar(levs, colors, vert=, labs=, adjust=, color=, width=,
   if (n != numberof(colors))
     error, "numberof(colors) must be one more than numberof(levs)";
 
-  if (is_void(vport)) vport = viewport();
+  if (is_void(vport)) vport = _p_builtin_viewport();
   if (is_void(adjust)) adjust = 0.0;
   if (is_void(ticklen)) ticklen = 0.005;
   dx = dy = 0.0;
