@@ -31,8 +31,6 @@
  * ---------------------------------------------------------------------------
  */
 
-require, "utils.i";
-
 local fft_utils;
 /* DOCUMENT: FFT utility routines in "fft_utils.i"
      This package  is mainly written  to deal with the  particular indexing
