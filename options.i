@@ -173,7 +173,7 @@ func opt_parse(tab, &argv)
   argc = numberof(argv);
   for (k = 1; k <= argc; ++k) {
     arg = argv(k);
-    if (strpart(arg, 1:1) != "-") {
+    if (strlen(arg) <= 1 || strpart(arg, 1:1) != "-") {
       argv = argv(k:);
       break;
     }
