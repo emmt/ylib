@@ -38,22 +38,29 @@ func opt_init(usage, brief, ops)
 
    Build table for fast parsing of command line options.  USAGE is the syntax
    of the command, BRIEF is a short description of the command.  OPS is a
-   ops of accepted options.  The items in OPS are lists of 5 items:
+   ops of accepted options.  The items in OPS are simple strings (considered as
+   text to print for help) or lists of 5 items:
 
-     ops = _lst(_lst(name1, defval1, units1, type1, descr1),
-                _lst(name2, defval2, units2, type2, descr2), ...);
+     ops = _lst("Help text",
+                _lst(name1, defval1, units1, type1, descr1),
+                _lst(name2, defval2, units2, type2, descr2),
+                "Some other help",
+                ...);
 
    with NAMEi the option name, DEFVALi the default value of the option, UNITSi
    the name of units or type of the option, TYPEi the identifier of the option
    type (one of: OPT_FLAG, OPT_INTEGER, OPT_REAL, OPT_STRING, OPT_HELP, or
    OPT_VERSION) and DESCRi the description of the option.
 
-   The options will be used as (with one or two leading dashes):
+   The options will be used as (with one or two leading hyphens):
 
-     --NAMEi              for an OPT_FLAG, OPT_HELP, or OPT_VERSION option
-     --NAMEi=VALUE        for an OPT_INTEGER, OPT_REAL, or OPT_STRING option
+     -NAMEi              for an OPT_FLAG, OPT_HELP, or OPT_VERSION option
+     -NAMEi=VALUE        for an OPT_INTEGER, OPT_REAL, or OPT_STRING option
 
    There should be at most one OPT_HELP and one OPT_VERSION options.
+
+   The may be any number of interleaving pieces of help text (given as simple
+   strings) between option specifications (given as lists).
 
    OPT_VERSION: If the option is set on the command line, the version will be
    printed.  The default value is the version string, the units are ignored.
@@ -76,6 +83,7 @@ func opt_init(usage, brief, ops)
                      "level of operation"),
                 _lst("scale", 0.3, "FACTOR", OPT_REAL,
                      "output scaling factor"),
+                "Miscellaneous Options:",
                 _lst("help", NULL, NULL, OPT_HELP, "print this help"),
                 _lst("version", "2.1.4", NULL, OPT_VERSION,
                      "print option number"));
@@ -84,24 +92,36 @@ func opt_init(usage, brief, ops)
    SEE ALSO: opt_parse.
  */
 {
+  local nam, value, units, type, descr;
   n = _len(ops);
   if (n < 1) opt_error, "empty option list";
   options = array(string, n);
   tab = h_new(":options", options, ":usage", usage, ":brief", brief);
   k = 0;
+  c = 0;
   while (ops) {
     item = _nxt(ops);
-    if (_len(item) != 5) {
-      opt_error, swrite(format="syntax error in option list (%d)", k+1);
-    }
-    name  = _car(item, 1);
-    value = _car(item, 2);
-    units = _car(item, 3);
-    type  = _car(item, 4);
-    descr = _car(item, 5);
-    if (strglob("*[: ]*", name)) {
-      opt_error, swrite(format="bad option name \"%s\" in option list (%d)",
-                    name, k+1);
+    if (is_string(item)) {
+      /* A comment. */
+      name = swrite(format="*%d*", ++c);
+      value = [];
+      units = [];
+      type = OPT_COMMENT;
+      eq_nocopy, descr, item;
+    } else {
+      /* An option. */
+      if (! is_list(item) || _len(item) != 5) {
+        opt_error, swrite(format="syntax error in option list (%d)", k+1);
+      }
+      name  = _car(item, 1);
+      value = _car(item, 2);
+      units = _car(item, 3);
+      type  = _car(item, 4);
+      descr = _car(item, 5);
+      if (strglob("*[*:= \t]*", name)) {
+        opt_error, swrite(format="bad option name \"%s\" in option list (%d)",
+                          name, k+1);
+      }
     }
     options(++k) = name;
     h_set, tab,
@@ -119,6 +139,7 @@ OPT_REAL = 2;
 OPT_STRING = 3;
 OPT_HELP = 4;
 OPT_VERSION = 5;
+OPT_COMMENT = 6;
 OPT_LIST = 16;
 OPT_INTEGER_LIST = (OPT_INTEGER | OPT_LIST);
 OPT_REAL_LIST    = (OPT_REAL    | OPT_LIST);
@@ -191,25 +212,38 @@ func opt_parse(tab, &argv)
         col1 = array(string, n);
         col2 = array(string, n);
         col3 = array(string, n);
+        len = 0;
         for (k = 1; k <= n; ++k) {
           name = options(k);
           value = opt(name);
           type = tab(name + ":type");
-          units = tab(name + ":units");
-          str1 = "-" + name;
-          if (! is_void(units)) {
-            str1 += "=" + tab(name + ":units");
+          if (type == OPT_COMMENT) {
+            col2(k) = tab(name + ":descr");
+          } else {
+            units = tab(name + ":units");
+            str1 = "-" + name;
+            if (! is_void(units)) {
+              str1 += "=" + tab(name + ":units");
+            }
+            str2 = tab(name + ":descr");
+            if (! is_void(value) && type != OPT_VERSION) {
+              str2 += " (default " + print(value) + ")";
+            }
+            col1(k) = str1;
+            col2(k) = str2;
+            len = max(len, strlen(str1));
           }
-          str2 = tab(name + ":descr");
-          if (! is_void(value) && type != OPT_VERSION) {
-           str2 += " (default " + print(value) + ")";
-          }
-          col1(k) = str1;
-          col2(k) = str2;
         }
-        len = max(strlen(col1));
         fmt = swrite(format = "  %%-%ds  %%s\n", len);
-        write, format=fmt, col1, col2, linesize=200;
+        for (k = 1; k <= n; ++k) {
+          str1 = col1(k);
+          str2 = col2(k);
+          if (str1) {
+            write, format=fmt, str1, str2, linesize=200;
+          } else {
+            write, format="%s\n", str2, linesize=200;
+          }
+        }
         return;
       } else if (type == OPT_VERSION) {
         write, format="version: %s\n", opt(name);
