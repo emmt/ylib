@@ -435,6 +435,7 @@ func pl_img(img, clear=, cmin=, cmax=, cmap=,
 
 func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
              nlabs=, labels=, levels=, ncolors=,
+             labeloptions=, labeldigits=,
              linetype=, frametype=, ticktype=,
              width=, linewidth=, framewidth=, tickwidth=,
              color=, linecolor=, textcolor=, framecolor=, tickcolor=,
@@ -443,9 +444,9 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
 /* DOCUMENT pl_cbar, z;
          or pl_cbar, cmin=CMIN, cmax=CMAX;
 
-     Draw a color bar below the current coordinate system.  The colors and the
-     default associated label values are from min(Z) to max(Z); alternatively,
-     keywords CMIN and CMAX can be specified.
+     Draw a color bar next to the current coordinate system.  The colors and
+     the default associated label values are from min(Z) to max(Z);
+     alternatively, keywords CMIN and CMAX can be specified.
 
      Keyword POSITION can be set with the position of the color bar relative to
      the current coordinate system.  For now only "bottom" (P_BOTTOM) and
@@ -473,10 +474,9 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
      keyword can be used to specify a GpTextAttribs structure with text
      attributes.
 
-     If neither LEVELS nor NLABS are specified, keyword NLABS can be used to
-     choose the number of displayed labels; by default, NLABS=11 which
-     correspond to a label every 10% of the dynamic; use NLABS=0 to suppress
-     all labels.
+     If neither LEVELS nor LABELS are specified, keyword NLABS can be used to
+     choose the approximate number of displayed labels; by default, NLABS=5;
+     use NLABS=0 to suppress all labels.
 
      Keyword NCOLORS can be used to specify the number of color cells in the
      color bar.  By default, the number of colors of the current palette is
@@ -559,16 +559,39 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
   p_real, framewidth, linewidth;
   p_real, tickwidth, linewidth;
 
-  nlevels = numberof(levels);
-  nlabels = numberof(labels);
-  if (nlabels != nlevels && nlevels != 0 && nlabels != 0) {
-    error, "LABELS and LEVELS must have same number of elements";
-  }
-  n = max(nlabels, nlevels);
-  if (is_void(nlabs)) {
-    nlabs = (n != 0 ? n : 11);
-  } else if (n != 0 && n != nlabs) {
-    error, "NLABS must be unspecified when LEVELS or LABELS are given";
+  /* Deal with given labels of levels. */
+  if (! is_void(labels)) {
+    if (! is_string(labels)) {
+      error, "LABELS must be an array of strings";
+    }
+    n = numberof(labels);
+    if (is_void(levels)) {
+      error, "LEVELS must be specified with LABELS";
+    }
+    if (numberof(levels) != n || ident(levels) > Y_DOUBLE) {
+      error, "LEVELS must be as many real values as LABELS";
+    }
+    if (! is_void(nlabs) && ! (is_integer(nlabs) && is_scalar(nlabs) &&
+                               nlabs == n)) {
+      error, "NLABS must be unspecified or numberof(LABELS) in this case";
+    }
+    nlabs = n;
+  } else if (! is_void(levels)) {
+    if (ident(levels) > Y_DOUBLE) {
+      error, "bad data type for LEVELS";
+    }
+    n = numberof(levels);
+    if (! is_void(nlabs) && ! (is_integer(nlabs) && is_scalar(nlabs) &&
+                               nlabs == n)) {
+      error, "NLABS must be unspecified or numberof(LEVELS) in this case";
+    }
+    nlabs = n;
+  } else if (is_void(nlabs)) {
+    nlabs = 5;
+  } else if (is_integer(nlabs) && is_scalar(nlabs)) {
+    nlabs = long(nlabs);
+  } else {
+    error, "NLABS must be a scalar integer";
   }
 
   /* Make the color gradient image to display. */
@@ -583,6 +606,11 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
   } else {
     cells = indgen(ncolors);
   }
+  if (ncolors > 1 && cmax != cmin) {
+    h = (cmax + 0.0 - cmin)/(2*(ncolors - 1));
+  }
+  c0 = cmin - h;
+  c1 = cmax + h;
 
   linetype = 1; /* "solid" */
   drawline = (is_void(width) || width >= 0);
@@ -615,21 +643,13 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
 
   if (nlabs > 0) {
     if (is_void(levels)) {
-      if (cmin == cmax) {
-        levels = cmin;
-        lz = (z0 + z1)/2.0;
-        if (nlabels > 1) labels = labels((nlabels + 1)/2);
-        nlabs = 1;
-      } else if (nlabs == 1) {
-        levels = (cmin + cmax)/2.0;
-        lz = (z0 + z1)/2.0;
-      } else {
-        levels = p_span(cmin, cmax, nlabs);
-        lz = p_span(z0, z1, nlabs);
-      }
+      ptr = p_labels(c0, c1, nlabs, eps=1e-6,
+                     ndig=labeldigits, opt=labeloptions);
+      levels = *ptr(1);
+      labels = *ptr(2);
+      nlabs = numberof(levels);
     } else {
       /* Select levels inside the displayed range. */
-      levels += 0.0;
       j = where((levels >= min(cmin, cmax))&(levels <= max(cmin, cmax)));
       if ((n = numberof(j)) != nlabs) {
         if (is_array(j)) {
@@ -638,32 +658,23 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
         }
         nlabs = n; /* may be zero here */
       }
-      if (nlabs > 0) {
-        if (cmin == cmax) {
-          levels = cmin;
-          lz = (z0 + z1)/2.0;
-          if ((n = numberof(labels)) > 1) labels = labels((n + 1)/2);
-          nlabs = 1;
+      if (nlabs > 0 && is_void(labels)) {
+        // FIXME: use a better method here
+        if (is_void(format)) {
+          t = max(abs(levels));
+          format = (t > 0.1 && t < 1000.0 ? "%.3g" : 3);
+        }
+        if (is_integer(format)) {
+          labels = p_pow10_labels(levels, ndig=format);
         } else {
-          lz = interp([z0, z1], [cmin, cmax], levels);
+          labels = swrite(format=format, levels);
         }
       }
     }
   }
 
   if (nlabs > 0) {
-    if (is_void(labels)) {
-      if (is_void(format)) {
-        t = max(abs(levels));
-        format = (t > 0.1 && t < 1000.0 ? "%.3g" : 3);
-      }
-      if (is_integer(format)) {
-        labels = p_pow10_labels(levels, ndig=format);
-      } else {
-        labels = swrite(format=format, levels);
-      }
-    }
-
+    lz = interp([z0, z1], [c0, c1], levels);
     local lx0, lx1, lx2, ly0, ly1, ly2;
     if (vert) {
       lx0 = array(x1, nlabs);
@@ -687,10 +698,13 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
         color=tickcolor, width=tickwidth, type=ticktype;
     }
     height_in_points = height/P_NDC_POINT;
+    lengths = strlen(labels);
     for (i = 1; i <= nlabs; ++i) {
-      _pl_builtin_plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
-        font=font, height=height_in_points, opaque=opaque,
-        orient=orient, justify=justify;
+      if (lengths(i) > 0) {
+        _pl_builtin_plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
+          font=font, height=height_in_points, opaque=opaque,
+          orient=orient, justify=justify;
+      }
     }
   }
   plsys, sys;

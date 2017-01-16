@@ -78,6 +78,173 @@ func p_pow10_labels(labs, ndig=, mult=)
   return swrite(format=format, f, p);
 }
 
+local _P_LABEL_MULTIPLIERS, _P_LABEL_MULTIPLY, _P_LABEL_OPTIONS;
+local P_LABEL_SIGN, P_LABEL_ZERO, P_LABEL_POW10, P_LABEL_TRIM;
+func p_labels(a, b, n, eps=, ndig=, opt=, mult=)
+/* DOCUMENT ptr = p_labels(a, b, n);
+
+     Make nice labels in the range [A,B] for graphics.  N is the aproximative
+     number of labels and D is the minimum number of significant digits (D = 5
+     if unspecified).  The result is an array of 2 pointers:
+
+         *ptr(1) = label values;
+         *ptr(2) = label strings;
+
+     If A <= B, the returned values are in ascending order; in descending order
+     otherwise.
+
+     Keyword NDIG may be set to specify the minimum number of significant
+     digits.
+
+     Keyword EPS (default 1e-5) may be set with a small nonnegative relative
+     tolerance used to favor nice values near the endpoints but perhaps
+     slightly outside the interval.  EPS should be small enough that the effect
+     is unnoticeable at the resolution of the graphic device.
+
+     Keyword OPT may be set with a combination of bits to format the labels.
+     Set bit P_LABEL_SIGN to force the sign of the mantissa; set P_LABEL_ZERO
+     to strip exponent for zero matissa (also strip trailing zeros for the
+     corresponding label); set P_LABEL_POW10 to force the power of ten to be
+     displayed.
+
+     Keyword MULT can be set with the string used to indicate multiplication by
+     the power of ten.  The default value is " x " where the 'x' is the
+     ISO-8859-1 code for the multiply sign.
+
+   SEE ALSO pl_cbar.
+ */
+{
+  if (is_void(opt)) opt = _P_LABEL_OPTIONS;
+  a += 0.0;
+  b += 0.0;
+  reverse = (a > b);
+  if (reverse) {
+    swap, a, b;
+  }
+  if (a == b) {
+    /* A single label is returned. */
+    if (a == 0) {
+      p = 0;
+      val = 0.0;
+      str = "0";
+      return [&val, &str];
+    } else {
+      d = (is_void(ndig) ? 5 : ndig);
+      p = long(floor(log10(abs(a))));
+      r = 10.0^(d - p);
+      val = round(a*r)/r;
+    }
+  } else {
+    if (is_void(eps)) eps = 1e-5;
+    h = (b - a)*eps;
+    a -= h;
+    b += h;
+    if (n >= 3) {
+      /* Try to find solution with N ≥ 3 labels. */
+      best_n = 0;
+      best_q = 0;
+      best_r = 0;
+      for (i = numberof(_P_LABEL_MULTIPLIERS); i >= 1; --i) {
+        s = double(_P_LABEL_MULTIPLIERS(i));
+        q = long(floor(log10((b - a)/(2*s))));
+        for (;;) {
+          r = s*10.0^q;
+          np = long(floor(b/r) - ceil(a/r)) + 1;
+          if (best_n == 0 || abs(n - np) < abs(n - best_n)) {
+            best_n = np;
+            best_q = q;
+            best_r = r;
+          }
+          if (np > n) {
+            break;
+          }
+          --q;
+        }
+      }
+      n = best_n;
+      if (n >= 3) {
+        q = best_q;
+        r = best_r;
+        val = (indgen(0:n-1) + ceil(a/r))*r;
+        p = long(floor(log10(max(abs(val)))));
+        d = p - q + 1;
+        if (! is_void(ndig) && ndig > d) {
+          d = ndig;
+        }
+      }
+    }
+    if (n < 3) {
+      /* Find a solution with 2 labels and at least 1 significant digit. */
+      d = (is_void(ndig) || ndig <= 1 ? 1 : ndig);
+      if (a <= 0 && b >= 0) {
+        /* Zero belongs to [A,B] */
+        if (abs(a) < abs(b)) {
+          x1 = 0.0;
+          p = long(floor(log10(abs(b))));
+          r = 10.0^(p - d + 1);
+          x2 = floor(b/r)*r;
+        } else {
+          p = long(floor(log10(abs(a))));
+          r = 10.0^(p - d + 1);
+          x1 = ceil(a/r)*r;
+          x2 = 0.0;
+        }
+      } else {
+        /* Find the least number of significant digits for which an uppper
+           approximation of A and a lower approximation of B are different. */
+        p = long(floor(log10(max(abs(a),abs(b)))));
+        for (;;) {
+          r = 10.0^(p - d + 1);
+          ap = ceil(a/r);
+          bp = floor(b/r);
+          if (ap < bp) {
+            x1 = ap*r;
+            x2 = bp*r;
+            break;
+          }
+          ++d;
+        }
+      }
+      val = [x1, x2];
+    }
+  }
+
+  /* Reorder the values. */
+  if (reverse) {
+    val = val(::-1);
+  }
+
+  /* Format the labels. */
+  sgn = ((opt & P_LABEL_SIGN) != 0 ? "+" : "")
+  if ((opt & P_LABEL_POW10) != 0 || p < -3 || p > 3) {
+    /* Make labels with a power of 10. */
+    if (is_void(mult)) {
+      eq_nocopy, mult, _P_LABEL_MULTIPLY;
+    }
+    fmt = swrite(format="%%%s.%df%s10^%d", sgn, max(0, d - 1), mult, p);
+    fmt;
+    str = swrite(format=fmt, val*10.0^(-p));
+  } else {
+    fmt = swrite(format="%%%s.%df", sgn, max(0, d - 1 - p));
+    fmt;
+    str = swrite(format=fmt, val);
+  }
+  if ((opt & P_LABEL_ZERO) != 0) {
+    j = where(! val);
+    if (is_array(j)) {
+      str(j) = ((opt & P_LABEL_SIGN) != 0 ? " 0" : "0");
+    }
+  }
+  return [&val, &str];
+}
+P_LABEL_SIGN  = (1 << 0); // force the sign of the mantissa
+P_LABEL_ZERO  = (1 << 1); // the label for zero is just "0"
+P_LABEL_POW10 = (1 << 2); // for the power of 10 to be displayed
+P_LABEL_TRIM  = (1 << 3); // remove trailing zeros from the mantissa
+_P_LABEL_OPTIONS = (P_LABEL_ZERO);
+_P_LABEL_MULTIPLIERS = [1,2,5];
+_P_LABEL_MULTIPLY = strchar([' ', P_ISO_8859_1_MULTIPLY, ' ']);
+
 func p_query_dpi(win)
 /* DOCUMENT dpi = p_query_dpi();
          or dpi = p_query_dpi(win);
