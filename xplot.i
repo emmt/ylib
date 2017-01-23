@@ -21,7 +21,6 @@
 /* Load prerequisites. */
 require, "xplot0.i";
 
-
 /* When substituting original plotting commands, the trick is to take into
    account interleaved strings for each significant arguments (see YpQuine).
 
@@ -38,20 +37,48 @@ require, "xplot0.i";
 */
 
 /* Save builtin version of the plotting commands. */
-if (is_func(plc)  == 2) _pl_builtin_plc  = plc;
-if (is_func(pldj) == 2) _pl_builtin_pldj = pldj;
-if (is_func(plf)  == 2) _pl_builtin_plf  = plf;
-if (is_func(plg)  == 2) _pl_builtin_plg  = plg;
-if (is_func(pli)  == 2) _pl_builtin_pli  = pli;
-if (is_func(plm)  == 2) _pl_builtin_plm  = plm;
-if (is_func(plt)  == 2) _pl_builtin_plt  = plt;
-if (is_func(plv)  == 2) _pl_builtin_plv  = plv;
+if (is_func(plc)  == 2) _pl_orig_plc  = plc;
+if (is_func(pldj) == 2) _pl_orig_pldj = pldj;
+if (is_func(plf)  == 2) _pl_orig_plf  = plf;
+if (is_func(plg)  == 2) _pl_orig_plg  = plg;
+if (is_func(pli)  == 2) _pl_orig_pli  = pli;
+if (is_func(plm)  == 2) _pl_orig_plm  = plm;
+if (is_func(plt)  == 2) _pl_orig_plt  = plt;
+if (is_func(plv)  == 2) _pl_orig_plv  = plv;
 
-func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
-             cmap=)
-/* DOCUMENT pli, z;
-          or pli, z, x1, y1;
-          or pli, z, x0, y0, x1, y1;
+func pl_hack(hack)
+/* DOCUMENT pl_hack, 0/1;
+
+     If argument is true, install improved substitutes for some standard
+     graphic commands; otherwise, restore original commands.
+
+   SEE ALSO: pli, plg, limits, logxy, xpli, xplg.
+ */
+{
+  extern limits, logxy, pli, plg;
+  if (is_func(_p_orig_limits) != 2) error, "corrupted limits wrapper";
+  if (is_func(_p_orig_logxy) != 2) error, "corrupted logxy wrapper";
+  if (is_func(_pl_orig_pli) != 2) error, "corrupted pli wrapper";
+  if (is_func(_pl_orig_plg) != 2) error, "corrupted plg wrapper";
+
+  if (hack) {
+    limits = _p_hack_limits;
+    logxy = _p_hack_logxy;
+    pli = _pl_hack_pli;
+    plg = _pl_hack_plg;
+  } else {
+    limits = _p_orig_limits;
+    logxy = _p_orig_logxy;
+    pli = _pl_orig_pli;
+    plg = _pl_orig_plg;
+  }
+}
+
+local _pl_hack_pli, _xpli;
+func xpli(z, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=, cmap=)
+/* DOCUMENT xpli, z;
+          or xpli, z, x1, y1;
+          or xpli, z, x0, y0, x1, y1;
 
       Plots the image Z as a cell array -- an array of equal rectangular cells
       colored according to the 2-D array Z.  The first dimension of Z is
@@ -70,8 +97,8 @@ func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
       If only the Z array is given, each cell will be a 1x1 unit square, with
       the lower left corner of the image at (0.5,0.5).
 
-      Compared to the original Yorick command, this version correctly set the
-      default coordinates (X0,Y0) and adds the CMAP keyword.
+      Compared to the original Yorick PLI command, this version correctly set
+      the default coordinates (X0,Y0) and adds the CMAP keyword.
 
       Keyword CMAP can be used to specify a colormap (see cmap, or p_colormap).
 
@@ -81,6 +108,21 @@ func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
               limits, logxy, range, fma, hcp, palette, bytscl, histeq_scale
 */
 {
+  _xpli, "z";
+}
+
+/* This function is a possible replacement for the builtin pli. */
+func _pl_hack_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
+                  cmap=)
+{
+  _xpli, _str1;
+}
+
+/* This function is the real worker, all another parameters than the string(s)
+   inserted by the parser are passed as external for maximum efficiency. */
+func _xpli(_str1)
+{
+  extern z, x0, y0, x1, y1, legend, hide, top, cmin, cmax, cmap;
   mode = (is_void(x0) | (is_void(y0) << 1) | (is_void(x1) << 2) |
           (is_void(y1) << 3));
   if (mode == 3) {
@@ -108,26 +150,27 @@ func _pl_pli(z, _str1, x0, y0, x1, y1, legend=, hide=, top=, cmin=, cmax=,
     error, "pli needs either 0, 1, or 2 corner (x,y) points";
   }
   if (! is_void(cmap)) p_colormap, cmap;
-  _pl_builtin_pli, z, _str1, x0, y0, x1, y1, hide=hide, top=top,
+  _pl_orig_pli, z, _str1, x0, y0, x1, y1, hide=hide, top=top,
     legend=legend, cmin=cmin, cmax=cmax;
 }
-errs2caller, _pl_pli;
 
-func _pl_plg(y, _str1, x, _str2,
-             legend=, hide=, color=, type=, width=, marks=, mcolor=, marker=,
-             msize=, mspace=, mphase=, rays=, arrowl=, arroww=, rspace=,
-             rphase=, closed=, smooth=, n=)
- /* DOCUMENT plg, y, x;
-          or plg, y;
+errs2caller, xpli, _xpli, _pl_hack_pli;
+
+local _xplg, _pl_hack_plg;
+func xplg(y, x, legend=, hide=, color=, type=, width=, marks=, mcolor=,
+          marker=, msize=, mspace=, mphase=, rays=, arrowl=, arroww=, rspace=,
+          rphase=, closed=, smooth=, n=)
+/* DOCUMENT xplg, y, x;
+         or xplg, y;
 
       Plots a graph of Y versus X.  Y and X must be 1-D arrays of equal length;
       if X is omitted, it defaults to [1, 2, ..., numberof(Y)].  A keyword
       n=[n1,n2,n3,...nN] can be used to add N curves.  In this case, sum(n)
       must be numberof(y).
 
-      Compared to the original Yorick command, this version automatically
-      converts the values of keywords COLOR, MARKER and TYPE with p_color,
-      p_marker and p_type respectively.
+      Compared to the original Yorick PLG command, this version automatically
+      converts the values of keywords COLOR, MCOLOR, MARKER and TYPE with
+      p_color, p_color, p_marker and p_type respectively.
 
       The following keywords are legal (each has a separate help entry):
 
@@ -139,27 +182,43 @@ func _pl_plg(y, _str1, x, _str2,
               limits, logxy, range, fma, hcp
   */
 {
+  _xplg, "y", (is_void(x) ? [] : "x");
+}
+
+/* This function is a possible replacement for the builtin plg. */
+func _pl_hack_plg(y, _str1, x, _str2, legend=, hide=, color=, type=, width=,
+                  marks=, mcolor=, marker=, msize=, mspace=, mphase=, rays=,
+                  arrowl=, arroww=, rspace=, rphase=, closed=, smooth=, n=)
+{
+  _xplg, _str1, _str2;
+}
+
+/* This function is the real worker, all another parameters than the string(s)
+   inserted by the parser are passed as external for maximum efficiency. */
+func _xplg(_str1, _str2)
+{
+  extern y, x, legend, hide, color, type, width, marks, mcolor, marker, msize,
+    mspace, mphase, rays, arrowl, arroww, rspace, rphase, closed, smooth, n;
   if (! is_void(color)) p_color, color;
+  if (! is_void(mcolor)) p_color, mcolor;
   if (! is_void(marker) && structof(marker) != char) p_marker, marker;
   if (! is_void(type) && structof(type) != string) p_type, type;
   if (is_void(_str2)) {
-    _pl_builtin_plg, y, _str1,
+    _pl_orig_plg, y, _str1,
       legend=legend, hide=hide, color=color, type=type, width=width,
       marks=marks, mcolor=mcolor, marker=marker, msize=msize, mspace=mspace,
       mphase=mphase, rays=rays, arrowl=arrowl, arroww=arroww, rspace=rspace,
       rphase=rphase, closed=closed, smooth=smooth, n=n;
   } else {
-    _pl_builtin_plg, y, _str1, x, _str2,
+    _pl_orig_plg, y, _str1, x, _str2,
       legend=legend, hide=hide, color=color, type=type, width=width,
       marks=marks, mcolor=mcolor, marker=marker, msize=msize, mspace=mspace,
       mphase=mphase, rays=rays, arrowl=arrowl, arroww=arroww, rspace=rspace,
       rphase=rphase, closed=closed, smooth=smooth, n=n;
   }
 }
-errs2caller, _pl_plg;
 
-if (is_func(_pl_builtin_pli) == 2) pli = _pl_pli;
-if (is_func(_pl_builtin_plg) == 2) plg = _pl_plg;
+errs2caller, xplg, _xplg, _pl_hack_plg;
 
 func pl_graph(y, x, legend=, hide=, color=, type=, width=,
               marks=, mcolor=, marker=, msize=, mspace=, mphase=,
@@ -334,7 +393,7 @@ func pl_steps(y, x, just=, justify=, legend=, hide=, type=, width=, color=,
 
   /* Plot the graph. */
   nil = string();
-  _pl_builtin_plg, y2, nil, x2, nil,
+  _pl_orig_plg, y2, nil, x2, nil,
     legend=legend, hide=hide, type=type, width=width, color=color,
     marks=marks, marker=marker, mspace=mspace, mphase=mphase;
 }
@@ -528,7 +587,7 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
     error, "only \"right\" and \"bottom\" positions are implemented";
   }
   vert = (position == P_RIGHT || position == P_LEFT);
-  if (is_void(viewport)) viewport = _p_builtin_viewport();
+  if (is_void(viewport)) viewport = _p_orig_viewport();
   if (is_void(textstyle) && (is_void(font) || is_void(color) ||
                              is_void(height) || is_void(orient))) {
     textstyle = p_query_text_style((vert ? 2 : 1));
@@ -701,7 +760,7 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
     lengths = strlen(labels);
     for (i = 1; i <= nlabs; ++i) {
       if (lengths(i) > 0) {
-        _pl_builtin_plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
+        _pl_orig_plt, labels(i), lx2(i), ly2(i), tosys=0, color=textcolor,
           font=font, height=height_in_points, opaque=opaque,
           orient=orient, justify=justify;
       }
@@ -996,7 +1055,7 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
     p_color, linecolor, color;
     p_type, type, P_SOLID;
     if (is_void(legend)) legend=nil;
-    _pl_builtin_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil, closed=1n,
+    _pl_orig_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil, closed=1n,
       width=width, type=type, color=linecolor, marks=0n, legend=legend;
   }
   if (label && strlen(label)) {
@@ -1069,7 +1128,7 @@ func pl_box(x0, y0, x1, y1, color=, legend=,
       x = x0;
       y = y1 - margin;
     }
-    _pl_builtin_plt, " " + label + " ", x, y, tosys=plsys(), opaque=1n,
+    _pl_orig_plt, " " + label + " ", x, y, tosys=plsys(), opaque=1n,
       orient=orient, justify=justify, font=font, color=textcolor,
       height=p_real(height, P_DEFAULT_HEIGHT)/P_NDC_POINT;
   }
@@ -1191,13 +1250,13 @@ func pl_circle(x0, y0, r, color=, width=, number=, type=, legend=)
     y0 += zero;
     r  += zero;
     for (i = 1; i <= n; ++i) {
-      _pl_builtin_plg, y0(i) + r(i)*cos_t, nil, x0(i) + r(i)*sin_t, nil,
+      _pl_orig_plg, y0(i) + r(i)*cos_t, nil, x0(i) + r(i)*sin_t, nil,
         width=width, color=color, type=type, marks=P_FALSE, closed=P_TRUE,
         legend=legend;
     }
   } else {
     /* Draw a single circle. */
-    _pl_builtin_plg, y0 + r*cos_t, nil, x0 + r*sin_t, nil,
+    _pl_orig_plg, y0 + r*cos_t, nil, x0 + r*sin_t, nil,
       width=width, color=color, type=type, marks=P_FALSE, closed=P_TRUE,
       legend=legend;
   }
@@ -1245,7 +1304,7 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
       t = theta(i);
       cs = cos(t);
       sn = sin(t);
-      _pl_builtin_plg, y0(i) + u*sn + v*cs, nil, x0(i) + u*cs - v*sn, nil,
+      _pl_orig_plg, y0(i) + u*sn + v*cs, nil, x0(i) + u*cs - v*sn, nil,
         width=width, color=color, type=type, marks=P_FALSE,
         closed=P_TRUE, legend=legend;
     }
@@ -1256,7 +1315,7 @@ func pl_ellipse(x0, y0, a, b, theta, color=, width=, number=, type=, legend=)
     v = b*sin_t;
     cs = cos(theta);
     sn = sin(theta);
-    _pl_builtin_plg, y0 + u*sn + v*cs, nil, x0 + u*cs - v*sn, nil,
+    _pl_orig_plg, y0 + u*sn + v*cs, nil, x0 + u*cs - v*sn, nil,
       width=width, color=color, type=type, marks=P_FALSE,
       closed=P_TRUE, legend=legend;
   }
@@ -1281,13 +1340,13 @@ func pl_hline(y, x0, x1, color=, width=, type=)
   if (! is_void(type)) p_type, type;
   bits = is_void(x0) | (is_void(x1) << 1);
   if (bits != 0) {
-    lim = _p_builtin_limits();
+    lim = _p_orig_limits();
     if ((bits&1) != 0) x0 = lim(1);
     if ((bits&2) != 0) x1 = lim(2);
   }
   nil = string();
   one = array(1.0, dimsof(y));
-  _pl_builtin_pldj, one*x0, nil, y, nil, one*x1, nil, y, nil,
+  _pl_orig_pldj, one*x0, nil, y, nil, one*x1, nil, y, nil,
     color=color, width=width, type=type;
 }
 
@@ -1297,13 +1356,13 @@ func pl_vline(x, y0, y1, color=, width=, type=)
   if (! is_void(type)) p_type, type;
   bits = is_void(y0) | (is_void(y1) << 1);
   if (bits != 0) {
-    lim = _p_builtin_limits();
+    lim = _p_orig_limits();
     if ((bits&1) != 0) y0 = lim(3);
     if ((bits&2) != 0) y1 = lim(4);
   }
   nil = string();
   one = array(1.0, dimsof(x));
-  _pl_builtin_pldj, x, nil, one*y0, nil, x, nil, one*y1, nil,
+  _pl_orig_pldj, x, nil, one*y0, nil, x, nil, one*y1, nil,
     color=color, width=width, type=type;
 }
 
@@ -1524,7 +1583,7 @@ func pl_title(str1, str2, str3, str4,
   bottom = p_real(bottom, 0.0) + 2.3*height;
   left   = p_real(left,   0.0) + 3.2*height;
   right  = p_real(right,  0.0) + 1.3*height;
-  port = _p_builtin_viewport();
+  port = _p_orig_viewport();
 
   /* plt command takes the text height in points */
   textheight = height/P_NDC_POINT;
@@ -1549,35 +1608,35 @@ func pl_title(str1, str2, str3, str4,
 
   if (mode == 1) {
     /* draw the plot title */
-    _pl_builtin_plt, str1, port(zcen:1:2)(1), port(4) + top,
+    _pl_orig_plt, str1, port(zcen:1:2)(1), port(4) + top,
       font=topfont, justify="CB", height=toptextheight, color=color;
   } else if (mode == 3) {
     /* draw the normal x and y axis titles */
     if (str1 && strlen(str1)) {
-      _pl_builtin_plt, str1, port(zcen:1:2)(1), port(3) - bottom, orient=0,
+      _pl_orig_plt, str1, port(zcen:1:2)(1), port(3) - bottom, orient=0,
         font=font, justify="CT", height=textheight, color=color;
     }
     if (str2 && strlen(str2)) {
-      _pl_builtin_plt, str2, port(1) - left, port(zcen:3:4)(1), orient=1,
+      _pl_orig_plt, str2, port(1) - left, port(zcen:3:4)(1), orient=1,
         font=font, justify="CB", height=textheight, color=color;
     }
   } else {
     /* draw the surrounding labels */
     if (str1 && strlen(str1)) {
-      _pl_builtin_plt, str1, port(zcen:1:2)(1), port(4) + top,
+      _pl_orig_plt, str1, port(zcen:1:2)(1), port(4) + top,
         font=topfont, justify="CB", height=toptextheight,
         color=color, orient=0;
     }
     if (str2 && strlen(str2)) {
-      _pl_builtin_plt, str2, port(zcen:1:2)(1), port(3) - bottom, orient=0,
+      _pl_orig_plt, str2, port(zcen:1:2)(1), port(3) - bottom, orient=0,
         font=font, justify="CT", height=textheight, color=color;
     }
     if (str3 && strlen(str3)) {
-      _pl_builtin_plt, str3, port(1) - left, port(zcen:3:4)(1), orient=1,
+      _pl_orig_plt, str3, port(1) - left, port(zcen:3:4)(1), orient=1,
         font=font, justify="CB", height=textheight, color=color;
     }
     if (str4 && strlen(str4)) {
-      _pl_builtin_plt, str4, port(2) + right, port(zcen:3:4)(1), orient=3,
+      _pl_orig_plt, str4, port(2) + right, port(zcen:3:4)(1), orient=3,
         font=font, justify="CB", height=textheight, color=color;
     }
   }
@@ -1675,7 +1734,7 @@ func pl_legend_box(nrows, ncols, viewport=, anchor=,
     /* draw the legend box */
     nil = string();
     sys = plsys(0);
-    _pl_builtin_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil,
+    _pl_orig_plg, [y0, y0, y1, y1], nil, [x0, x1, x1, x0], nil,
       closed=1n, legend=nil, marks=0n,
       type=p_type(type, P_SOLID),
       color=p_color(color, P_FG), width=width;
@@ -1735,7 +1794,7 @@ func pl_legend_add(lb, text, textcolor=,
       fillcolor = fillcolor,
       width = p_real(symbolwidth, width);
   }
-  _pl_builtin_plt, text, lx + ll + lo, ly,
+  _pl_orig_plt, text, lx + ll + lo, ly,
     color = p_color(textcolor, color),
     font = p_font(font, P_HELVETICA),
     height = height/P_NDC_POINT,
@@ -1763,7 +1822,7 @@ func pl_text(text, x, y, tosys=, legend=, hide=, opaque=, orient=,
    SEE ALSO plt, p_color, p_font, p_justify.
 */
 {
-  _pl_builtin_plt, text, x, y, tosys = tosys, legend = legend, hide = hide,
+  _pl_orig_plt, text, x, y, tosys = tosys, legend = legend, hide = hide,
     opaque = opaque, orient = orient,
     color = p_color(color, P_DEFAULT_COLOR),
     font = p_font(font, P_DEFAULT_FONT),

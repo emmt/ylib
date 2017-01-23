@@ -35,13 +35,13 @@
  */
 
 /* Save builtin version of the plotting commands. */
-if (is_func(limits)   == 2) _p_builtin_limits   = limits;
-if (is_func(range)    == 2) _p_builtin_range    = range;
-if (is_func(viewport) == 2) _p_builtin_viewport = viewport;
-if (is_func(logxy)    == 2) _p_builtin_logxy    = logxy;
-if (is_func(gridxy)   == 2) _p_builtin_gridxy   = gridxy;
-if (is_func(plsys)    == 2) _p_builtin_plsys    = plsys;
-if (is_func(window)   == 2) _p_builtin_window   = window;
+if (is_func(limits)   == 2) _p_orig_limits   = limits;
+if (is_func(range)    == 2) _p_orig_range    = range;
+if (is_func(viewport) == 2) _p_orig_viewport = viewport;
+if (is_func(logxy)    == 2) _p_orig_logxy    = logxy;
+if (is_func(gridxy)   == 2) _p_orig_gridxy   = gridxy;
+if (is_func(plsys)    == 2) _p_orig_plsys    = plsys;
+if (is_func(window)   == 2) _p_orig_window   = window;
 
 /* Miscellaneous constants. */
 P_TRUE = 1n;
@@ -1642,9 +1642,9 @@ func p_viewport_world(sys)
    SEE ALSO: limits, gridxy, get_style, plsys, viewport.
 */
 {
-  if (is_void(sys)) return _p_builtin_viewport();
+  if (is_void(sys)) return _p_orig_viewport();
   old = plsys(sys);
-  res = _p_builtin_viewport();
+  res = _p_orig_viewport();
   if (old != sys) plsys, old;
   return res;
 }
@@ -2996,7 +2996,7 @@ P_LIM_SQUARE   = 0x040;
 P_LIM_LOGX     = 0x080;
 P_LIM_LOGY     = 0x100;
 P_LIM_ZOOMED   = 0x200;
-func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
+func _p_hack_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
 /* DOCUMENT limits
          or limits, xmin, xmax, ymin, ymax,
                     square=0/1, nice=0/1, restrict=0/1
@@ -3062,16 +3062,16 @@ func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
   if (am_subroutine()) {
     if (is_void(xmax) && is_void(xmin) && is_void(ymin) && is_void(ymax)) {
       if (is_void(square) && is_void(nice) && is_void(restrict)) {
-        _p_builtin_limits;
+        _p_orig_limits;
       } else {
-      _p_builtin_limits, square=square, nice=nice, restrict=restrict;
+      _p_orig_limits, square=square, nice=nice, restrict=restrict;
       }
     } else {
-      _p_builtin_limits, xmin, xmax, ymin, ymax,
+      _p_orig_limits, xmin, xmax, ymin, ymax,
         square=square, nice=nice, restrict=restrict;
     }
   } else {
-    old_limits = _p_builtin_limits(xmin, xmax, ymin, ymax, square=square,
+    old_limits = _p_orig_limits(xmin, xmax, ymin, ymax, square=square,
                                    nice=nice, restrict=restrict);
   }
   if (numberof(xmin) == 5) {
@@ -3081,17 +3081,16 @@ func _p_limits(xmin, xmax, ymin, ymax, square=, nice=, restrict=)
     yflag = (new_flags & P_LIM_LOGY);
     if ((old_flags & P_LIM_LOGX) != xflag ||
         (old_flags & P_LIM_LOGY) != yflag) {
-      _p_logxy, xflag, yflag;
+      _p_hack_logxy, xflag, yflag;
     }
   }
   return old_limits;
 }
-errs2caller, _p_limits;
-limits = _p_limits;
+errs2caller, _p_hack_limits;
 
 _P_LIN_TICKS_RELATIVE_LENGTH = [1.0, 0.64, 0.36, 0.18, 0.09];
 _P_LOG_TICKS_RELATIVE_LENGTH = [1.0, 0.0, 0.0, 0.0, 0.0];
-func _p_logxy(xflag, yflag)
+func _p_hack_logxy(xflag, yflag)
 /* DOCUMENT logxy, xflag, yflag;
 
      Sets the linear/log axis scaling flags for the current coordinate system.
@@ -3132,10 +3131,9 @@ func _p_logxy(xflag, yflag)
       set_style, land, gsys, legs, clegs;
     }
   }
-  _p_builtin_logxy, xflag, yflag;
+  _p_orig_logxy, xflag, yflag;
 }
-errs2caller, _p_logxy;
-logxy = _p_logxy;
+errs2caller, _p_hack_logxy;
 
 /*---------------------------------------------------------------------------*/
 /* INITIALIZATION */
