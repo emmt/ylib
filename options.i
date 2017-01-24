@@ -94,7 +94,7 @@ func opt_init(usage, brief, ops)
 {
   local nam, value, units, type, descr;
   n = _len(ops);
-  if (n < 1) opt_error, "empty option list";
+  if (n < 1) opt_error, "Empty option list";
   options = array(string, n);
   tab = h_new(":options", options, ":usage", usage, ":brief", brief);
   k = 0;
@@ -111,7 +111,7 @@ func opt_init(usage, brief, ops)
     } else {
       /* An option. */
       if (! is_list(item) || _len(item) != 5) {
-        opt_error, swrite(format="syntax error in option list (%d)", k+1);
+        opt_error, swrite(format="Syntax error in option list (%d)", k+1);
       }
       name  = _car(item, 1);
       value = _car(item, 2);
@@ -119,7 +119,7 @@ func opt_init(usage, brief, ops)
       type  = _car(item, 4);
       descr = _car(item, 5);
       if (strglob("*[*:= \t]*", name)) {
-        opt_error, swrite(format="bad option name \"%s\" in option list (%d)",
+        opt_error, swrite(format="Bad option name \"%s\" in option list (%d)",
                           name, k+1);
       }
     }
@@ -197,10 +197,10 @@ func opt_parse(tab, &argv)
     type = tab(name + ":type");
     units = tab(name + ":units");
     if (is_void(type)) {
-      opt_error, "unknown option: " + arg;
+      opt_error, "Unknown option: " + arg;
     }
     if (h_has(opt, name)) {
-      opt_error, "duplicate option: " + arg;
+      opt_error, "Duplicate option: " + arg;
     }
     if (is_void(value)) {
       if (type == OPT_FLAG) {
@@ -249,21 +249,21 @@ func opt_parse(tab, &argv)
         write, format="version: %s\n", opt(name);
         return;
       } else {
-        opt_error, "option \"" + name + "\" takes a value";
+        opt_error, "Option \"" + name + "\" takes a value";
       }
     } else {
       if (type == OPT_INTEGER) {
         temp = 0L;
         dummy = nil;
         if (sread(value, temp, dummy) != 1) {
-          opt_error, "expecting integer value for option \"" + name + "\"";
+          opt_error, "Expecting integer value for option \"" + name + "\"";
         }
         value = temp;
       } else if (type == OPT_REAL) {
         temp = 0.0;
         dummy = nil;
         if (sread(value, temp, dummy) != 1) {
-          opt_error, ("expecting floating-point value for option \""
+          opt_error, ("Expecting floating-point value for option \""
                       + name + "\"");
         }
         value = temp;
@@ -279,7 +279,7 @@ func opt_parse(tab, &argv)
         dummy = nil;
         for (i = 1; i <= numb; ++i) {
           if (sread(list(i), temp, dummy) != 1) {
-            opt_error, "expecting list of integers for option \"" + name + "\"";
+            opt_error, "Expecting list of integers for option \"" + name + "\"";
           }
           vect(i) = temp;
         }
@@ -292,7 +292,7 @@ func opt_parse(tab, &argv)
         dummy = nil;
         for (i = 1; i <= numb; ++i) {
           if (sread(list(i), temp, dummy) != 1) {
-            opt_error, "expecting list of reals for option \"" + name + "\"";
+            opt_error, "Expecting list of reals for option \"" + name + "\"";
           }
           vect(i) = temp;
         }
@@ -303,7 +303,7 @@ func opt_parse(tab, &argv)
           value = value(1);
         }
       } else {
-        opt_error, "option \"" + name + "\" takes no value";
+        opt_error, "Option \"" + name + "\" takes no value";
       }
     }
     h_set, opt, name, value;
