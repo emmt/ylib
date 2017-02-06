@@ -222,11 +222,9 @@ func p_labels(a, b, n, eps=, ndig=, opt=, mult=)
       eq_nocopy, mult, _P_LABEL_MULTIPLY;
     }
     fmt = swrite(format="%%%s.%df%s10^%d", sgn, max(0, d - 1), mult, p);
-    fmt;
     str = swrite(format=fmt, val*10.0^(-p));
   } else {
     fmt = swrite(format="%%%s.%df", sgn, max(0, d - 1 - p));
-    fmt;
     str = swrite(format=fmt, val);
   }
   if ((opt & P_LABEL_ZERO) != 0) {
