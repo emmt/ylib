@@ -2127,7 +2127,7 @@ func benchmark(script, repeat)
      function).
 
 
-   SEE ALSO: timer, timer_start.
+   SEE ALSO: timer, timer_start, tic, toc.
  */
 {
   extern __benchmark_proc;
@@ -2149,6 +2149,53 @@ func benchmark(script, repeat)
       t(1)*1e3, t(2)*1e3, t(3)*1e3, repeat, (repeat > 1 ? "s" : "");
   }
   return t;
+}
+
+local tic, toc, tic_toc_timer;
+/* DOCUMENT tic;
+         or toc;
+         or toc, n;
+         or toc();
+         or toc(n);
+
+     The `tic` subroutine set a timer for the next call to `toc` which, when
+     called as a subroutine, prints the elapsed time since previous `tic` or,
+     when called as a function, returns the elapsed time (see `timer` for the
+     format and meaning of the elapsed time values).
+
+     If optional argument N is provided, elapsed time is divided by this
+     number.
+
+     External variable `tic_toc_timer` may be declared local before calling
+     `tic` to restrict the measurment of the elapsed time to the current
+     context.
+
+     Example:
+
+         local tic_toc_timer;
+         tic;
+         .....; // some code to benchmark
+         toc;
+
+
+   SEE ALSO: timer, benchmark.
+*/
+
+func tic
+{
+  extern tic_toc_timer;
+  timer, (tic_toc_timer = array(double, 3));
+}
+
+func toc(n)
+{
+  extern tic_toc_timer;
+  timer, (t = array(double, 3));
+  t -= tic_toc_timer;
+  if (! is_void(n)) t /= n;
+  if (! am_subroutine()) return t;
+  write, format="Elapsed time: cpu = %g s / sys = %g s / wall = %g s\n",
+    t(1), t(2), t(3);
 }
 
 /*---------------------------------------------------------------------------*/
