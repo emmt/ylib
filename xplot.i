@@ -475,7 +475,7 @@ func pl_img(img, clear=, cmin=, cmax=, cmap=,
   if (clear && clear > 0) {
     fma;
   }
-  pli, img, x0, y0, x1, y1, cmin=cmin, cmax=cmax, cmap=cmap;
+  xpli, img, x0, y0, x1, y1, cmin=cmin, cmax=cmax, cmap=cmap;
   if (! is_void(cbar)) {
     pl_cbar, cmin=cmin, cmax=cmax, position=cbar, viewport=viewport,
       adjust=adjust, nlabs=nlabs, labels=labels, levels=levels,
