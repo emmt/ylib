@@ -50,16 +50,16 @@ func mda_save(data, file, &offset, byteorder=)
   type = structof(data);
   cmplx = is_complex(data);
   if (type == char) {
-    type = ('\xFF' > '\x00' ? 1 : 2);
+    type = ('\xFF' < '\x00' ? 1 : 2);
     elsize = 1;
   } else if (type == short) {
-    type = 4;
+    type = 3;
     elsize = 2;
   } else if (type == int) {
-    type = 6;
+    type = 5;
     elsize = 4;
   } else if (type == long) {
-    type = 8;
+    type = 7;
     elsize = 8;
   } else if (type == float) {
     type = 9;
