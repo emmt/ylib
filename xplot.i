@@ -667,6 +667,8 @@ func pl_cbar(z, cmin=, cmax=, position=, viewport=, adjust=,
   }
   if (ncolors > 1 && cmax != cmin) {
     h = (cmax + 0.0 - cmin)/(2*(ncolors - 1));
+  } else {
+    h = 0.0;
   }
   c0 = cmin - h;
   c1 = cmax + h;
