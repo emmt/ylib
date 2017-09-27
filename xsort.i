@@ -36,8 +36,8 @@ func xsort_uniq(x, ..)
    SEE ALSO: msort, xsort.
  */
 {
-  local index, uniq; /* shared variables with _xsort_helper */
-  classify = _xsort_helper; /* shortcut */
+  local index, uniq; /* shared variables with _xsort_classify */
+  classify = _xsort_classify; /* shortcut */
 
   /* Process first argument. */
   rank = classify(x);
@@ -92,8 +92,8 @@ func xsort(x, .., all=)
    SEE ALSO: sort, heapsort, msort, xsort_rank.
  */
 {
-  local index, uniq; /* shared variables with _xsort_helper */
-  classify = _xsort_helper; /* shortcut */
+  local index, uniq; /* shared variables with _xsort_classify */
+  classify = _xsort_classify; /* shortcut */
 
   /* Process first argument. */
   rank = classify(x);
@@ -112,7 +112,7 @@ func xsort(x, .., all=)
     rank += classify(next_arg())*norm;    /* adjust rank for next key */
     rank = classify(rank);                /* renormalize adjusted rank */
     if (numberof(rank) != number) {
-      error, "X1 must be the largest in every dimensions";
+      error, "first argument must be the largest in every dimensions";
     }
     if (max(rank) == max_rank) {
       return (all ? [&index, &rank, &uniq] : index);
@@ -121,11 +121,13 @@ func xsort(x, .., all=)
 
   /* Use indgen as final key guaranteed to break up any remaining equal
      values. */
+  rank += indgen(0:max_rank)*norm;
   if (all) {
-    rank = classify(rank + indgen(0:max_rank)*norm);
+    rank = classify(rank);
     return [&index, &rank, &uniq];
+  } else {
+    return heapsort(rank);
   }
-  return heapsort(rank + indgen(0:max_rank)*norm);
 }
 
 func xsort_rank(x, &index, &uniq)
@@ -151,12 +153,12 @@ func xsort_rank(x, &index, &uniq)
    SEE ALSO: msort, sort, heapsort, xsort.
  */
 {
-  return _xsort_helper(x);
+  return _xsort_classify(x);
 }
 
-func _xsort_helper(x)
+func _xsort_classify(x)
 {
-  extern index, uniq; /* shared variables with _xsort_helper */
+  extern index, uniq; /* shared variables with _xsort_classify */
   rank = array(long, dimsof(x));
   if (numberof(x) < 2) {
     index = 1 + rank;
