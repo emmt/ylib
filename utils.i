@@ -704,25 +704,13 @@ func rescale(a, .., scale=, rgb=, cubic=)
 func cast(arr, type, dims)
 /* DOCUMENT cast(arr, type, dims);
      Returns array ARR reshaped to an array with given TYPE and dimension
-     list.  Use reinterpret if you do not want to make a copy of ARR.
+     list.
 
-   SEE ALSO: reshape, reinterpret.
+   SEE ALSO: reshape.
  */
 {
   reshape, arr, type, dims;
   return arr;
-}
-
-func reinterpret(&dst, src, type, dims)
-/* DOCUMENT reinterpret, dst, src, type, dims;
-     Make variable DST shares the contents of array SRC assuming TYPE and DIMS
-     are the type and the dimensions of the array.
-
-   SEE ALSO: reshape, cast.
- */
-{
-  eq_nocopy, dst, src;
-  reshape, dst, type, dims;
 }
 
 func collate(arg)
