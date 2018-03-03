@@ -1065,6 +1065,10 @@ local printf, inform, warn, throw;
      The subroutines `inform`, `warn` and `throw` are simple wrappers to print
      informations, warnings or raise errors with a formatted message.
 
+     The original `error` function is saved in a global variable, so you may
+     just write `error=throw` to have formatted and colored error messages.
+
+
    SEE ALSO: write, swrite, error.
  */
 func printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
@@ -1134,10 +1138,11 @@ func inform(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
     _MSG_RESET_STYLE;
 }
 
+if (is_func(error) == 2) _orig_error  = error;
 func throw(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
 {
-  error, (_MSG_ERROR_STYLE + printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) +
-          _MSG_RESET_STYLE);
+  _orig_error, (_MSG_ERROR_STYLE + printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) +
+                _MSG_RESET_STYLE);
 }
 errs2caller, throw;
 
