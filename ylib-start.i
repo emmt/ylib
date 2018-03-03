@@ -59,6 +59,7 @@ autoload, "utils.i", pw_get_user, pw_get_uid, pw_get_gid, pw_get_name, pw_get_ho
 autoload, "utils.i", pdb_list, pdb_restore_all;
 autoload, "utils.i", timer_start, timer_elapsed;
 autoload, "utils.i", moments, stat;
+autoload, "utils.i", ansi_term, printf, inform, warn, throw;
 //autoload, "utils.i", open_url;
 //autoload, "utils.i", strlower, strupper, strcut, strjoin, strchr, strrchr;
 

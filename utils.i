@@ -8,7 +8,7 @@
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
  * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2009-2016, Éric Thiébaut.
+ * Copyright (C) 2009-2018, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -31,6 +31,7 @@
  * ----------------------------------------------------------------------------
  *
  * Routines:
+ *   ansi_term    - get control string for ANSI terminals
  *   basename     - get basename of file from path
  *   cast         - change the type and/or the dimensions of an array
  *   depth_of     - get 3rd dimension of an array
@@ -43,6 +44,7 @@
  *   glob         - get list of files matching glob-style pattern
  *   guess_compression - guess compression method of existing file
  *   height_of    - get 2nd dimension of an array
+ *   inform       - print formatted and colored informative message
  *   is_integer_scalar - check if argument is a scalar of integer type
  *   is_string_scalar - check if argument is a scalar string
  *   lambda       - create anonymous function
@@ -55,6 +57,7 @@
  *   open_url     - open an URL into a web browser
  *   pdb_list     - lists contents of PDB binary file
  *   pdb_restore_all - restore all non-record variables of a PDB file
+ *   printf       - formatted print
  *   protect_file_name - protect special characters in file name
  *   pw_get_gid   - get group numerical identifier from /etc/passwd file
  *   pw_get_home  - get home directory of user from /etc/passwd file
@@ -71,16 +74,18 @@
  *   stat         - display statistics/info about symbols/expressions
  *   strchr       - forward search for a character in a string
  *   strcut       - cut text to fit into lines of given length
+ *   strip_file_extension - remove extension from file name
  *   strjoin      - make array of strings into a single string
  *   strlower     - convert string(s) to lower case letters
  *   strrchr      - backward search for a character in a string
  *   strupper     - convert string(s) to upper case letters
- *   strip_file_extension - remove extension from file name
  *   swap_bytes   - swap bytes of an array
  *   tempfile     - get unique file name
+ *   throw        - throw formatted and colored error message
  *   timer_elapsed - get/print the elapsed time since timer_start
  *   timer_start  - (re)start the profiling timer
  *   undersample  - shrink array dimension(s)
+ *   warn         - print formatted and colored warning message
  *   width_of     - get 1st dimension of an array
  *   xopen        - extended open with (de)compression, primitives, ...
  *
@@ -90,8 +95,8 @@
 local old_eval;
 func eval(eval_code, eval_tmp, eval_debug)
 /* DOCUMENT eval, code [, tmp [, debug]];
-       -or- eval(code [, tmp [, debug]]);
-       -or- old_eval(code, tmp=, debug=)
+         or eval(code [, tmp [, debug]]);
+         or old_eval(code, tmp=, debug=)
 
      Evaluates CODE given as a string or as an array of strings (considered
      as different lines in the script).  Since CODE can be dynamically
@@ -251,7 +256,7 @@ func undersample(a, nsub, which=, op=)
 
 func resample(a, f)
 /* DOCUMENT resample(a, f);
-       -or- resample(a, dims);
+         or resample(a, dims);
 
      Resample input array A so that its dimensions are rescaled by the
      factor(s) F or become the new dimension list DIMS.
@@ -385,22 +390,22 @@ func width_of(a)  { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 2 ? d
 func height_of(a) { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 3 ? dims(3) : 1) : 0); }
 func depth_of(a)  { return (is_array(a) ? (numberof((dims = dimsof(a))) >= 4 ? dims(4) : 1) : 0); }
 /* DOCUMENT ndims_of(a) - get number of dimensions of array A; returns -1
- *                        for non-array argument;
- *          nrows_of(a) - get number of rows of array A, returns 0
- *                        for non-array or scalar argument;
- *          ncols_of(a) - get number of columns of array A, returns 0
- *                        for non-array or vector argument;
- *          width_of(a) - get length of 1st dimension of A, returns 0
- *                        if A is non-array is a scalar;
- *         height_of(a) - get length of 2nd dimension of A, returns 0
- *                        if A is non-array or has less than 2 dimensions;
- *          depth_of(a) - get length of 3rd dimension of A, returns 0
- *                        if A is non-array or has less than 3 dimensions.
- *
- *   The number of rows of an array is the length of its first dimension;
- *   the number of columns is the length of its second dimension.
- *
- * SEE ALSO: dimsof.
+                          for non-array argument;
+            nrows_of(a) - get number of rows of array A, returns 0
+                          for non-array or scalar argument;
+            ncols_of(a) - get number of columns of array A, returns 0
+                          for non-array or vector argument;
+            width_of(a) - get length of 1st dimension of A, returns 0
+                          if A is non-array is a scalar;
+           height_of(a) - get length of 2nd dimension of A, returns 0
+                          if A is non-array or has less than 2 dimensions;
+            depth_of(a) - get length of 3rd dimension of A, returns 0
+                          if A is non-array or has less than 3 dimensions.
+
+     The number of rows of an array is the length of its first dimension;
+     the number of columns is the length of its second dimension.
+
+   SEE ALSO: dimsof.
  */
 nrows_of = width_of;
 ncols_of = height_of;
@@ -608,7 +613,7 @@ func lambda(args, code)
 
 func rescale(a, .., scale=, rgb=, cubic=)
 /* DOCUMENT rescale(a, dimlist)
-       -or- rescale(a, scale=FACT)
+         or rescale(a, scale=FACT)
      Return an array obtained by interpolation of A with new dimension list
      as given by DIMLIST or with all its dimension multiplied by a scaling
      factor FACT if keyword SCALE is specified.  If keyword RGB is true the
@@ -809,7 +814,7 @@ func swap_bytes(a)
 func strlower(s) { return strcase(0, s); }
 func strupper(s) { return strcase(1, s); }
 /* DOCUMENT strlower(s)
-       -or- strupper(s)
+         or strupper(s)
      Convert (array of) string(s) S to lower/upper case letters.
 
    SEE ALSO strcase */
@@ -831,7 +836,7 @@ func strcut(str, len)
 
 func strjoin(str, glue)
 /* DOCUMENT strjoin(str)
-       -or- strjoin(str, glue)
+         or strjoin(str, glue)
      Join strings from array STR into a single long string.  The string GLUE
      (default "") is used between each pair of element from STR.
 
@@ -921,12 +926,228 @@ func structname(obj, w)
 }
 
 /*---------------------------------------------------------------------------*/
+/* STYLES FOR ANSI TERMINALS */
+
+ANSI_TERM_RESET        =  0;
+ANSI_TERM_BOLD         =  1;
+ANSI_TERM_BRIGHT       =  1;
+ANSI_TERM_FAINT        =  2;
+ANSI_TERM_ITALIC       =  3;
+ANSI_TERM_UNDERLINE    =  4;
+ANSI_TERM_BLINK        =  5; /* slow blink */
+ANSI_TERM_BLINK_FAST   =  6;
+ANSI_TERM_INVERSE      =  7;
+ANSI_TERM_CONCEAL      =  8;
+ANSI_TERM_CROSSED      =  9;
+ANSI_TERM_FONT_DEF     = 10;
+/* 11-16 = alternate font, 20 = Fraktur (not widely supported) */
+ANSI_TERM_BOLD_OFF      = (ANSI_TERM_BOLD + 20);
+ANSI_TERM_ITALIC_OFF    = (ANSI_TERM_ITALIC + 20);
+ANSI_TERM_UNDERLINE_OFF = (ANSI_TERM_UNDERLINE + 20);
+ANSI_TERM_BLINK_OFF     = (ANSI_TERM_BLINK + 20);
+ANSI_TERM_INVERSE_OFF   = (ANSI_TERM_INVERSE + 20);
+ANSI_TERM_CONCEAL_OFF   = (ANSI_TERM_CONCEAL + 20);
+ANSI_TERM_CROSSED_OFF   = (ANSI_TERM_CROSSED + 20);
+ANSI_TERM_FG_BLACK      = 30;
+ANSI_TERM_FG_RED        = 31;
+ANSI_TERM_FG_GREEN      = 32;
+ANSI_TERM_FG_YELLOW     = 33;
+ANSI_TERM_FG_BLUE       = 34;
+ANSI_TERM_FG_MAGENTA    = 35;
+ANSI_TERM_FG_CYAN       = 36;
+ANSI_TERM_FG_WHITE      = 37;
+ANSI_TERM_FG_EXTENDED   = 38;
+ANSI_TERM_FG_DEFAULT    = 39;
+ANSI_TERM_BG_BLACK      = 40;
+ANSI_TERM_BG_RED        = 41;
+ANSI_TERM_BG_GREEN      = 42;
+ANSI_TERM_BG_YELLOW     = 43;
+ANSI_TERM_BG_BLUE       = 44;
+ANSI_TERM_BG_MAGENTA    = 45;
+ANSI_TERM_BG_CYAN       = 46;
+ANSI_TERM_BG_WHITE      = 47;
+ANSI_TERM_BG_EXTENDED   = 48;
+ANSI_TERM_BG_DEFAULT    = 49;
+
+local ANSI_TERM_RESET, ANSI_TERM_BOLD, ANSI_TERM_BRIGHT, ANSI_TERM_FAINT, ANSI_TERM_ITALIC, ANSI_TERM_UNDERLINE, ANSI_TERM_BLINK, ANSI_TERM_BLINK_FAST, ANSI_TERM_INVERSE, ANSI_TERM_CONCEAL, ANSI_TERM_CROSSED, ANSI_TERM_FONT_DEF, ANSI_TERM_BOLD_OFF, ANSI_TERM_ITALIC_OFF, ANSI_TERM_UNDERLINE_OFF, ANSI_TERM_BLINK_OFF, ANSI_TERM_INVERSE_OFF, ANSI_TERM_CONCEAL_OFF, ANSI_TERM_CROSSED_OFF, ANSI_TERM_FG_BLACK, ANSI_TERM_FG_RED, ANSI_TERM_FG_GREEN, ANSI_TERM_FG_YELLOW, ANSI_TERM_FG_BLUE, ANSI_TERM_FG_MAGENTA, ANSI_TERM_FG_CYAN, ANSI_TERM_FG_WHITE, ANSI_TERM_FG_EXTENDED, ANSI_TERM_FG_DEFAULT, ANSI_TERM_BG_BLACK, ANSI_TERM_BG_RED, ANSI_TERM_BG_GREEN, ANSI_TERM_BG_YELLOW, ANSI_TERM_BG_BLUE, ANSI_TERM_BG_MAGENTA, ANSI_TERM_BG_CYAN, ANSI_TERM_BG_WHITE, ANSI_TERM_BG_EXTENDED, ANSI_TERM_BG_DEFAULT;
+func ansi_term(..)
+/* DOCUMENT ctrl = ansi_term(...);
+
+     Concate its arguments (integer codes) to form a control string which can
+     be printed to an ANSI terminal to change things such as text color, text
+     weight, etc.
+
+     For instance:
+
+         ansi_term(ANSI_TERM_BOLD, ANSI_TERM_FG_RED)
+         ansi_term(ANSI_TERM_RESET)
+
+     respectively yield the strings "\033[1;31m" and "\033[0m" suitable to
+     switch to bold red text and to revert to default settings.
+
+     The following constants are available:
+
+     Command                Description      Reverse command
+     ---------------------------------------------------------------
+     ANSI_TERM_RESET        Reset settings
+     ANSI_TERM_BOLD         Bold font        ANSI_TERM_BOLD_OFF
+     ANSI_TERM_BRIGHT       Bright color
+     ANSI_TERM_FAINT        Faint color      ANSI_TERM_ITALIC_OFF
+     ANSI_TERM_ITALIC       Italic font
+     ANSI_TERM_UNDERLINE    Underline text   ANSI_TERM_UNDERLINE_OFF
+     ANSI_TERM_BLINK        Slow blink       ANSI_TERM_BLINK_OFF
+     ANSI_TERM_BLINK_FAST   Fast blink       ANSI_TERM_BLINK_OFF
+     ANSI_TERM_INVERSE      Inverse colors   ANSI_TERM_INVERSE_OFF
+     ANSI_TERM_CONCEAL      Concealed text   ANSI_TERM_CONCEAL_OFF
+     ANSI_TERM_CROSSED      Crossed text     ANSI_TERM_CROSSED_OFF
+     ANSI_TERM_FONT_DEF     Default font
+
+     Set foregrond color    Background color
+     --------------------------------------------
+     ANSI_TERM_FG_BLACK     ANSI_TERM_BG_BLACK
+     ANSI_TERM_FG_RED       ANSI_TERM_BG_RED
+     ANSI_TERM_FG_GREEN     ANSI_TERM_BG_GREEN
+     ANSI_TERM_FG_YELLOW    ANSI_TERM_BG_YELLOW
+     ANSI_TERM_FG_BLUE      ANSI_TERM_BG_BLUE
+     ANSI_TERM_FG_MAGENTA   ANSI_TERM_BG_MAGENTA
+     ANSI_TERM_FG_CYAN      ANSI_TERM_BG_CYAN
+     ANSI_TERM_FG_WHITE     ANSI_TERM_BG_WHITE
+     ANSI_TERM_FG_EXTENDED  ANSI_TERM_BG_EXTENDED
+     ANSI_TERM_FG_DEFAULT   ANSI_TERM_BG_DEFAULT
+
+
+   SEE ALSO: swrite.
+ */
+{
+  args = "";
+  argc = 0;
+  while (more_args()) {
+    local arg;
+    eq_nocopy, arg, next_arg();
+    if (is_integer(arg)) {
+      arg = swrite(format="%d", arg);
+    }
+    n = numberof(arg);
+    if (n == 0) continue;
+    if (n > 1) {
+      arg = strpart(sum(arg+";"), 1:-1);
+    }
+    if (argc == 0) {
+      eq_nocopy, args, arg;
+    } else {
+      args += ";" + arg;
+    }
+    argc += n;
+  }
+  return ("\033["+args+"m");
+}
+
+_MSG_ERROR_STYLE = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_RED);
+_MSG_WARN_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_YELLOW);
+_MSG_INFO_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_GREEN);
+_MSG_RESET_STYLE = ansi_term(ANSI_TERM_RESET);
+
+/*---------------------------------------------------------------------------*/
+/* FORMATTED MESSAGES */
+
+local printf, inform, warn, throw;
+/* DOCUMENT printf, fmt, ...;
+         or printf(fmt, ...);
+         or inform, fmt, ...;
+         or warn, fmt, ...;
+         or throw, fmt, ...;
+
+     When called as a subroutine, `printf` writes a formatted message to
+     standard output; when called as a function, it returns the formatted
+     string.  FMT must be a string with "%" directives for each other
+     arguments.
+
+     The subroutines `inform`, `warn` and `throw` are simple wrappers to print
+     informations, warnings or raise errors with a formatted message.
+
+   SEE ALSO: write, swrite, error.
+ */
+func printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
+{
+  if (am_subroutine()) {
+    if (is_void(a1)) {
+      write, format="%s", a0;
+    } else if (is_void(a2)) {
+      write, format=a0, a1;
+    } else if (is_void(a3)) {
+      write, format=a0, a1, a2;
+    } else if (is_void(a4)) {
+      write, format=a0, a1, a2, a3;
+    } else if (is_void(a5)) {
+      write, format=a0, a1, a2, a3, a4;
+    } else if (is_void(a6)) {
+      write, format=a0, a1, a2, a3, a4, a5;
+    } else if (is_void(a7)) {
+      write, format=a0, a1, a2, a3, a4, a5, a6;
+    } else if (is_void(a8)) {
+      write, format=a0, a1, a2, a3, a4, a5, a6, a7;
+    } else if (is_void(a9)) {
+      write, format=a0, a1, a2, a3, a4, a5, a6, a7, a8;
+    } else {
+      write, format=a0, a1, a2, a3, a4, a5, a6, a7, a8, a9;
+    }
+  } else if (is_void(a1)) {
+    return swrite(format="%s", a0);
+  } else if (is_void(a2)) {
+    return swrite(format=a0, a1);
+  } else if (is_void(a3)) {
+    return swrite(format=a0, a1, a2);
+  } else if (is_void(a4)) {
+    return swrite(format=a0, a1, a2, a3);
+  } else if (is_void(a5)) {
+    return swrite(format=a0, a1, a2, a3, a4);
+  } else if (is_void(a6)) {
+    return swrite(format=a0, a1, a2, a3, a4, a5);
+  } else if (is_void(a7)) {
+    return swrite(format=a0, a1, a2, a3, a4, a5, a6);
+  } else if (is_void(a8)) {
+    return swrite(format=a0, a1, a2, a3, a4, a5, a6, a7);
+  } else if (is_void(a9)) {
+    return swrite(format=a0, a1, a2, a3, a4, a5, a6, a7, a8);
+  } else {
+    return swrite(format=a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+  }
+}
+
+func warn(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
+{
+  str = printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9);
+  if (strpart(str, 0:0) == "\n") {
+    str = strpart(str, 1:-1);
+  }
+  write, format="%sWARNING - %s%s\n", _MSG_WARN_STYLE, str,
+    _MSG_RESET_STYLE;
+}
+
+func inform(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
+{
+  str = printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9);
+  if (strpart(str, 0:0) == "\n") {
+    str = strpart(str, 1:-1);
+  }
+  write, format="%sINFO - %s%s\n", _MSG_INFO_STYLE, str,
+    _MSG_RESET_STYLE;
+}
+
+func throw(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
+{
+  error, (_MSG_ERROR_STYLE + printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) +
+          _MSG_RESET_STYLE);
+}
+errs2caller, throw;
+
+/*---------------------------------------------------------------------------*/
 /* LOGICAL ROUTINES */
 
 func is_integer_scalar(x) { return (is_integer(x) && is_scalar(x)); }
 func is_string_scalar(x) { return (is_string(x) && is_scalar(x)); }
 /* DOCUMENT is_integer_scalar(x)
-       -or- is_string_scalar(x)
+         or is_string_scalar(x)
      Check whether or not X is an integer/string scalar.
 
    SEE ALSO is_scalar, is_integer. */
@@ -1238,7 +1459,7 @@ func filesize(file, errmode)
 
 func pwd(nil)
 /* DOCUMENT pwd
-       -or- pwd()
+         or pwd()
      Prints out (subroutine form) or returns (function form) full path
      of current working directory.
 
@@ -1311,21 +1532,20 @@ func basename(path, ext)
 
 func strip_file_extension(path, ext, ..)
 /* DOCUMENT strip_file_extension(path);
- *     -or- strip_file_extension(path, ext, ..);
- *
- *   Strip file extension from filename PATH (an array of strings).
- *   If no other arguments are specified, the result is PATH with
- *   trailing characters after (and including) the last dot '.'
- *   stripped (the last dot must however occur after the last slash
- *   '/').  Otherwise, there may be any number of extensions EXT which
- *   are tried in turn until one matches the end of PATH, in that case
- *   the result is PATH stripped from that particular extension (which
- *   may or may not contain a dot).  If PATH is an array, the same
- *   processus is applied to every element of PATH (i.e. they can
- *   match a different extension).
- *
- *
- * SEE ALSO: strpart, strgrep, streplace.
+         or strip_file_extension(path, ext, ..);
+
+     Strip file extension from filename PATH (an array of strings).  If no
+     other arguments are specified, the result is PATH with trailing characters
+     after (and including) the last dot '.'  stripped (the last dot must
+     however occur after the last slash '/').  Otherwise, there may be any
+     number of extensions EXT which are tried in turn until one matches the end
+     of PATH, in that case the result is PATH stripped from that particular
+     extension (which may or may not contain a dot).  If PATH is an array, the
+     same processus is applied to every element of PATH (i.e. they can match a
+     different extension).
+
+
+   SEE ALSO: strpart, strgrep, streplace.
  */
 {
   if (! is_string(path)) {
@@ -1616,7 +1836,7 @@ func dump_text(file, text, compress=, level=, preserve=)
 
 func guess_compression(filename)
 /* DOCUMENT guess_compression, filename;
-       -or- guess_compression(filename)
+         or guess_compression(filename)
      Guess  which compression  program was  used to  produce  file FILENAME
      according to first  bytes of this file.  When  called as a subroutine,
      the file name is printed out  with the name of the compression program
@@ -1694,7 +1914,7 @@ func guess_compression(filename)
 
 func xopen(filename, filemode, preserve=, nolog=, compress=, level=, prims=)
 /* DOCUMENT xopen(filename)
-       -or- xopen(filename, filemode)
+         or xopen(filename, filemode)
      Opens the  file FILENAME according  to FILEMODE (both are  strings).  The
      return value  is an IOStream (or  just stream for short).   When the last
      reference to  this return  value is discarded,  the file will  be closed.
@@ -2016,7 +2236,7 @@ func _pw_get(script, as_integer)
 
 func pdb_list(file)
 /* DOCUMENT pdb_list, file;
-       -or- pdb_list(file)
+         or pdb_list(file)
      Lists contents of PDB binary file.  FILE can be either a file name or
      a binary stream.
 
@@ -2059,10 +2279,10 @@ func timer_start {
 }
 func timer_elapsed(count)
 /* DOCUMENT timer_start;
-       -or- timer_elapsed;
-       -or- timer_elapsed, count;
-       -or- timer_elapsed()
-       -or- timer_elapsed(count)
+         or timer_elapsed;
+         or timer_elapsed, count;
+         or timer_elapsed()
+         or timer_elapsed(count)
      The  subroutine  timer_start (re)starts  the  timer  and the  function
      timer_elapsed   computes  the   elapsed  time   since  last   call  to
      timer_start.  If COUNT is given, the elapsed time is divided by COUNT.
@@ -2190,46 +2410,46 @@ func toc(n)
 
 func moments(x, mean, variance)
 /* DOCUMENT moments(x)
- *     -or- moments(x, mean)
- *     -or- moments(x, mean, variance)
- *
- *   Returns the first moments of values in array X as:
- *
- *       [MEAN, VARIANCE, SKEWNESS, KURTOSIS]
- *
- *   where MEAN and VARIANCE are the mean and variance of the distribution
- *   sampled by X.  They can be specifed as the 2nd and/or 3rd arguments,
- *   otherwise sample estimates are used:
- *
- *       MEAN = avg(X)
- *
- *       VARIANCE = 1/M * sum((x - MEAN)^2)
- *
- *   where N = numberof(X) and where M = N, if the mean is provided; or
- *   M = N - 1, when the sample mean avg(X) is used.  The other moments
- *   are:
- *
- *       SKEWNESS = 1/N * sum(((x - MEAN)/sqrt(VARIANCE))^3)
- *
- *       KURTOSIS = 1/N * sum(((x - MEAN)/sqrt(VARIANCE))^4) - 3
- *
- *   The skewness is non-dimensional and characterizes the degree of
- *   asymmetry of a distribution around its mean.  For a Gaussian
- *   distribution, the standard deviation of the skewness is sqrt(15/N)
- *   when the true mean is used, and sqrt(6/N) when the mean is estimated
- *   by the sample mean.
- *
- *   The kurtosis is non-dimensional and measures the peakedness or
- *   flatness of a distribution with respect to a Normal distribution.  For
- *   a Gaussian distribution, the standard deviation of the kurtosis is
- *   sqrt(96/N) when the true variance is known and sqrt(24/N) when it is
- *   the sample estimate.  A distribution with positive kurtosis is termed
- *   'leptokurtic' and is more peaked than the Normal distribution.  A
- *   distribution with negative kurtosis is termed 'platykurtic' and is
- *   more flat than the Normal distribution.  An in-between distribution is
- *   termed 'mesokurtic'.
- *
- * SEE ALSO: avg, rms, median.
+         or moments(x, mean)
+         or moments(x, mean, variance)
+
+     Returns the first moments of values in array X as:
+
+         [MEAN, VARIANCE, SKEWNESS, KURTOSIS]
+
+     where MEAN and VARIANCE are the mean and variance of the distribution
+     sampled by X.  They can be specifed as the 2nd and/or 3rd arguments,
+     otherwise sample estimates are used:
+
+         MEAN = avg(X)
+
+         VARIANCE = 1/M * sum((x - MEAN)^2)
+
+     where N = numberof(X) and where M = N, if the mean is provided; or
+     M = N - 1, when the sample mean avg(X) is used.  The other moments
+     are:
+
+         SKEWNESS = 1/N * sum(((x - MEAN)/sqrt(VARIANCE))^3)
+
+         KURTOSIS = 1/N * sum(((x - MEAN)/sqrt(VARIANCE))^4) - 3
+
+     The skewness is non-dimensional and characterizes the degree of
+     asymmetry of a distribution around its mean.  For a Gaussian
+     distribution, the standard deviation of the skewness is sqrt(15/N)
+     when the true mean is used, and sqrt(6/N) when the mean is estimated
+     by the sample mean.
+
+     The kurtosis is non-dimensional and measures the peakedness or
+     flatness of a distribution with respect to a Normal distribution.  For
+     a Gaussian distribution, the standard deviation of the kurtosis is
+     sqrt(96/N) when the true variance is known and sqrt(24/N) when it is
+     the sample estimate.  A distribution with positive kurtosis is termed
+     'leptokurtic' and is more peaked than the Normal distribution.  A
+     distribution with negative kurtosis is termed 'platykurtic' and is
+     more flat than the Normal distribution.  An in-between distribution is
+     termed 'mesokurtic'.
+
+   SEE ALSO: avg, rms, median.
  */
 {
   n = numberof(x);
@@ -2336,7 +2556,7 @@ func open_url(url, new=, browser=)
 
 func smooth(a, level)
 /* DOCUMENT smooth(a)
-       -or- smooth(a, level)
+         or smooth(a, level)
      Returns array A smoothed along its dimensions.  I.e. for a 1D array:
        smooth(A) = A(pcen)(zcen)
      for a 2D array:
