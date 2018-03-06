@@ -80,6 +80,7 @@
  *   strlower     - convert string(s) to lower case letters
  *   strrchr      - backward search for a character in a string
  *   strupper     - convert string(s) to upper case letters
+ *   styled_messages - control wheter to use colors for messages
  *   swap_bytes   - swap bytes of an array
  *   tempfile     - get unique file name
  *   throw        - throw formatted and colored error message
@@ -1047,7 +1048,6 @@ func ansi_term(..)
 /*---------------------------------------------------------------------------*/
 /* FORMATTED MESSAGES */
 
-local _MSG_ERROR_STYLE, _MSG_WARN_STYLE, _MSG_INFO_STYLE, _MSG_RESET_STYLE;
 local printf, inform, warn, throw;
 /* DOCUMENT printf, fmt, ...;
          or printf(fmt, ...);
@@ -1066,8 +1066,11 @@ local printf, inform, warn, throw;
      The original `error` function is saved in a global variable, so you may
      just write `error=throw` to have formatted and colored error messages.
 
+     The messages printed by `inform`, `warn` and `throw` may be colored, see
+     `styled_messages` to control this feature.
 
-   SEE ALSO: write, swrite, error.
+
+   SEE ALSO: write, swrite, error, styled_messages.
  */
 func printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
 {
@@ -1144,11 +1147,37 @@ func throw(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
 }
 errs2caller, throw;
 
-_MSG_ERROR_STYLE = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_RED);
-_MSG_WARN_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_YELLOW);
-_MSG_INFO_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_GREEN);
-_MSG_RESET_STYLE = ansi_term(ANSI_TERM_RESET);
+local _MSG_ERROR_STYLE, _MSG_WARN_STYLE, _MSG_INFO_STYLE, _MSG_RESET_STYLE;
+func styled_messages(arg)
+/* DOCUMENT styled_messages();
+         or styled_messages, 0/1;
 
+     yields whether messages printed by `warn`, `inform` and `throw` use
+     specific styles (like colors) or not.  A non-void argument can be provided
+     to turn this feature on (if true) or off (otherwise).
+
+     Initially, colors are used to print messages unless the environment
+     variable "MSG_STYLE" is set to "none".
+
+
+   SEE ALSO: warn, inform, throw.
+ */
+{
+  extern _MSG_ERROR_STYLE, _MSG_WARN_STYLE, _MSG_INFO_STYLE, _MSG_RESET_STYLE;
+  if (arg) {
+    _MSG_ERROR_STYLE = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_RED);
+    _MSG_WARN_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_YELLOW);
+    _MSG_INFO_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_GREEN);
+    _MSG_RESET_STYLE = ansi_term(ANSI_TERM_RESET);
+  } else if (! is_void(arg)) {
+    _MSG_ERROR_STYLE = "";
+    _MSG_WARN_STYLE  = "";
+    _MSG_INFO_STYLE  = "";
+    _MSG_RESET_STYLE = "";
+  }
+  return (_MSG_ERROR_STYLE != "");
+}
+styled_messages, get_env("MSG_STYLE") != "none";
 
 /*---------------------------------------------------------------------------*/
 /* LOGICAL ROUTINES */
