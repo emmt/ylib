@@ -40,6 +40,7 @@
  *   eval         - evaluate textual code
  *   expand_file_name - expand leading tilde in file name(s)
  *   filesize     - get size of a file in bytes
+ *   fulldirname  - get absolute directory of a file
  *   get_file_name - get path name of file associated with a stream
  *   glob         - get list of files matching glob-style pattern
  *   guess_compression - guess compression method of existing file
@@ -1042,14 +1043,11 @@ func ansi_term(..)
   return ("\033["+args+"m");
 }
 
-_MSG_ERROR_STYLE = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_RED);
-_MSG_WARN_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_YELLOW);
-_MSG_INFO_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_GREEN);
-_MSG_RESET_STYLE = ansi_term(ANSI_TERM_RESET);
 
 /*---------------------------------------------------------------------------*/
 /* FORMATTED MESSAGES */
 
+local _MSG_ERROR_STYLE, _MSG_WARN_STYLE, _MSG_INFO_STYLE, _MSG_RESET_STYLE;
 local printf, inform, warn, throw;
 /* DOCUMENT printf, fmt, ...;
          or printf(fmt, ...);
@@ -1145,6 +1143,12 @@ func throw(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
                 _MSG_RESET_STYLE);
 }
 errs2caller, throw;
+
+_MSG_ERROR_STYLE = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_RED);
+_MSG_WARN_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_YELLOW);
+_MSG_INFO_STYLE  = ansi_term(ANSI_TERM_BOLD,ANSI_TERM_FG_GREEN);
+_MSG_RESET_STYLE = ansi_term(ANSI_TERM_RESET);
+
 
 /*---------------------------------------------------------------------------*/
 /* LOGICAL ROUTINES */
@@ -1449,7 +1453,7 @@ func filesize(file, errmode)
  */
 {
   id = identof(file);
-  if (id !=  Y_STREAM) {
+  if (id != Y_STREAM) {
     if (id != Y_STRING || ! is_scalar(file)) {
       error, "expecting a stream or a file name";
     }
@@ -1508,9 +1512,22 @@ func dirname(path)
      terminated by a "/", so that dirname(dirname(PATH)) gives the same result
      as dirname(PATH).
 
-   SEE ALSO: basename, strfind. */
+   SEE ALSO: basename, fulldirname, strfind. */
 {
   return (i = strfind("/", path, back=1)(2)) > 0 ? strpart(path, 1:i) : "./";
+}
+
+func fulldirname(file)
+/* DOCUMENT fulldirname(file);
+     yields the absolute directory name of FILE which can be a file name or a
+     file stream.  The returned string is always terminated by a "/".
+
+   SEE ALSO: dirname, filepath, strfind. */
+{
+  if ((i = strfind("/", (path = filepath(file)), back=1)(2)) <= 0) {
+    error, "expecting a valid file name or file stream";
+  }
+  return strpart(path, 1:i);
 }
 
 func basename(path, ext)
