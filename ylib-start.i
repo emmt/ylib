@@ -33,6 +33,8 @@ autoload, "linalg.i", pm;
 
 autoload, "mda.i", mda_save, mda_recv;
 
+autoload, "options.i", opt_init, opt_parse, opt_usage, opt_error;
+
 //autoload, "plot.i", pl_arrow, pl_fc, pl_img, pl_cbar, color_bar;
 //autoload, "plot.i", pla, pls_mesh, pls, plfg;
 autoload, "plot.i", plh, plp;
