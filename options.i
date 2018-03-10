@@ -349,14 +349,23 @@ func _opt_split_list(arg, sep)
 }
 
 func opt_usage(tab, msg)
+/* DOCUMENT opt_usage, tab, msg;
+         or opt_usage, tab;
+
+     This subroutine prints the message MSG (if any) with the "usage" part of
+     the options table TAB.  In batch mode, Yorick is exited after printing
+     these information.
+
+   SEE ALSO: opt_init, batch, quit.
+ */
 {
   if (msg && strlen(msg)) {
     msg += "\n" + tab(":usage");
   } else {
     msg = tab(":usage");
   }
+  write, format="%s\n", msg;
   if (batch()) {
-    write, format="%s\n", msg;
     quit;
   }
 }
@@ -364,11 +373,10 @@ func opt_usage(tab, msg)
 local opt_error;
 /* DOCUMENT opt_error, msg;
 
-     If in batch mode, this subroutine print the error message and exit
-     Yorick.  Otherwise, this subroutine is just an alias to the error
-     subroutine of Yorick.  Note that batch mode is detected when the source
-     is compiled par Yorick parser *not* at runtime when the subroutine is
-     called.
+     In batch mode, this subroutine prints the error message and exits Yorick;
+     otherwise, this subroutine is just an alias to the error subroutine of
+     Yorick.  Note that batch mode is detected when the source is compiled par
+     Yorick parser *not* at runtime when the subroutine is called.
 
    SEE ALSO: error, batch, quit.
  */
