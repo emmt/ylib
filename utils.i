@@ -1118,6 +1118,7 @@ func printf(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
     return swrite(format=a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
   }
 }
+errs2caller, printf;
 
 func warn(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
 {
@@ -1128,6 +1129,7 @@ func warn(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
   write, format="%sWARNING - %s%s\n", _MSG_WARN_STYLE, str,
     _MSG_RESET_STYLE;
 }
+errs2caller, warn;
 
 func inform(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
 {
@@ -1138,6 +1140,7 @@ func inform(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
   write, format="%sINFO - %s%s\n", _MSG_INFO_STYLE, str,
     _MSG_RESET_STYLE;
 }
+errs2caller, inform;
 
 if (is_func(error) == 2) _orig_error  = error;
 func throw(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) /* DOCUMENTED */
