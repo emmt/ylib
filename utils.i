@@ -46,7 +46,10 @@
  *   guess_compression - guess compression method of existing file
  *   height_of    - get 2nd dimension of an array
  *   inform       - print formatted and colored informative message
+ *   ieee_generate - generate specific IEEE values
+ *   is_nan       - check for NaN value(s)
  *   is_integer_scalar - check if argument is a scalar of integer type
+ *   is_nan       - check for infinite value(s)
  *   is_string_scalar - check if argument is a scalar string
  *   lambda       - create anonymous function
  *   load_text    - load all lines of a text file
@@ -1351,6 +1354,55 @@ func vector_double(&var, def)
   return 0n;
 }
 errs2caller, vector_double;
+
+/*---------------------------------------------------------------------------*/
+/* SPECIAL IEEE VALUES */
+
+_IS_INF_TABLE = [-1n, 0n, 1n, 0n, 0n, 0n, 0n];
+_IS_NAN_TABLE = [ 0n, 0n, 0n, 1n, 1n, 0n, 1n];
+local is_nan, is_inf;
+/* DOCUMENT is_inf(x);
+         or is_nan(x);
+
+     `is_inf(x)` returns `-1n`, `0n` or `+1n` depending whether `x` is minus
+     infinity, not infinite or plus infinity.
+
+     `is_nan(x)` returns whether `x` is a NaN (not a number) or not.
+
+     If `x` is an array, the result has the same dimenions as `x`.
+
+   SEE ALSO: ieee_test, ieee_generate.
+ */
+func is_inf(x) { return _map_ieee_test(_IS_INF_TABLE, x, 0n); }
+func is_nan(x) { return _map_ieee_test(_IS_NAN_TABLE, x, 0n); }
+func _map_ieee_test(f, x, f0)
+{
+  if (is_real(x)) {
+    return f(ieee_test(x) + 2);
+  } else if (is_scalar(x) || ! is_array(x)) {
+    return f0;
+  } else {
+    return array(f0, dimsof(x));
+  }
+}
+errs2caller, _map_ieee_test;
+
+func ieee_generate(type, what)
+/* DOCUMENT ieee_generate(type, what);
+     yields the floating-point value(s) of given `type` (must be `float` or
+     `double`) corresponding to a special IEEE value specified by `what`: 1 for
+     Inf, 2 for quiet NaN, 3 for signalling NaN, 4 for zero.  Negate `what` to
+     set the sign bit of the result as well.  The result has the same
+     dimensions as `what`.
+
+   SEE ALSO: ieee_set, is_nan, is_inf.
+ */
+{
+  scalar = is_scalar(what);
+  a = array(type, (scalar ? 1 : dimsof(what)));
+  ieee_set, a, what;
+  return (scalar ? a(1) : a);
+}
 
 /*---------------------------------------------------------------------------*/
 /* FILE ROUTINES */
