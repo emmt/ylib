@@ -53,6 +53,8 @@ autoload, "utils.i", eval, map, lambda, cast, collate, swap_bytes;
 autoload, "utils.i", undersample, resample, spline_zoom, rescale, smooth;
 //autoload, "utils.i", ndims_of, width_of, height_of, depth_of;
 //autoload, "utils.i", is_integer_scalar, is_string_scalar, is_absolute_path;
+autoload, "utils.i", scalar_double, scalar_int, scalar_long, scalar_string,
+  vector_double;
 autoload, "utils.i", pwd, glob;
 //autoload, "utils.i", dirname, basename;
 autoload, "utils.i", fulldirname;

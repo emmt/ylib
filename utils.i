@@ -70,6 +70,10 @@
  *   raw_read     - read binary data from file
  *   read_ascii   - read ascii numeric data
  *   rescale      - interpolate a multi-dimensional array
+ *   scalar_double - get a scalar double argument
+ *   scalar_int   - get a scalar int argument
+ *   scalar_long  - get a scalar long argument
+ *   scalar_string - get a scalar string argument
  *   smooth       - smooth array along its dimensions
  *   spline_zoom  - resize an array by cubic spline interpolation
  *   stat         - display statistics/info about symbols/expressions
@@ -87,6 +91,7 @@
  *   timer_elapsed - get/print the elapsed time since timer_start
  *   timer_start  - (re)start the profiling timer
  *   undersample  - shrink array dimension(s)
+ *   vector_double - get a vector of double's
  *   warn         - print formatted and colored warning message
  *   width_of     - get 1st dimension of an array
  *   xopen        - extended open with (de)compression, primitives, ...
@@ -1183,7 +1188,7 @@ func styled_messages(arg)
 styled_messages, get_env("MSG_STYLE") != "none";
 
 /*---------------------------------------------------------------------------*/
-/* LOGICAL ROUTINES */
+/* PARSING OF ARGUMENTS */
 
 func is_integer_scalar(x) { return (is_integer(x) && is_scalar(x)); }
 func is_string_scalar(x) { return (is_string(x) && is_scalar(x)); }
@@ -1192,6 +1197,160 @@ func is_string_scalar(x) { return (is_string(x) && is_scalar(x)); }
      Check whether or not X is an integer/string scalar.
 
    SEE ALSO is_scalar, is_integer. */
+
+func scalar_double(&var, def)
+/* DOCUMENT bool = scalar_double(var [, def]);
+         or scalar_double, var [, def];
+
+     Make sure that variable `var` stores a scalar of type `double`.  `var`
+     should be a variable, not an expression because its contents may be
+     redefined by this routine.  On entry, if `var` is undefined, it is set
+     with the default value `def`.  On successful return, it is guaranteed
+     that `var` stores a scalar of type `double`.  When called as a function,
+     a boolean result is returned: true in case of success and false in case
+     of failure.  When called as a subroutine, an error is thrown in case of
+     failure.
+
+     Typical usage is:
+
+         func foo(arg1, ..., argN, key1=, ..., keyN)
+         {
+           if (! scalar_double(key1, 0.0) || key1 < 0.0) {
+             error, "keyword KEY1 should be a strictly positive real";
+           }
+           ...
+         }
+
+     The simple call:
+
+         scalar_double, var, def;
+
+     is equivalent to:
+
+         if (! scalar_double(var, def)) {
+           error, "expecting a scalar real";
+         }
+
+
+   SEE ALSO: scalar_long, scalar_int, scalar_string.
+ */
+{
+  if (is_void(var)) var = def;
+  if (is_scalar(var) && identof(var) <= Y_DOUBLE) {
+    var = double(var);
+    return 1n;
+  }
+  if (am_subroutine()) error, "expecting a real";
+  return 0n;
+}
+errs2caller, scalar_double;
+
+func scalar_int(&var, def)
+/* DOCUMENT bool = scalar_int(var [, def]);
+         or scalar_int, var [, def];
+
+     Make sure that variable `var` stores a scalar of type `int`.  See the
+     documentation of `scalar_double` for more details and typical usage.
+
+
+   SEE ALSO: scalar_double, scalar_int, scalar_string.
+ */
+{
+  if (is_void(var)) var = def;
+  if (is_scalar(var) && (id = identof(var)) <= Y_LONG) {
+    if (id <= Y_INT) {
+      var = (id == Y_CHAR ? (var & 0xffn) : int(var));
+      return 1n;
+    }
+    if ((tmp = int(var)) == var) {
+      var = tmp;
+      return 1n;
+    }
+    if (am_subroutine()) error, "integer overflow";
+    return 0n;
+  }
+  if (am_subroutine()) error, "expecting an integer";
+  return 0n;
+}
+errs2caller, scalar_int;
+
+func scalar_long(&var, def)
+/* DOCUMENT bool = scalar_long(var [, def]);
+         or scalar_long, var [, def];
+
+     Make sure that variable `var` stores a scalar of type `long`.  See the
+     documentation of `scalar_double` for more details and typical usage.
+
+
+   SEE ALSO: scalar_double, scalar_int, scalar_string.
+ */
+{
+  if (is_void(var)) var = def;
+  if (is_scalar(var) && (id = identof(var)) <= Y_LONG) {
+    var = (id == Y_CHAR ? (var & 0xff) : long(var));
+    return 1n;
+  }
+  if (am_subroutine()) error, "expecting an integer";
+  return 0n;
+}
+errs2caller, scalar_long;
+
+func scalar_string(&var, def)
+/* DOCUMENT bool = scalar_string(var [, def]);
+         or scalar_string, var [, def];
+
+     Make sure that variable `var` stores a scalar string.  See the
+     documentation of `scalar_double` for more details and typical usage.
+
+
+   SEE ALSO: scalar_double, scalar_int, scalar_long.
+ */
+{
+  if (is_void(var)) eq_nocopy, var, def;
+  if (is_scalar(var) && is_string(var)) {
+    return 1n;
+  }
+  if (am_subroutine()) error, "expecting a string";
+  return 0n;
+}
+errs2caller, scalar_string;
+
+func vector_double(&var, def)
+/* DOCUMENT bool = vector_double(var [, def]);
+         or vector_double, var [, def];
+
+     Make sure that variable `var` stores a vector of type `double`.  `var`
+     should be a variable, not an expression because its contents may be
+     redefined by this routine.  On entry, if `var` is undefined, it is set
+     with the default value `def`.  On successful return, it is guaranteed that
+     `var` stores a vector of type `double`.  When called as a function, a
+     boolean result is returned: true in case of success and false in case of
+     failure.  When called as a subroutine, an error is thrown in case of
+     failure.  See the documentation of `scalar_double` for more details and
+     typical usage.
+
+   SEE ALSO: scalar_double.
+ */
+{
+  if (is_void(var)) {
+    var = def;
+  }
+  if ((id = identof(var)) <= Y_DOUBLE) {
+    if (is_scalar(var)) {
+      var = [double(var)];
+      return 1n;
+    }
+    if (is_vector(var)) {
+      if (id != Y_DOUBLE) {
+        var = double(var);
+      }
+      return 1n;
+    }
+  }
+  if (am_subroutine()) error, "expecting a vector of reals";
+  return 0n;
+}
+errs2caller, vector_double;
 
 /*---------------------------------------------------------------------------*/
 /* FILE ROUTINES */
