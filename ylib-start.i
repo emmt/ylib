@@ -57,7 +57,7 @@ autoload, "utils.i", scalar_double, scalar_int, scalar_long, scalar_string,
   vector_double, is_nan, is_inf, ieee_generate;
 autoload, "utils.i", pwd, glob;
 //autoload, "utils.i", dirname, basename;
-autoload, "utils.i", fulldirname;
+autoload, "utils.i", absdirname;
 autoload, "utils.i", locate, load, tempfile, filesize, structname;
 autoload, "utils.i", strip_file_extension, expand_file_name, get_file_name, protect_file_name, read_ascii, load_text, dump_text, guess_compression, xopen, raw_read;
 autoload, "utils.i", pw_get_user, pw_get_uid, pw_get_gid, pw_get_name, pw_get_home, pw_get_shell;

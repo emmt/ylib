@@ -31,6 +31,7 @@
  * ----------------------------------------------------------------------------
  *
  * Routines:
+ *   absdirname   - get absolute directory of a file
  *   ansi_term    - get control string for ANSI terminals
  *   basename     - get basename of file from path
  *   cast         - change the type and/or the dimensions of an array
@@ -40,7 +41,6 @@
  *   eval         - evaluate textual code
  *   expand_file_name - expand leading tilde in file name(s)
  *   filesize     - get size of a file in bytes
- *   fulldirname  - get absolute directory of a file
  *   get_file_name - get path name of file associated with a stream
  *   glob         - get list of files matching glob-style pattern
  *   guess_compression - guess compression method of existing file
@@ -1750,20 +1750,22 @@ func glob(pat, sorted=)
 func dirname(path)
 /* DOCUMENT dirname(path);
 
-     Returns PATH with its trailing "/component" removed; if PATH contains no
+     yields PATH with its trailing "/component" removed; if PATH contains no
      /'s, returns "./" (meaning the current directory).  The result is always
      terminated by a "/", so that dirname(dirname(PATH)) gives the same result
      as dirname(PATH).
 
-   SEE ALSO: basename, fulldirname, strfind. */
+   SEE ALSO: basename, absdirname, strfind. */
 {
   return (i = strfind("/", path, back=1)(2)) > 0 ? strpart(path, 1:i) : "./";
 }
 
-func fulldirname(file)
-/* DOCUMENT fulldirname(file);
+func absdirname(file)
+/* DOCUMENT absdirname(file);
+
      yields the absolute directory name of FILE which can be a file name or a
-     file stream.  The returned string is always terminated by a "/".
+     file stream.  The returned string is always an absolute directory name
+     (i.e., starting by a "/") terminated by a "/".
 
    SEE ALSO: dirname, filepath, strfind. */
 {
