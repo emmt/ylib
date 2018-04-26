@@ -1789,7 +1789,8 @@ local p_get_style, p_set_style;
 
          ptr = [&landscape, &systems, &legends, &clegends];
 
-   SEE ALSO: get_style, set_style.
+   SEE ALSO: p_style, p_read_style, p_write_style,
+             get_style, set_style.
  */
 
 func p_set_style(ptr, win)
@@ -1809,7 +1810,7 @@ func p_set_style(ptr, win)
   }
 }
 
-func p_get_style(win)
+func p_get_style(win) /* DOCUMENTED */
 {
   local landscape, systems, legends, clegends;
   if (is_void(win)) {
@@ -1822,6 +1823,31 @@ func p_get_style(win)
   if (oldwin >= 0) {
     window, oldwin;
   }
+  return [&landscape, &systems, &legends, &clegends];
+}
+
+local p_read_style;
+func p_write_style(ptr, file)
+/* DOCUMENT p_write_style, ptr, file;
+         or p_write_style, file, ptr;
+         or ptr = p_read_style(file);
+
+     Write style defined in PTR into FILE or read style from FILE.
+
+   SEE ALSO: p_style, p_set_style, p_get_style,
+             write_style, read_style.
+ */
+{
+  if (is_scalar(ptr) && is_string(ptr) && is_pointer(file)) {
+    swap, ptr, file;
+  }
+  write_style, file, *ptr(1), *ptr(2), *ptr(3), *ptr(4);
+}
+
+func p_read_style(file) /* DOCUMENTED */
+{
+  local landscape, systems, legends, clegends;
+  read_style, file, landscape, systems, legends, clegends;
   return [&landscape, &systems, &legends, &clegends];
 }
 
