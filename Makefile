@@ -17,6 +17,7 @@ PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/img.i \
       ${srcdir}/linalg.i \
       ${srcdir}/mda.i \
+      ${srcdir}/options.i \
       ${srcdir}/plot.i \
       ${srcdir}/rgb1.i \
       ${srcdir}/rgb2.i \
