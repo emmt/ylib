@@ -485,26 +485,26 @@ func img_fft_centered_at_max(img)
 func img_convolve(a, b, unroll=, pad=, correl=)
 /* DOCUMENT img_convolve(a, b)
 
-     Convolve image B by image A using FFT's.  If Yeti FFTW plugin is
-     loaded, FFTW is used; otherwise Yorick's FFT is used.
+     Convolve image B by image A using FFT's.  If Yeti FFTW plugin is loaded,
+     FFTW is used; otherwise Yorick's FFT is used.
 
-     If keyword UNROLL is true, the result is centered at pixel
-     ((WIDTH + 1)/2, (HEIGHT + 1)/2) where WIDTH and HEIGHT are the
-     dimensuon of the result (and integere division is applied); the
-     default is to have the result centered at pixel (1,1) according
-     to FFT conventions.
+     If keyword UNROLL is true, the result is centered at pixel (WIDTH/2 + 1,
+     HEIGHT/2 + 1) where WIDTH and HEIGHT are the dimensions of the result (and
+     integer division is assumed); the default is to have the result centered
+     at pixel (1,1) according to FFT conventions.
 
-     If keyword CORREL is true, the correlation of B by A instead of
-     the convolution is computed.
+     If keyword CORREL is true, the correlation of B by A instead of the
+     convolution is computed.
 
-     If keyword PAD is true, then A and B are padded with zeroes to
-     match good dimensions for the FFT.  As a special case, with PAD=2
-     the padding is such that there is no aliasing in the result,
-     i.e. dimensions of the result are such that:
+     If keyword PAD is true, then A and B are padded with zeroes to match good
+     dimensions for the FFT.  As a special case, with PAD=2 the padding is such
+     that there is no aliasing in the result, i.e. dimensions of the result are
+     such that:
+
        WIDTH  >= DIMSOF(A)(2) + DIMSOF(B)(2) - 1
        HEIGHT >= DIMSOF(A)(2) + DIMSOF(B)(2) - 1
 
-   SEE ALSO: fft_best_dim, fft, fftw.
+   SEE ALSO: fft_best_dim, fft, fftw, fft_freq.
  */
 {
   real = (structof(a) != complex && structof(b) != complex);
@@ -534,10 +534,9 @@ func img_convolve(a, b, unroll=, pad=, correl=)
       temp(1:bdims(2), 1:bdims(3)) = b;
       b = temp;
     }
-    // FIXME: check unroll offsets
     if (unroll) {
-      off0 = ((adims(2:) - 1)/2);
-      off1 = ((cdims(2:) - 1)/2) - ((bdims(2:) - 1)/2);
+      off0 = (adims(2:) >> 1);
+      off1 = (cdims(2:) >> 1) - (bdims(2:) >> 1);
       offset = (correl ? off1 + off0 : off1 - off0);
     }
   } else {
@@ -546,7 +545,7 @@ func img_convolve(a, b, unroll=, pad=, correl=)
       error, "non-conformable arrays";
     }
     if (unroll) {
-      offset = ((cdims(2:) - 1)/2);
+      offset = (cdims(2:) >> 1);
     }
   }
 
