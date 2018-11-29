@@ -54,8 +54,21 @@ ypkg upgrade ylib
    repository named `ylib`.
 
 
-3. Configure for compilation.  There are two possibilities (the first one is
-   recommended):
+3. Configure for compilation.  There are two possibilities:
+
+   - For an **in-place build**, go to the source directory, say `$SRC_DIR`, of
+     the plug-in code and run the configuration script:
+
+     ```sh
+     cd $SRC_DIR
+     ./configure
+     ```
+
+     To see the configuration options, type:
+
+     ```sh
+     ./configure --help
+     ```
 
    - For an **out-of-place build**, create a dedicated build directory, say
      `$BUILD_DIR`, go to the build directory and run the configuration script:
@@ -71,20 +84,6 @@ ypkg upgrade ylib
 
      ```sh
      $SRC_DIR/configure --help
-     ```
-
-   - For an **in-place build**, go to the source directory, say `$SRC_DIR`, of
-     the plug-in code and run the configuration script:
-
-     ```sh
-     cd $SRC_DIR
-     ./configure
-     ```
-
-     To see the configuration options, type:
-
-     ```sh
-     ./configure --help
      ```
 
 4. Build YLib:

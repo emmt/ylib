@@ -66,12 +66,6 @@ options:
 EOF
 }
 
-if cmp -s "./Makefile" "$cfg_srcdir/Makefile"; then
-  cfg_inplace=yes
-else
-  cfg_inplace=no
-fi
-
 cfg_os=$(uname -s | tr A-Z a-z)
 if test "x$cfg_os" = "x"; then
     cfg_os="unknown"
@@ -148,13 +142,7 @@ echo >&2 "Yorick site directory ----> $cfg_ysite"
 
 # Create the Makefile.
 cfg_dst="./Makefile"
-if test "$cfg_inplace" = "yes"; then
-  cfg_src="$cfg_dst.bak"
-  mv -f "$cfg_dst" "$cfg_src"
-else
-  cfg_src="$cfg_srcdir/Makefile"
-fi
-
+cfg_src="$cfg_srcdir/Makefile.in"
 cfg_filter=""
 cfg_add_rule "Y_EXE"       "$cfg_yorick"
 cfg_add_rule "Y_MAKEDIR"   "$cfg_ymkdir"
@@ -166,9 +154,5 @@ cfg_add_rule "PKG_LDFLAGS" "$cfg_ldflags"
 cfg_add_rule "srcdir"      "$cfg_srcdir"
 sed < "$cfg_src" > "$cfg_dst" -e "$cfg_filter"
 
-if test "$cfg_inplace" = "yes"; then
-  rm -f "$cfg_src"
-fi
-
-echo "Makefile has been updated."
+echo "Makefile has been created."
 echo "You can run 'make' and 'make install' now."

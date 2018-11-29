@@ -1,5 +1,6 @@
 # Specific files #
 ##################
+Makefile
 ywrap.c
 build/
 work/
@@ -52,4 +53,3 @@ ehthumbs.db
 Icon?
 Thumbs.db
 .directory
-
