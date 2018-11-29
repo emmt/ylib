@@ -1,52 +1,101 @@
-YLib
-====
+# YLib
 
-YLib (Yorick Library) is a collection of useful interpreted functions
-for Yorick.
-
-Contents
---------
-* img.i - routines for manipulation image.
-* utils.i - various utilities.
-* plot.i - plotting utilities.
+YLib (Yorick Library) is a collection of useful interpreted functions for
+[Yorick](http://yorick.github.com/).
 
 
-Installation
-------------
+## Contents
 
-1. You simply clone the contents of the repository:
-
-    git clone https://github.com/emmt/ylib.git
-
-   which creates a directory `ylib` with the Git repository.
-
-2. You may update the time stamps of the file (so that you can refer
-to them in case of problems).  To that end, in the `ylib` directory,
-execute the following command:
-
-    ./tools/code_dater *.i
-
-3. If you want to keep the synchronization with the Git repository, it
-is probably a good idea to create symbolic links in your `~/Yorick`
-directory toward all the `*.i` files in the `ylib` directory.  It is
-also a good idea to follows the instructions in the "Developpers"
-section.
+Amon others:
+* `img.i` - routines for manipulation image.
+* `utils.i` - various utilities.
+* `plot.i` - plotting utilities.
 
 
-Instructions for Developers
----------------------------
+## Installation
 
-Checking out and comitting involve a number of filters.  The filters are
-in the `tools` directory.  To activate the filters you have to edit the
-file `.git/config' and add/modify the following lines:
+### Installation with EasyYorick
 
-    [filter "code-filter"]
-            clean = ./tools/code_cleaner
-            smudge = ./tools/code_dater
-    [filter "text-filter"]
-            clean = ./tools/code_cleaner
-            smudge = ./tools/code_dater
-    [filter "yorick-makefile-filter"]
-            clean = ./tools/ymk_cleaner
-            smudge = cat
+Installation of YLib by [EasyYorick](https://github.com/emmt/EasyYorick) is
+fully supported.  Assuming you have installed EasyYorick, you just have to
+execute:
 
+```sh
+ypkg install yorick ylib
+```
+
+which should install Yorick (if not yet installed) and YLib.
+
+To upgrade to the last master version:
+
+```sh
+ypkg upgrade ylib
+```
+
+
+### Manual installation
+
+1. You must have [Yorick](http://yorick.github.com/) installed on your machine.
+
+2. Unpack the [software code](https://github.com/emmt/ylib/archive/master.zip)
+   somewhere or clone the Git repository:
+
+   ```sh
+   git clone https://github.com/emmt/ylib.git ylib
+   ```
+
+   if you want/prefer to use HTTPS, or:
+
+   ```sh
+   git clone git@github.com:emmt/ylib.git ylib
+   ```
+
+   if you want/prefer to use SSH.  Any of these commands creates a local GIT
+   repository named `ylib`.
+
+
+3. Configure for compilation.  There are two possibilities (the first one is
+   recommended):
+
+   - For an **out-of-place build**, create a dedicated build directory, say
+     `$BUILD_DIR`, go to the build directory and run the configuration script:
+
+     ```sh
+     mkdir -p $BUILD_DIR
+     cd $BUILD_DIR
+     $SRC_DIR/configure
+     ```
+
+     where `$SRC_DIR` is the path to the source directory of the plug-in code.
+     To see the configuration options, type:
+
+     ```sh
+     $SRC_DIR/configure --help
+     ```
+
+   - For an **in-place build**, go to the source directory, say `$SRC_DIR`, of
+     the plug-in code and run the configuration script:
+
+     ```sh
+     cd $SRC_DIR
+     ./configure
+     ```
+
+     To see the configuration options, type:
+
+     ```sh
+     ./configure --help
+     ```
+
+4. Build YLib:
+
+   ```sh
+   make clean
+   make
+   ```
+
+5. Install YLib (you must have write access granted to Yorick directories):
+
+   ```sh
+   make install
+   ```
