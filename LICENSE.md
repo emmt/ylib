@@ -1,6 +1,6 @@
 YLib (Yorick Library) is licensed under the MIT "Expat" License:
 
-> Copyright (c) 1995-2014: Éric Thiébaut
+> Copyright (c) 1995-2018: Éric Thiébaut <https://github.com/emmt/ylib>
 
 > Permission is hereby granted, free of charge, to any person obtaining
 > a copy of this software and associated documentation files (the
