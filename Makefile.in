@@ -14,6 +14,7 @@ Y_HOME_PKG=
 PKG_NAME=ylib
 PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/fmin.i \
+      ${srcdir}/fzero.i \
       ${srcdir}/img.i \
       ${srcdir}/linalg.i \
       ${srcdir}/mda.i \
@@ -23,6 +24,7 @@ PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/rgb2.i \
       ${srcdir}/rgb3.i \
       ${srcdir}/rgb.i \
+      ${srcdir}/statistics.i \
       ${srcdir}/utils.i \
       ${srcdir}/xplot0.i \
       ${srcdir}/xplot.i \
