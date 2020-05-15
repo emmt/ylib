@@ -15,6 +15,7 @@ PKG_NAME=ylib
 PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/fmin.i \
       ${srcdir}/fzero.i \
+      ${srcdir}/hmac.i \
       ${srcdir}/img.i \
       ${srcdir}/linalg.i \
       ${srcdir}/mda.i \

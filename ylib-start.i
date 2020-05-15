@@ -14,6 +14,8 @@ autoload, "fft_utils.i", fft_plh, fft_plg, fft_pli, fft_plc, fft_plfc;
 autoload, "fmin.i", fmin, fmin_global, fmin_range;
 autoload, "fzero.i", fzero;
 
+autoload, "hmac.i", hmac, hmac_md5, hmac_sha1, bytes2hex;
+
 autoload, "img.i", img_dims, img_plot, img_cbar;
 autoload, "img.i", img_resize, img_thumbnail, img_interpolate;
 autoload, "img.i", img_extract_parallelogram_as_rectangle;
