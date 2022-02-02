@@ -68,6 +68,8 @@
  *   strjoin      - make array of strings into a single string
  *   strlower     - convert string(s) to lower case letters
  *   strrchr      - backward search for a character in a string
+ *   strtrimleft  - remove leading spaces
+ *   strtrimright - remove trailing spaces
  *   strupper     - convert string(s) to upper case letters
  *   styled_messages - control wheter to use colors for messages
  *   swap_bytes   - swap bytes of an array
@@ -803,11 +805,22 @@ func swap_bytes(a)
 /*---------------------------------------------------------------------------*/
 /* STRING ROUTINES */
 
+func strtrimleft(s)  { return strtrim(s, 1); }
+func strtrimright(s) { return strtrim(s, 2); }
+/* DOCUMENT strtrimleft(s);
+         or strtrimrigth(s);
+
+     returns input (array of) string(s) S without leading or trailing
+     blanks.
+
+   SEE ALSO strlower, strupper, string, strtrim. */
+
 func strlower(s) { return strcase(0, s); }
 func strupper(s) { return strcase(1, s); }
 /* DOCUMENT strlower(s)
          or strupper(s)
-     Convert (array of) string(s) S to lower/upper case letters.
+
+     returns (array of) string(s) S converted to lower/upper case letters.
 
    SEE ALSO strcase */
 

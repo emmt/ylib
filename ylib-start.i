@@ -68,6 +68,6 @@ autoload, "utils.i", timer_start, timer_elapsed;
 autoload, "utils.i", moments, stat;
 autoload, "utils.i", ansi_term, printf, inform, warn, throw, styled_messages;
 //autoload, "utils.i", open_url;
-//autoload, "utils.i", strlower, strupper, strcut, strjoin, strchr, strrchr;
+autoload, "utils.i", strtrimleft, strtrimright, strlower, strupper, strcut, strjoin, strchr, strrchr;
 
 autoload, "xsort.i", xsort, xsort_rank, xsort_uniq;

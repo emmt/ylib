@@ -1,3 +1,7 @@
+February 2 2022:
+* Fix includes/requires.
+* Move Yeti string functions `strtrimleft` and `strtrimright` in `utils.i`.
+
 May 15 2020:
 * Add routines to calculate an Hashed Message Authentication digest (HMAC) as
   described in RFC 2104 (https://www.rfc-editor.org/rfc/rfc2104.txt).
