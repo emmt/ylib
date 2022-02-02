@@ -8,7 +8,7 @@
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
  * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2000-2017, Éric Thiébaut.
+ * Copyright (C) 2000-2022, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -2309,9 +2309,6 @@ func _win2any_worker(filename, counter, jpg)
     return "bad graphical window";
   }
   if (is_void(dpi)) {
-    if (! is_func(window_geometry)) {
-      require, "yeti.i";
-    }
     geom = window_geometry(tgt_win);
     dpi = long(floor(geom(1) + 0.5));
   }
