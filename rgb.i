@@ -10,24 +10,6 @@
  *
  * Copyright (C) 1995-2022, Éric Thiébaut.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- *
  * ----------------------------------------------------------------------------
  */
 
@@ -171,31 +153,32 @@ func rgb_build_databases(file, dir)
 }
 
 func rgb_uncapitalize(s)
-/* DOCUMENT rgb_uncapitalize(s)
-     Returns uncapitalizeed version of array of strings S:
+/* DOCUMENT u = rgb_uncapitalize(s);
+
+     returns uncapitalizeed version of array of strings S:
 
        "dark slate blue"  ->  "dark_slate_blue"
        "DarkSlateBlue"    ->  "dark_slate_blue"
 
    SEE ALSO: rgb_build_databases. */
 {
-  (lower = char(indgen(0:255)))(1+'A':1+'Z') = lower(1+'a':1+'z');
-  n = numberof((r = array(string, dimsof(s))));
-  for (i=1; i<=n; ++i) {
-    w1 = *pointer(s(i));
-    len = numberof(w1);
-    if (len) {
-      w2 = array(char, 2*len-1);
-      j2 = 0;
-      for (j1=1 ; j1<len ; ++j1) {
-        if ((c = w1(j1)) >= 'A' && c <= 'Z') {
-          c = lower(1 + c);
-          if (j1 != 1) w2(++j2) = '_';
+    (lower = char(indgen(0:255)))(1+'A':1+'Z') = lower(1+'a':1+'z');
+    n = numberof((r = array(string, dimsof(s))));
+    for (i = 1; i <= n; ++i) {
+        w1 = *pointer(s(i));
+        len = numberof(w1);
+        if (len) {
+            w2 = array(char, 2*len-1);
+            j2 = 0;
+            for (j1 = 1; j1 < len; ++j1) {
+                if ((c = w1(j1)) >= 'A' && c <= 'Z') {
+                    c = lower(1 + c);
+                    if (j1 != 1) w2(++j2) = '_';
+                }
+                w2(++j2) = c;
+            }
+            r(i) = string(&w2);
         }
-        w2(++j2) = c;
-      }
-      r(i) = string(&w2);
     }
-  }
-  return r;
+    return r;
 }
