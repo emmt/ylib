@@ -131,7 +131,7 @@ func rgb_build_databases(file, dir)
                 vals = db(noop(name));
                 write, file, format="    %-22s = [%3d,%3d,%3d]%s\n",
                     name, vals(1), vals(2), vals(3),
-                    (i<ncolors ? "," : ");");
+                    (i<ncolors ? "," : ");\n}");
             }
         } else {
             write, file, format="%s\n%s\n%s\n%s\n",
@@ -144,7 +144,7 @@ func rgb_build_databases(file, dir)
                 vals = db(noop(name));
                 write, file, format="    %-22s = [%3d,%3d,%3d]%s\n",
                     name, vals(1), vals(2), vals(3),
-                    (i < ncolors ? "," : ");");
+                    (i < ncolors ? "," : ");\n}");
             }
         }
         write, file, format="\n// end of `%s`\n", shortname;

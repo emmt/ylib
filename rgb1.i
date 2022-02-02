@@ -1,6 +1,9 @@
-/* rgb1.i - Color database with global names (automatically build
- *          by rgb_parse in rgb.i).
- */
+// rgb1.i -
+//
+// Color database with global names.
+//
+// This file has been automatically build by `rgb_build_databases` in `rgb.i`.
+
 rgb_alice_blue             = [240n,248n,255n];
 rgb_antique_white          = [250n,235n,215n];
 rgb_antique_white1         = [255n,239n,219n];
@@ -115,6 +118,7 @@ rgb_dark_slate_gray4       = [ 82n,139n,139n];
 rgb_dark_slate_grey        = [ 47n, 79n, 79n];
 rgb_dark_turquoise         = [  0n,206n,209n];
 rgb_dark_violet            = [148n,  0n,211n];
+rgb_debian_red             = [215n,  7n, 81n];
 rgb_deep_pink              = [255n, 20n,147n];
 rgb_deep_pink1             = [255n, 20n,147n];
 rgb_deep_pink2             = [238n, 18n,137n];
@@ -658,4 +662,5 @@ rgb_yellow2                = [238n,238n,  0n];
 rgb_yellow3                = [205n,205n,  0n];
 rgb_yellow4                = [139n,139n,  0n];
 rgb_yellow_green           = [154n,205n, 50n];
-/* end of rgb1.i */
+
+// end of `rgb1.i`

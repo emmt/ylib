@@ -1,6 +1,8 @@
-/* rgb3.i - Color database using Yeti hash table (automatically build
- *          by rgb_parse in rgb.i).
- */
+// rgb3.i -
+//
+// Color database using Yeti hash table.
+//
+// This file has been automatically build by `rgb_build_databases` in `rgb.i`.
 
 func _rgb_hash(nil)
 /* DOCUMENT _rgb_hash() - Returns instanciated RGB hash table. */
@@ -120,6 +122,7 @@ func _rgb_hash(nil)
     dark_slate_grey        = [ 47, 79, 79],
     dark_turquoise         = [  0,206,209],
     dark_violet            = [148,  0,211],
+    debian_red             = [215,  7, 81],
     deep_pink              = [255, 20,147],
     deep_pink1             = [255, 20,147],
     deep_pink2             = [238, 18,137],
@@ -664,4 +667,5 @@ func _rgb_hash(nil)
     yellow4                = [139,139,  0],
     yellow_green           = [154,205, 50]);
 }
-/* end of rgb3.i */
+
+// end of `rgb3.i`

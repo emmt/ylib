@@ -1,8 +1,10 @@
-/* rgb2.i - Color database using Yorick structure (automatically build
- *          by rgb_parse in rgb.i).
- */
+// rgb2.i -
+//
+// Color database using Yorick structure.
+//
+// This file has been automatically build by `rgb_build_databases` in `rgb.i`.
 
-/* Definition of RGB structure. */
+// Definition of RGB structure.
 struct _RGB_STRUCT {
   char alice_blue(3);
   char antique_white(3);
@@ -118,6 +120,7 @@ struct _RGB_STRUCT {
   char dark_slate_grey(3);
   char dark_turquoise(3);
   char dark_violet(3);
+  char debian_red(3);
   char deep_pink(3);
   char deep_pink1(3);
   char deep_pink2(3);
@@ -781,6 +784,7 @@ func _rgb_struct(nil)
     dark_slate_grey        = [ 47, 79, 79],
     dark_turquoise         = [  0,206,209],
     dark_violet            = [148,  0,211],
+    debian_red             = [215,  7, 81],
     deep_pink              = [255, 20,147],
     deep_pink1             = [255, 20,147],
     deep_pink2             = [238, 18,137],
@@ -1325,4 +1329,5 @@ func _rgb_struct(nil)
     yellow4                = [139,139,  0],
     yellow_green           = [154,205, 50]);
 }
-/* end of rgb2.i */
+
+// end of `rgb2.i`
