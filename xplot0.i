@@ -2051,7 +2051,7 @@ func p_style(win, geom=, verb=, aspect=, viewport=, units=, size=, color=,
 
   p_real, size, 0.035*max(abs(ymax - ymin));
   if (verb) {
-    write, format="  size = %f NDC (equivallent to ~ %.1f pt)\n",
+    write, format="  size = %f NDC (equivalent to ~ %.1f pt)\n",
       size, size/P_NDC_POINT;
   }
 
