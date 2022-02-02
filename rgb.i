@@ -8,7 +8,7 @@
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
  * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 1995-2014, Éric Thiébaut.
+ * Copyright (C) 1995-2022, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -31,40 +31,42 @@
  * ----------------------------------------------------------------------------
  */
 
+local rgb;
 func rgb_load(nil)
 /* DOCUMENT rgb_load;
-       -or- db = rgb_load();
-     Loads RGB  color database (from  X11 distribution).  When called  as a
-     subroutine, the  external symbol "rgb" get defined.   The database can
-     be used as follows:
+         or rgb = rgb_load();
+
+     loads RGB color database (from X11 distribution).  When called as a
+     subroutine, the external symbol "rgb" get defined.  The database can be
+     used as follows:
 
         plg, y, x, color=rgb.light_goldenrod
         plg, y, x, color=rgb.dark_slate_grey
 
-     The  color names are  all lower  case with  un underscore  to separate
-     words.  If  you prefer  using global names  for _all_ RBG  colors then
-     just include "rgb1.i" (then the color names are prefixed with "rgb_"):
+     The color names are all lower case with un underscore to separate words.
+     If you prefer using global names for _all_ RBG colors then just include
+     "rgb1.i" (then the color names are global variables prefixed with "rgb_"):
 
-        include, "~/yorick/rgb1.i";
+        include, "rgb1.i";
         plg, y, x, color=rgb_goldenrod;
 
    SEE ALSO: rgb_build_databases. */
 {
-  if (is_func(h_new) == 2) {
-    /* use hash table */
-    include, "~/yorick/rgb3.i", 1;
-    db = _rgb_hash();
-  } else {
-    /* use structure */
-    include, "~/yorick/rgb2.i", 1;
-    db = _rgb_struct();
-  }
-  if (am_subroutine()) {
-    extern rgb;
-    eq_nocopy, rgb, db;
-  } else {
-    return db;
-  }
+    if (is_func(h_new)) {
+        /* use hash table */
+        include, "rgb3.i", 1;
+        db = _rgb_hash();
+    } else {
+        /* use structure */
+        include, "rgb2.i", 1;
+        db = _rgb_struct();
+    }
+    if (am_subroutine()) {
+        extern rgb;
+        eq_nocopy, rgb, db;
+    } else {
+        return db;
+    }
 }
 
 func rgb_build_databases(file)
