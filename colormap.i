@@ -8,7 +8,7 @@
  * This file is part of YLib available at <https://github.com/emmt/ylib> and
  * licensed under the MIT "Expat" License.
  *
- * Copyright (C) 2010, Éric Thiébaut.
+ * Copyright (C) 2010-2022, Éric Thiébaut.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -43,7 +43,6 @@ func extract_image_colors(img, quiet=, full=)
    SEE ALSO: heapsort.
  */
 {
-  if (! is_func(heapsort)) include, "yeti.i", 1;
   local q;
   dims = dimsof(img);
   rank = numberof(dims) - 1;
@@ -90,7 +89,6 @@ func make_indexed_image(img, quiet=)
    SEE ALSO: heapsort.
  */
 {
-  if (! is_func(heapsort)) include, "yeti.i", 1;
   local q;
   dims = dimsof(img);
   rank = numberof(dims) - 1;
