@@ -1,7 +1,7 @@
 # YLib
 
 YLib (Yorick Library) is a collection of useful interpreted functions for
-[Yorick](http://yorick.github.com/).
+[Yorick](http://github.com/LLNL/yorick/).
 
 
 ## Contents
@@ -35,7 +35,7 @@ ypkg upgrade ylib
 
 ### Manual installation
 
-1. You must have [Yorick](http://yorick.github.com/) installed on your machine.
+1. You must have [Yorick](http://github.com/LLNL/yorick/) installed on your machine.
 
 2. Unpack the [software code](https://github.com/emmt/ylib/archive/master.zip)
    somewhere or clone the Git repository:
