@@ -456,12 +456,13 @@ func spline_zoom(a, factor, rgb=)
 }
 
 func map(__map__f, __map__x)
-/* DOCUMENT map(f, x)
+/* DOCUMENT map(f, x);
          or map, f, x;
-     Map scalar function or subroutine F  onto argument X to mimics elementwise
-     unary operation.   Argument X must  be an array, or  a list or  nil.  When
-     called  as  a  function,  the  result  is: nil  if  X  is  nil,  an  array
-     dimsof(F(X(1)))-by-dimsof(X) if X is an array, a list if X is a list.
+
+     Map function or subroutine `f` on argument `x` element-wise. Argument `x`
+     must be an array, a list, or `[]`. When called as a function, the result
+     is an array of dimensions `dimsof(f(x(1)))` by `dimsof(x)` if `x` is an
+     array, a list if `x` is a list, or `f()` if `x` is `[]`.
 
      For example, to kill all windows:
        map, winkill, window_list();
@@ -471,53 +472,59 @@ func map(__map__f, __map__x)
 
    SEE ALSO: lambda, _map. */
 {
-  /* All locals here must have weird names, since the user's function may rely
-     on external variables for arguments not varying in the source, or for
-     accumulated outputs. */
-  if (is_array(__map__x)) {
-    if (am_subroutine()) {
-      __map__n = numberof(__map__x);
-      for (__map__i = 1; __map__i <= __map__n; ++__map__i) {
-        __map__f, __map__x(__map__i);
-      }
-    } else if (is_scalar(__map__x)) {
-      return __map__f(__map__x);
-    } else {
-      __map__n = numberof(__map__x);
-      __map__y1 = __map__f(__map__x(1));
-      __map__y = array(structof(__map__y1), dimsof(__map__y1),
-                       dimsof(__map__x));
-      if ((__map__m = numberof(__map__y1)) == 1) {
-        __map__y(1) = __map__y1;
-        for (__map__i = 2; __map__i <= __map__n; ++__map__i) {
-          __map__y(__map__i) = __map__f(__map__x(__map__i));
+    // All locals must have weird names to avoid collision with external
+    // variables that may be used by the mapped function.
+    if (is_array(__map__x)) {
+        if (am_subroutine()) {
+            __map__n = numberof(__map__x);
+            for (__map__i = 1; __map__i <= __map__n; ++__map__i) {
+                __map__f, __map__x(__map__i);
+            }
+        } else if (is_scalar(__map__x)) {
+            return __map__f(__map__x);
+        } else {
+            __map__n = numberof(__map__x);
+            __map__y1 = __map__f(__map__x(1));
+            __map__y = array(structof(__map__y1), dimsof(__map__y1),
+                             dimsof(__map__x));
+            if ((__map__m = numberof(__map__y1)) == 1) {
+                __map__y(1) = __map__y1;
+                for (__map__i = 2; __map__i <= __map__n; ++__map__i) {
+                    __map__y(__map__i) = __map__f(__map__x(__map__i));
+                }
+            } else {
+                __map__y(1:(__map__j1 = __map__m)) = __map__y1(*);
+                for (__map__i = 2; __map__i <= __map__n; ++__map__i) {
+                    __map__j0 = __map__j1 + 1;
+                    __map__j1 += __map__m;
+                    __map__y(__map__j0:__map__j1) =
+                        __map__f(__map__x(__map__i))(*);
+                }
+            }
+            return __map__y;
         }
-      } else {
-        __map__y(1:(__map__j1 = __map__m)) = __map__y1(*);
-        for (__map__i = 2; __map__i <= __map__n; ++__map__i) {
-          __map__j0 = __map__j1 + 1;
-          __map__j1 += __map__m;
-          __map__y(__map__j0:__map__j1) = __map__f(__map__x(__map__i))(*);
+    } else if (is_list(__map__x)) {
+        if (am_subroutine()) {
+            while (__map__x) {
+                __map__f, _car(__map__x);
+                __map__x = _cdr(__map__x);
+            }
+        } else {
+            __map__y = _lst(__map__f(_car(__map__x)));
+            while ((__map__x = _cdr(__map__x))) {
+                _cat, __map__y, __map__f(_car(__map__x));
+            }
+            return __map__y;
         }
-      }
-      return __map__y;
-    }
-  } else if (is_list(__map__x)) {
-    if (am_subroutine()) {
-      while (__map__x) {
-        __map__f, _car(__map__x);
-        __map__x = _cdr(__map__x);
-      }
+    } else if (is_void(__map__x)) {
+        if (am_subroutine()) {
+            __map__f;
+        } else {
+            return __map__f();
+        }
     } else {
-      __map__y = _lst(__map__f(_car(__map__x)));
-      while ((__map__x = _cdr(__map__x))) {
-        _cat, __map__y, __map__f(_car(__map__x));
-      }
-      return __map__y;
+        error, "unsupported data type \""+typeof(__map__x)+"\"";
     }
-  } else if (! is_void(__map__x)) {
-    error, "unsupported data type \""+typeof(__map__x)+"\"";
-  }
 }
 
 func reduce(f, x, ravel=)
@@ -577,25 +584,26 @@ func reduce(f, x, ravel=)
 }
 
 func lambda(args, code)
-/* DOCUMENT lambda(args, code);
+/* DOCUMENT f = lambda(args, code);
 
-     Return an anonymous function with ARGS its argment list and CODE the
-     body of the function.  ARGS and CODE must be (arrays of) strings.
+     Compile an anonymous function whose argument list and body are `args` and
+     `code` specified as (arrays of) strings. When the anonymous function is no
+     longer referenced, its definition is automatically deleted.
+
      For instance:
 
        f1 = lambda("x", "c = x*x; return sqrt(c + abs(x));");
        f2 = lambda("x,y", "return cos(x*y + abs(x));");
 
      define two functions f1 and f2 which take respectively one and two
-     arguments.  When variables f1 and f2 get out of scope the function
-     definition is automatically deleted.
+     arguments.
 
      Other example:
 
        a = _lst(12,34,67);
        b = map(lambda("x", "return sin(x);"), a);
 
-     B is a list with its elements the sines of the elements of A.
+     yields a list `b` with its elements the sines of the elements of `a`.
 
    SEE ALSO: map, include.
  */
