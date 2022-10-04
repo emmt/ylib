@@ -276,7 +276,7 @@ func fmin_global(f, arg1, arg2, arg3, arg4)
      This function implements the BraDi ("Bracket" then "Dig") algorithm
      described in [1].
 
-     [1] Ferréol Soulez, Éric Thiebaut, Michel Tallon, Isabelle Tallon-Bosc
+     [1] Ferréol Soulez, Éric Thiébaut, Michel Tallon, Isabelle Tallon-Bosc
          and Paulo Garcia, "Optimal a posteriori fringe tracking in optical
          interferometry", Proc. SPIE 9146, Optical and Infrared
          Interferometry IV, 91462Y (July 24, 2014); doi:10.1117/12.2056590
