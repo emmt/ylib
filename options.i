@@ -228,7 +228,7 @@ func opt_parse(tab, &argv)
         }
         return;
       } else if (type == OPT_VERSION) {
-        write, format="version: %s\n", opt(name);
+        write, format="version: %s\n", tab(name+":defval");
         return;
       } else {
         opt_error, "Option \"" + name + "\" takes a value";
