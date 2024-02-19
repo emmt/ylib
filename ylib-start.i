@@ -71,3 +71,5 @@ autoload, "utils.i", ansi_term, printf, inform, warn, throw, styled_messages;
 autoload, "utils.i", strtrimleft, strtrimright, strlower, strupper, strcut, strjoin, strchr, strrchr;
 
 autoload, "xsort.i", xsort, xsort_rank, xsort_uniq;
+
+autoload, "testing.i", test_assert, test_eval, test_init, test_summary;

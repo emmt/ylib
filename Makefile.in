@@ -26,6 +26,7 @@ PKG_I=${srcdir}/fft_utils.i \
       ${srcdir}/rgb3.i \
       ${srcdir}/rgb.i \
       ${srcdir}/statistics.i \
+      ${srcdir}/testing.i \
       ${srcdir}/utils.i \
       ${srcdir}/xplot0.i \
       ${srcdir}/xplot.i \
