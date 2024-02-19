@@ -45,6 +45,12 @@ func test_eval(expr)
  */
 {
     local _test_result;
+    if (catch(-1)) {
+        ++test_nfailed;
+        write, format="TEST FAILED: %s\n", expr;
+        write, format="FAILURE REASON: %s\n", catch_message;
+        return;
+    }
     include, ["_test_result = ("+expr+");"], 1;
     if (_test_result) {
         ++test_npassed;
