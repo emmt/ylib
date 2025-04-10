@@ -109,6 +109,12 @@ ylib-start-tmp.i: ${PKG_I}
 	  | sed -e 's/^[ 	]*func[ 	][ 	]*\([_0-9A-Za-z]*\).*/\1/' >> $@; \
 	done
 
+tag:
+	@version=`grep -i -m 1 '^##* * VERSION  *[0-9.][0-9.]*' < NEWS.md | sed -e 's/^[# A-Za-z]*= *\([0-9.]*\).*/\1/'`; \
+	echo "To tag this version, type:"; \
+	echo "   git tag -m 'Release $$version of YLib' v$$version"; \
+	echo "   git push"; \
+	echo "   git push --tags"
 
 release: $(RELEASE_NAME)
 
@@ -142,6 +148,6 @@ $(RELEASE_NAME):
 	  fi; \
 	fi;
 
-.PHONY: clean release all install uninstall default
+.PHONY: clean release all install uninstall default tag
 
 # -------------------------------------------------------- end of Makefile
