@@ -4,7 +4,7 @@ This page describes the most important changes in `YLib`. The format is based on
 Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic
 Versioning](https://semver.org/spec).
 
-## Unreleased
+## Version 2.0.0 (2025/04/10)
 
 ### Added
 
