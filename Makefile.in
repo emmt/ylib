@@ -110,7 +110,7 @@ ylib-start-tmp.i: ${PKG_I}
 	done
 
 tag:
-	@version=`grep -i -m 1 '^##* * VERSION  *[0-9.][0-9.]*' < NEWS.md | sed -e 's/^[# A-Za-z]*= *\([0-9.]*\).*/\1/'`; \
+	@version=`grep -i -m 1 '^##* * VERSION  *[0-9.][0-9.]*' < NEWS.md | sed -e 's/^[^0-9]*\([0-9.]*\).*/\1/'`; \
 	echo "To tag this version, type:"; \
 	echo "   git tag -m 'Release $$version of YLib' v$$version"; \
 	echo "   git push"; \
